@@ -1,4 +1,5 @@
-protected Class ServiceControl{
+package presentation;
+public class ServiceControl{
     private WorkersService workers_service;
     private ShiftJobsService jobs_service;
     private ShiftPlacementService placement_service;
