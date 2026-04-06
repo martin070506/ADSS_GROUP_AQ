@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import Domain.WorkersFacade;
 public class WorkersService{
     private WorkersFacade workers;
-    public WorkersService(WorkersFacade workers){
-        this.workers = workers;
+    public WorkersService(){
+        this.workers = new WorkersFacade();
     }
 
     public String addWorker(String name, int id, String bank_account, double salary, String salary_condision, LocalDate start_date, boolean is_shift_manager){

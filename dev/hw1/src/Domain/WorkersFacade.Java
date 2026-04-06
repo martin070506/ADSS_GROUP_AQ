@@ -1,4 +1,4 @@
-package domain;
+package Domain;
 
 import java.time.LocalDate; 
 import java.util.HashMap;
