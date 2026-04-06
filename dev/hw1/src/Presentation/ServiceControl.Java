@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package Presentation;
 import java.time.LocalDate; 
 import java.util.Scanner;
@@ -9,20 +8,6 @@ public class ServiceControl{
    // private static ShiftPlacementService placement_service;
    // private static ShiftWorkersCanidatesService canidates_service;
 
-=======
-package presentation;
-public class ServiceControl{
-    private WorkersService workers_service;
-    private ShiftJobsService jobs_service;
-    private ShiftPlacementService placement_service;
-    private ShiftWorkersCanidatesService canidates_service;
-    public ServiceControl(){
-        workers_service = new WorkersService();
-        jobs_service = new ShiftJobsService();
-        placement_service = new ShiftPlacementService();
-        canidates_service = new ShiftWorkersCanidatesService();
-    }
->>>>>>> refs/remotes/origin/216015826_216308064
     public static void main(String[] args) {
         ServiceControl service = new ServiceControl();
         run();
