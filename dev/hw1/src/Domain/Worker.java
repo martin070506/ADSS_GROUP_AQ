@@ -1,8 +1,6 @@
 package Domain;
 import java.time.LocalDate;
 
-
-
 public class Worker {
     private String name;
     private int id;
@@ -22,7 +20,6 @@ public class Worker {
         this.is_shift_manager = is_shift_manager;
     }
 
-
     public String getName() {
         return name;
     }
@@ -31,7 +28,7 @@ public class Worker {
         return id;
     }
 
-    public String getBank_info() {
+    public String getBankInfo() {
         return bank_info;
     }
 
@@ -39,20 +36,17 @@ public class Worker {
         return salary;
     }
 
-    public String getSalary_condition() {
+    public String getSalaryCondition() {
         return salary_condition;
     }
 
-    public LocalDate getStart_job_date() {
+    public LocalDate getStartJobDate() {
         return start_job_date;
     }
 
-    
-    public boolean isIs_shift_manager() {
+    public boolean isShiftManager() {
         return is_shift_manager;
     }
-
-    
 
     public void setName(String name) {
         this.name = name;
@@ -62,7 +56,7 @@ public class Worker {
         this.id = id;
     }
 
-    public void setBank_info(String bank_info) {
+    public void setBankInfo(String bank_info) {
         this.bank_info = bank_info;
     }
 
@@ -70,15 +64,15 @@ public class Worker {
         this.salary = salary;
     }
 
-    public void setSalary_condition(String salary_condition) {
+    public void setSalaryCondition(String salary_condition) {
         this.salary_condition = salary_condition;
     }
 
-    public void setStart_job_date(LocalDate start_job_date) {
+    public void setStartJobDate(LocalDate start_job_date) {
         this.start_job_date = start_job_date;
     }
 
-    public void setIs_shift_manager(boolean is_shift_manager) {
+    public void setShiftManager(boolean is_shift_manager) {
         this.is_shift_manager = is_shift_manager;
     }
 }
