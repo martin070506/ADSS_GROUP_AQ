@@ -1,5 +1,17 @@
 {
     "java.project.sourcePaths": [
-        "src"
-    ]
+        "src",
+        "tests"
+    ],
+    "java.project.referencedLibraries": {
+        "include": [
+            "c:\\Users\\orhai\\Downloads\\junit-jupiter-api-5.10.0.jar",
+            "c:\\Users\\orhai\\AppData\\Local\\Microsoft\\Windows\\INetCache\\IE\\SK1QBVTB\\junit-jupiter-engine-5.10.0[1].jar"
+        ],
+        "exclude": [
+            "lib/hamcrest-core-1.3.jar"
+        ]
+    },
+    "maven.view": "hierarchical",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
