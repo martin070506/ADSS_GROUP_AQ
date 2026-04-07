@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import Domain.WorkersFacade;
 public class WorkersService{
     private WorkersFacade workers;
-    public WorkersService(){
-        this.workers = new WorkersFacade();
+    public WorkersService(WorkersFacade workers){
+        this.workers = workers;
     }
 
     public String addWorker(String name, int id, String bank_account, double salary, String salary_condision, LocalDate start_date, boolean is_shift_manager){
@@ -45,5 +45,8 @@ public class WorkersService{
     public String editWorkerIsShiftManager(int id, boolean new_is_shift_manager){
         String result = workers.editWorkerIsShiftManager(id, new_is_shift_manager);
         return("the result for editing worker is shift manager are: "+ result); 
+    }
+    public String getAllWorkers(){
+        return workers.getAllWorkers();
     }
 }

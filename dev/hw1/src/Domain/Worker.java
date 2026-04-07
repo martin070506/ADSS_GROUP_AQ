@@ -75,4 +75,8 @@ public class Worker {
     public void setShiftManager(boolean is_shift_manager) {
         this.is_shift_manager = is_shift_manager;
     }
+    @Override
+    public String toString(){
+        return "name: "+name+" | id: "+id+" | bank info: "+bank_info+" | salary: "+salary+" | salary condisions: "+salary_condition+" | start date: "+ start_job_date+" | can be shift manager? "+is_shift_manager;
+    }
 }

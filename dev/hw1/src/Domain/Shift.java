@@ -24,4 +24,9 @@ public class Shift {
         return o.getDate().equals(this.date)
                 && o.is_morning == this.is_morning;
     }
+
+    
+    public String toString(){
+        return "-shift date: "+ date+"\n -is this morning shift? "+ is_morning;
+    }
 }

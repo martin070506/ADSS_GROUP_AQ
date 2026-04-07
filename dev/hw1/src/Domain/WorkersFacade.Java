@@ -2,6 +2,8 @@ package Domain;
 
 import java.time.LocalDate; 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WorkersFacade {
     private HashMap<Integer, Worker> workers;
@@ -96,4 +98,25 @@ public class WorkersFacade {
         worker.setShiftManager(newIsShiftManager);
         return "success, worker's shift manager status has been changed to: " + newIsShiftManager;
     }
+    public boolean hasShiftManager(List<Integer> ids){
+        for(Integer id: ids){
+            if(workers.containsKey(id)){
+                if(workers.get(id).isShiftManager()){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public String getAllWorkers(){
+        StringBuilder result = new StringBuilder();
+        result.append("==== All The Workers Details ====");
+        int i=1;
+        for (Map.Entry<Integer, Worker> entry : workers.entrySet()) {
+            result.append("\n"+i+") "+ entry.getValue().toString());
+            i++;
+        }
+        return result.toString();
+    }
+
 }
