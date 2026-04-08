@@ -1,5 +1,7 @@
 package Presentation;
 
+import java.time.LocalDate;
+
 import Domain.Shift;
 import Domain.ShiftCanidatesWorkersFacade;
 
@@ -14,6 +16,9 @@ public class ShiftWorkersCanidatesService {
     }
     public String removeCandidate(Shift shift, int id){
         return canidates.removeCandidate(shift, id);
+    }
+    public String getCandidatesForShift(LocalDate date, boolean is_morning){
+        return canidates.getCandidatesForShift(date,is_morning);
     }
     
 

@@ -40,5 +40,16 @@ public class ShiftCanidatesWorkersFacade {
         return false;
     }
 
+    public String getCandidatesForShift(LocalDate date, boolean is_morning) {
+        Shift shift=new Shift(date, is_morning);
+        for (ShiftCanidates shiftCanidates : canidates_list) {
+            if(shift.equals(shiftCanidates.getShift()))
+                return ("The candidates for the shift: "+shiftCanidates.getShift().toString()
+            +" ,are: "+shiftCanidates.getWorkersIds().toString());
+        }
+
+        return ("The shift: "+shift.toString()+", has no candidates yet.");
+    }
+
     
 }

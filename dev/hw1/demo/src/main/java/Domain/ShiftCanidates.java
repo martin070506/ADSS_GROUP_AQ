@@ -22,9 +22,14 @@ public class ShiftCanidates {
     }
 
 
-    public Shift getShift(){
+    protected Shift getShift(){
         return this.shift;
     }
+
+    protected List<Integer> getWorkersIds(){
+        return this.workers_ids;
+    }
+    
 
     public String removeCandidate(Integer id) {
         if(!workers_ids.contains(id))
