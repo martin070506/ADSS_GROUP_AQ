@@ -22,15 +22,15 @@ public class ShiftPlacmentFacade {
             else if(ids.size()!=jobs.size()){
                 return "faild, there are mistmatch sizes between the workers and jobs that sent";
             }
-            else if(!workers.hasShiftManager(ids)){
+            else if(!workers.hasShiftManager(ids)){//It should be in "canidates".
                 return "faild, placement does not contain shift manager";
             }
             else if(!allJobs.containAllJobs(date, is_morning, jobs)){
                 return "faild, all job in placment did not match the shift sets jobs ";
             }
-            //else if(!canidates.containAllWorkers(date, is_morning, ids)){
-            //    return "faild, all workers in placment did not match the shift sets workers canidates ";
-            //}
+            else if(!canidates.containAllWorkers(date, is_morning, ids)){
+              return "faild, all workers in placment did not match the shift sets workers canidates ";
+            }
             int length = jobs.size();
             Shift shift = new Shift(date, is_morning);
             for (ShiftPlacement shiftPlacement : shifts) {

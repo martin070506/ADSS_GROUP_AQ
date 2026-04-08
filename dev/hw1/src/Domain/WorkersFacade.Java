@@ -118,5 +118,8 @@ public class WorkersFacade {
         }
         return result.toString();
     }
+    public boolean hasWorker(int id){
+        return this.workers.containsKey(id);
+    }
 
 }

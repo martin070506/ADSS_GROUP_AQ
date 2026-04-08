@@ -46,7 +46,10 @@ public class ShiftJobs{
         }
         return "faild, job not founded";
     }
-    public Shift getShift(){return shift;}
+    public Shift getShift(){
+        return shift;
+    }
+
     public boolean containAllJobs(List<Integer> jobs){
         ShiftJobs new_shift = new ShiftJobs(this.shift.getDate(), this.shift.getIsMorning());
         for (int id : jobs) {
