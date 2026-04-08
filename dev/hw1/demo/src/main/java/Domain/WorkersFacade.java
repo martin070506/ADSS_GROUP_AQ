@@ -98,15 +98,11 @@ public class WorkersFacade {
         worker.setShiftManager(newIsShiftManager);
         return "success, worker's shift manager status has been changed to: " + newIsShiftManager;
     }
-    public boolean hasShiftManager(List<Integer> ids){
-        for(Integer id: ids){
-            if(workers.containsKey(id)){
-                if(workers.get(id).isShiftManager()){
-                    return true;
-                }
-            }
+    public boolean isShiftManager(int id){
+        if(!workers.containsKey(id)){
+            return false;
         }
-        return false;
+        return workers.get(id).isShiftManager();
     }
     public String getAllWorkers(){
         StringBuilder result = new StringBuilder();

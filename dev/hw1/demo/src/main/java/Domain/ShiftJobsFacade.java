@@ -8,6 +8,9 @@ public class ShiftJobsFacade {
         shifts= new ArrayList<>();
     }
     public String addJob(LocalDate date, boolean is_morning, int job){
+        if(!LocalDate.now().isBefore(date)){
+                return "failed, now is too late to add shift jobs";
+        }
         for (ShiftJobs shiftJobs : shifts) {
             if(shiftJobs.getShift().equals(new Shift(date, is_morning))){
                 return shiftJobs.addJob(job);
@@ -20,6 +23,9 @@ public class ShiftJobsFacade {
     }
 
     public String removeJob(LocalDate date, boolean is_morning, int job){
+        if(!LocalDate.now().isBefore(date)){
+                return "failed, now is too late to remove shift jos";
+        }
         for (ShiftJobs shiftJobs : shifts) {
             if(shiftJobs.getShift().equals(new Shift(date, is_morning))){
                 return shiftJobs.removeJob(job);
@@ -39,6 +45,9 @@ public class ShiftJobsFacade {
     }
 
     public String changeJob(LocalDate date, boolean is_morning, int job_to_be_changed, int job_to_change_to){
+        if(!LocalDate.now().isBefore(date)){
+                return "failed, now is too late to change job";
+        }
         String remove_result = removeJob(date,is_morning,job_to_be_changed);
         if(!remove_result.startsWith("succeed")){
             return "faild at chainging, "+remove_result;

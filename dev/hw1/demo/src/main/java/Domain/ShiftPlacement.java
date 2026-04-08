@@ -7,21 +7,36 @@ import java.util.Map;
 public class ShiftPlacement{
     private Shift shift;
     private HashMap<Integer,Jobs> placements;
+    private int shift_manager;
     public ShiftPlacement(LocalDate date, boolean is_morning){
         shift = new Shift(date, is_morning);
         placements = new HashMap<>();
+        shift_manager=-1;
     }
-
+    public String changePlacment(int id_to_out, int id_to_in){
+        if(placements.containsKey(id_to_in)){
+            return "failed, worker already in shift, can not have two jobs"; 
+        }
+        Jobs job = placements.get(id_to_out);
+        placements.remove(id_to_out);
+        placements.put(id_to_in, job);
+        return "secceed, changed "+job+" from "+id_to_out+" to "+id_to_in;
+    }
     public Shift getShift() {
         return shift;
     }
-
+    public int getShiftManager(){
+        return shift_manager;
+    }
+    public void setShiftManager(int id){
+        shift_manager=id;
+    }
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("==== Shift Detail ====\n the shift date: "+shift.toString()+"\n the shift placement \n ");
+        result.append("==== Shift Detail ====\n the shift date: "+shift.toString()+"\n the shift manager is: "+ shift_manager +"\n the shift placement \n ");
         placements.forEach((job, count) -> {
-            result.append("  - ").append(job).append(" -> ").append(count).append(" workers\n");
+            result.append("  - ").append(job).append(" -> ").append(count).append(" worker\n");
         });
         return result.toString();
     }

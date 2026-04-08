@@ -99,7 +99,7 @@ public class ServiceControl{
     public static void runPlacementService(){
         boolean exit=false;
         while (!exit) {
-            System.out.println("Welcome to shift placement service \n 1) for adding placement job enter 'add' \n 2) for viewing shift placement enter 'view' \n 3) for returning to main menu enter 'return' \n");
+            System.out.println("Welcome to shift placement service \n 1) for adding placement job enter 'add' \n 2) for changing placment enter 'change'\n 3) for viewing shift placement enter 'view' \n 3) for returning to main menu enter 'return' \n");
             String command = scanner.nextLine();
              if (command.equals("return")) {
                 exit=true;
@@ -110,17 +110,18 @@ public class ServiceControl{
             else if (command.equals("view")) {
                 runViewPlacementService();
             }
+            else if (command.equals("change")) {
+                runChangePlacementService();
+            }
             else{ 
                  System.out.println("the system did not understand your input, tryng again:");
             }
         }
     }
-    public static void runPlacementServiceAdd(){
-        boolean exit=false;
-        List<Integer> jobs = new ArrayList<>();
-        List<Integer> ids = new ArrayList<>();
+    public static void runChangePlacementService(){
         LocalDate date= null;
         boolean is_morning=false;
+        int id_change_from=0, id_change_to=0;
         try{
             System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
             String text_date = scanner.nextLine();
@@ -128,6 +129,41 @@ public class ServiceControl{
 
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
+            scanner.nextLine();
+
+            System.out.println("enter the id of the worker to remove from shift: ");
+            id_change_from = scanner.nextInt();
+            scanner.nextLine();
+
+             System.out.println("enter the id of the worker to add from shift: ");
+            id_change_to = scanner.nextInt();
+            scanner.nextLine();
+        }
+        catch(Exception e){
+           System.out.println("entered wrong data type, returning to placement service menu ");
+
+        }
+        System.out.println(placement_service.changePlacment(date,is_morning, id_change_from,id_change_to));
+
+    }
+    public static void runPlacementServiceAdd(){
+        boolean exit=false;
+        List<Integer> jobs = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
+        LocalDate date= null;
+        boolean is_morning=false;
+        int shift_manager = 0;
+        try{
+            System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
+            String text_date = scanner.nextLine();
+            date = LocalDate.parse(text_date);
+
+            System.out.println("enter 'true' if this is morning shift else enter 'false': ");
+            is_morning = scanner.nextBoolean();
+            scanner.nextLine();
+
+            System.out.println("enter shift manager id: ");
+            shift_manager = scanner.nextInt();
             scanner.nextLine();
         }
         catch(Exception e){
@@ -167,7 +203,7 @@ public class ServiceControl{
                  System.out.println("the system did not understand your input, tryng again:");
             }
         }
-        System.out.println(placement_service.addPlacement(date, is_morning, ids, jobs));
+        System.out.println(placement_service.addPlacement(date, is_morning,shift_manager, ids, jobs));
     }
     public static void runViewPlacementService(){
         LocalDate date= null;

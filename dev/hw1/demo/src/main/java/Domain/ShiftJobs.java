@@ -7,13 +7,21 @@ import java.util.Map;
 public class ShiftJobs{
     private Shift shift;
     private HashMap<Jobs, Integer> jobs;
+    private boolean placement_started;
 
     public ShiftJobs(LocalDate date, boolean is_morning){
         shift = new Shift(date, is_morning);
         jobs = new HashMap<>();
+        placement_started=false;
     }
+    public void placementStarted(){
+        placement_started=true;
 
+    }
     public String addJob(int job){
+        if(placement_started){
+            return "failed, cannot change shift jobs after pacement started";
+        }
         if(job == 0){
             int currentCount = jobs.getOrDefault(Jobs.CASHEER, 0);
             jobs.put(Jobs.CASHEER, currentCount + 1);
@@ -28,6 +36,9 @@ public class ShiftJobs{
     }
     
     public String removeJob(int job){
+        if(placement_started){
+            return "failed, cannot change shift jobs after pacement started";
+        }
         if(job == 0){
             int currentCount = jobs.getOrDefault(Jobs.CASHEER, 0);
             if( currentCount == 0 ){
