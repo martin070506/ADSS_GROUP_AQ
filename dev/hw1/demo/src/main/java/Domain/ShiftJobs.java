@@ -57,14 +57,18 @@ public class ShiftJobs{
         }
         return "faild, job not founded";
     }
-    public Shift getShift(){return shift;}
-    public boolean containAllJobs(List<Integer> jobs){
+    public Shift getShift(){
+        return shift;
+    }
+
+    public boolean containAllJobs( List<Integer> jobs){
         ShiftJobs new_shift = new ShiftJobs(this.shift.getDate(), this.shift.getIsMorning());
         for (int id : jobs) {
             new_shift.addJob(id);
         }
         return new_shift.mapEquals(this.jobs);
     }
+
     public boolean mapEquals(HashMap<Jobs, Integer> others){
         for (Map.Entry<Jobs, Integer> entry : jobs.entrySet()) {
             if(!others.containsKey(entry.getKey())){

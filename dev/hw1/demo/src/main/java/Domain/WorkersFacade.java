@@ -11,7 +11,9 @@ public class WorkersFacade {
     public WorkersFacade() {
         workers = new HashMap<>(); 
     }
-
+    public boolean hasWorker(int id){
+        return this.workers.containsKey(id);
+    }
     public String addWorker(String name, int id, String bankAccount, double salary, String salaryCondition, LocalDate startDate, boolean isShiftManager) {
         if (workers.containsKey(id)) {
             return "failed, worker with id: " + id + " already exists.";
@@ -114,5 +116,7 @@ public class WorkersFacade {
         }
         return result.toString();
     }
+
+    
 
 }

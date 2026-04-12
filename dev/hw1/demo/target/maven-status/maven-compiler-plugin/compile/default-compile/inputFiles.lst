@@ -1,5 +1,6 @@
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\Jobs.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\Shift.java
+C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\ShiftCanidates.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\ShiftCanidatesWorkersFacade.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\ShiftJobs.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\ShiftJobsFacade.java
@@ -10,4 +11,5 @@ C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Domain\WorkersFacade.jav
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Presentation\ServiceControl.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Presentation\ShiftJobsService.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Presentation\ShiftPlacementService.java
+C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Presentation\ShiftWorkersCanidatesService.java
 C:\Users\orhai\ADSS_GROUP_AQ\dev\hw1\demo\src\main\java\Presentation\WorkersService.java

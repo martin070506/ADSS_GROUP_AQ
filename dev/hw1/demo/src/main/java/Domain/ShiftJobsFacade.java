@@ -21,7 +21,15 @@ public class ShiftJobsFacade {
         shifts.add(new_shift_job);
         return result;
     }
+    
 
+    public void startPlacement(LocalDate date, boolean is_morning){
+        Shift shift = new Shift(date, is_morning);
+        for (ShiftJobs shift_job : shifts) {
+            if(shift.equals(shift_job.getShift()))
+                 shift_job.placementStarted();
+        }
+    }
     public String removeJob(LocalDate date, boolean is_morning, int job){
         if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to remove shift jos";

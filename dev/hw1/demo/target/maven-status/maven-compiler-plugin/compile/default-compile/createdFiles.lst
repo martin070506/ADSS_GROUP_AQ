@@ -1,0 +1,15 @@
+Domain\ShiftJobsFacade.class
+Presentation\ShiftWorkersCanidatesService.class
+Presentation\WorkersService.class
+Presentation\ShiftPlacementService.class
+Presentation\ServiceControl.class
+Domain\Shift.class
+Presentation\ShiftJobsService.class
+Domain\WorkersFacade.class
+Domain\ShiftPlacement.class
+Domain\ShiftCanidatesWorkersFacade.class
+Domain\Worker.class
+Domain\ShiftJobs.class
+Domain\ShiftPlacmentFacade.class
+Domain\Jobs.class
+Domain\ShiftCanidates.class

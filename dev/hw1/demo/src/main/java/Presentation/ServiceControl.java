@@ -13,13 +13,14 @@ public class ServiceControl{
     private static WorkersService workers_service;
     private static ShiftJobsService jobs_service;
     private static ShiftPlacementService placement_service;
-    //private static ShiftWorkersCanidatesService canidates_service;
+    private static ShiftWorkersCanidatesService canidates_service;
     public ServiceControl(){
         WorkersFacade workers_facade = new WorkersFacade();
         workers_service= new WorkersService(workers_facade);
         ShiftJobsFacade jobs_facade = new ShiftJobsFacade();
         jobs_service = new ShiftJobsService(jobs_facade);
         ShiftCanidatesWorkersFacade canidates_facade = new ShiftCanidatesWorkersFacade();
+        canidates_service = new ShiftWorkersCanidatesService(canidates_facade);
         ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, canidates_facade);
         placement_service = new ShiftPlacementService(placement_facade);
 
@@ -32,7 +33,7 @@ public class ServiceControl{
         boolean exit=false;
         while (!exit) {
             System.out.println("system woke up... \nsystem initialize");
-            System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placment' for placement service \n 4) 'exit' for exit: ");
+            System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placement' for placement service \n 4) 'canidate' for shift canidates service \n 5) 'exit' for exit: ");
             String command = scanner.nextLine();
 
             if (command.equals("exit")) 
@@ -47,10 +48,102 @@ public class ServiceControl{
             else if (command.equals("placement")){
                 runPlacementService();
             }
+            else if (command.equals("canidate")){
+                runCanidateService();
+            }
             else{ 
                  System.out.println("the system did not understand your input, tryng again:");
             }
         }
+    }
+    public static void runCanidateService(){
+        boolean exit=false;
+        while (!exit) {
+            System.out.println("Welcome to shifts canidates workers service \n 1) for adding new canidate worker to a shift enter 'add' \n 2) for removing a worker canidate from a shift enter 'remove' \n 3) for viewing all shift canidates workers in a shift 'view' \n 4) for returning to main menu enter 'return' \n");
+            String command = scanner.nextLine();
+             if (command.equals("return")) {
+                exit=true;
+            }
+            else if (command.equals("add")) {
+                runCanidatesServiceAdd();
+            }
+            else if (command.equals("remove")) {
+                runCanidatesServiceRemove();
+            }
+            else if (command.equals("view")) {
+                runViewCanidatesShiftService();
+            }
+            else{ 
+                 System.out.println("the system did not understand your input, tryng again:");
+            }
+        }
+    }
+    public static void runCanidatesServiceRemove(){
+        LocalDate date= null;
+        boolean is_morning=false;
+        int worker=-1;
+        try{
+            System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
+            String text_date = scanner.nextLine();
+            date = LocalDate.parse(text_date);
+
+            System.out.println("enter 'true' if this is morning shift else enter 'false': ");
+            is_morning = scanner.nextBoolean();
+            scanner.nextLine();
+            
+            System.out.println("enter the id for the worker");
+            worker = scanner.nextInt();
+            scanner.nextLine();
+        }
+        catch(Exception e){
+           System.out.println("entered wrong data type, returning to workers service menu ");
+
+        }
+        System.out.println(canidates_service.removeCandidate(date,is_morning,worker));
+
+    }
+    public static void runCanidatesServiceAdd(){
+        LocalDate date= null;
+        boolean is_morning=false;
+        int worker=-1;
+        try{
+            System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
+            String text_date = scanner.nextLine();
+            date = LocalDate.parse(text_date);
+
+            System.out.println("enter 'true' if this is morning shift else enter 'false': ");
+            is_morning = scanner.nextBoolean();
+            scanner.nextLine();
+            
+            System.out.println("enter the id for the worker");
+            worker = scanner.nextInt();
+            scanner.nextLine();
+        }
+        catch(Exception e){
+           System.out.println("entered wrong data type, returning to workers service menu ");
+
+        }
+        System.out.println(canidates_service.addCandidate(date,is_morning,worker));
+
+    }
+    public static void runViewCanidatesShiftService(){
+        LocalDate date= null;
+        boolean is_morning=false;
+        try{
+            System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
+            String text_date = scanner.nextLine();
+            date = LocalDate.parse(text_date);
+
+            System.out.println("enter 'true' if this is morning shift else enter 'false': ");
+            is_morning = scanner.nextBoolean();
+            scanner.nextLine();
+        }
+        catch(Exception e){
+           System.out.println("entered wrong data type, returning to placement service menu ");
+
+        }
+        System.out.println(canidates_service.getCandidatesForShift(date,is_morning));
+
     }
     public static void runJobsService(){
         boolean exit=false;
@@ -265,7 +358,7 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
             
-            System.out.println("enter '1' for removing casheer job, '2' for shop keeper");
+            System.out.println("enter '0' for removing casheer job, '1' for shop keeper");
             job = scanner.nextInt();
             scanner.nextLine();
         }
@@ -289,7 +382,7 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
             
-            System.out.println("enter '1' for adding casheer job, '2' for shop keeper");
+            System.out.println("enter '0' for adding casheer job, '1' for shop keeper");
             job = scanner.nextInt();
             scanner.nextLine();
         }

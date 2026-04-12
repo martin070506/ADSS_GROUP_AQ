@@ -31,9 +31,9 @@ public class ShiftPlacmentFacade {
             else if(!allJobs.containAllJobs(date, is_morning, jobs)){
                 return "faild, all job in placment did not match the shift sets jobs ";
             }
-            //else if(!canidates.containAllWorkers(date, is_morning, ids)){
-            //    return "faild, all workers in placment did not match the shift sets workers canidates ";
-            //}
+            else if(!canidates.containAllWorkers(date, is_morning, ids)){
+              return "faild, all workers in placment did not match the shift sets workers canidates ";
+            }
             int length = jobs.size();
             Shift shift = new Shift(date, is_morning);
             for (ShiftPlacement shiftPlacement : shifts) {
@@ -48,6 +48,8 @@ public class ShiftPlacmentFacade {
                         shiftPlacement.setShiftManager(shift_manager);
 
                     }
+                    canidates.startPlacement(date, is_morning);
+                    allJobs.startPlacement(date,is_morning);
                     return "succeed, added all placment \n"+ shiftPlacement.toString();
                 }
 
@@ -64,6 +66,9 @@ public class ShiftPlacmentFacade {
 
             }
             shifts.add(new_Placement);
+            canidates.startPlacement(date, is_morning);
+            allJobs.startPlacement(date,is_morning);
+
             return "succeed, added all placment \n"+ new_Placement.toString();
             
         }
@@ -78,9 +83,9 @@ public class ShiftPlacmentFacade {
             return "faild, shift placment not found";
         }
         public String changePlacment(LocalDate date, boolean is_morning, int id_to_out, int id_to_in){
-            //else if(!canidates.containWorker(date, is_morning, id_to_in)){
-            //    return "faild, all workers in placment did not match the shift sets workers canidates ";
-            //}
+            if(!canidates.containWorker(date, is_morning, id_to_in)){
+                return "faild, all workers in placment did not match the shift sets workers canidates ";
+            }
             if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to change placement";
             }
