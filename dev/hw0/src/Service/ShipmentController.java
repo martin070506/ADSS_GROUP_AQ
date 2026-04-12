@@ -1,4 +1,7 @@
-import java.util.LinkedList;
+package Service;
+
+import Domain.Supplier;
+
 import java.util.List;
 
 public class ShipmentController {

@@ -1,3 +1,5 @@
+package Domain;
+
 public class ProductPair {
 
     private Product product;

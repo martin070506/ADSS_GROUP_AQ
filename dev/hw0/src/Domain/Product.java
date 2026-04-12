@@ -1,3 +1,5 @@
+package Domain;
+
 public class Product {
 
     private String name;

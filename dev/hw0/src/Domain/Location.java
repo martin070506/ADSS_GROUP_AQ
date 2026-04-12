@@ -1,3 +1,5 @@
+package Domain;
+
 public class Location {
 
     private String address;

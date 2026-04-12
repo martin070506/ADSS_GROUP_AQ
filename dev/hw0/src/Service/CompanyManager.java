@@ -1,6 +1,9 @@
+package Service;
+
+import Domain.*;
+
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class CompanyManager {
     private int globalFileNumber=0;
@@ -39,11 +42,11 @@ public class CompanyManager {
     public void startShipment(){
        boolean truckAndDriverMatch=false;
        while (!truckAndDriverMatch){
-           System.out.println("Choose a Truck and a matching Driver");
+           System.out.println("Choose a Domain.Truck and a matching Domain.Driver");
            Truck t=truckController.chooseTruck();
            Driver d=truckController.chooseDriver();
            truckAndDriverMatch=t.getMinLicense()<=d.getLicense();
-           if(!truckAndDriverMatch) System.out.println("Truck and Driver chosen are not matching");
+           if(!truckAndDriverMatch) System.out.println("Domain.Truck and Domain.Driver chosen are not matching");
        }
 
 

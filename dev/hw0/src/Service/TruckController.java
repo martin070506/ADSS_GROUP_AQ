@@ -1,3 +1,8 @@
+package Service;
+
+import Domain.Driver;
+import Domain.Truck;
+
 import java.util.*;
 
 public class TruckController {
@@ -60,9 +65,9 @@ public class TruckController {
     }
 
     private void displayTruck(Truck truck){
-        System.out.println("Truck Number: " + truck.getTruckNumber() + '\n'+
-                "Truck allowed Weight: " + (truck.getMaxWeight()- truck.getTruckWeight())+'\n'+
-                "Truck min License: " + truck.getMinLicense()+ 'n'+
-                "Truck Model: " +truck.getModel());
+        System.out.println("Domain.Truck Number: " + truck.getTruckNumber() + '\n'+
+                "Domain.Truck allowed Weight: " + (truck.getMaxWeight()- truck.getTruckWeight())+'\n'+
+                "Domain.Truck min License: " + truck.getMinLicense()+ 'n'+
+                "Domain.Truck Model: " +truck.getModel());
     }
 }

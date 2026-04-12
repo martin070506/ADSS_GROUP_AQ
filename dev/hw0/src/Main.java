@@ -1,3 +1,6 @@
+import Domain.*;
+import Service.CompanyManager;
+
 import java.util.LinkedList;
 import java.util.List;
 

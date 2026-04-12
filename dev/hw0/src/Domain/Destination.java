@@ -1,10 +1,10 @@
-import java.util.List;
+package Domain;
 
 public class Destination   {
     private Location location;
     private ProductFile productFile;
 
-    public Destination(Location location,ProductFile productFile){
+    public Destination(Location location, ProductFile productFile){
         this.location = location;
         this.productFile = productFile;
     }

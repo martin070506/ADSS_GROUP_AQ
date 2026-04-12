@@ -1,3 +1,5 @@
+package Domain;
+
 public class Driver {
 
     private String driverName;

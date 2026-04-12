@@ -1,3 +1,8 @@
+package Service;
+
+import Domain.Location;
+import Domain.ProductPair;
+
 import java.util.List;
 
 public class BranchManager {

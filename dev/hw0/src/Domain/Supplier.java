@@ -1,4 +1,5 @@
-import java.util.LinkedList;
+package Domain;
+
 import java.util.List;
 
 public class Supplier{
