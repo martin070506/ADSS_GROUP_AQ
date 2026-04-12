@@ -1,24 +1,22 @@
 public class Driver {
 
-    private int driverName;
+    private String driverName;
     private int license;
 
-    public Driver(int driverName, int license) {
+    public Driver(String driverName, int license) {
         this.driverName = driverName;
         this.license = license;
     }
 
-    public int getDriverName() {
+    public String getDriverName() {
         return driverName;
     }
     public int getLicense() {
         return license;
     }
-    public void setDriverName(int driverName) {
+
+    public void setDriverName(String driverName) {
         this.driverName = driverName;
     }
-    public void setLicense(int license) {
-        this.license = license;
-    }
-
+    public void setLicense(int license) { this.license = license; }
 }

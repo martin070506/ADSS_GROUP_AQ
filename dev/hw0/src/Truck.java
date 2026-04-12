@@ -7,7 +7,11 @@ public class Truck {
     private int minLicense;
 
     public Truck(int truckNumber, String model, int truckWeight, int maxWeight, int minLicense) {
-
+        this.truckNumber = truckNumber;
+        this.model = model;
+        this.truckWeight = truckWeight;
+        this.maxWeight = maxWeight;
+        this.minLicense = minLicense;
     }
 
     public int getTruckNumber() {

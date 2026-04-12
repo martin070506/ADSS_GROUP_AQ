@@ -12,8 +12,8 @@ public class CompanyManager {
     private static CompanyManager instance = null;
 
     private CompanyManager(List<Supplier> suppliers,List<Truck> trucks,List<Driver> drivers) {
-        truckController=new TruckController(trucks,drivers);
-        shipmentController=new ShipmentController(suppliers);
+        truckController = new TruckController(trucks,drivers);
+        shipmentController = new ShipmentController(suppliers);
     }
 
     public static CompanyManager getInstance(List<Supplier> suppliers,List<Truck> trucks,List<Driver> drivers) {

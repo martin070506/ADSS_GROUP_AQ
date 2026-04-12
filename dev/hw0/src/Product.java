@@ -1,17 +1,16 @@
-public enum Product {
+public class Product {
 
-    Apple(1),
-    Banana(2),
-    Pineapple(5),
-    Carrot(10),
-    Orange(20);
+    private String name;
+    private int weight; // Kg
 
-    private final int weight; // Kg
-
-    Product(int weight) {
+    Product(String name, int weight) {
+        this.name = name;
         this.weight = weight;
     }
 
+    public int getName() {
+        return name;
+    }
     public int getWeight() {
         return weight;
     }
