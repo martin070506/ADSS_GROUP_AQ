@@ -46,4 +46,7 @@ public class Truck {
     public void setMinLicense(int minLicense) {
         this.minLicense = minLicense;
     }
+    public int getAllowedWeight(){
+        return maxWeight - truckWeight;
+    }
 }

@@ -7,16 +7,18 @@ import java.util.List;
 
 public class CompanyManager {
     private int globalFileNumber=0;
-    private TransportStorageBase transportStorage;
-    private TruckController truckController;
-    private ShipmentController shipmentController;
+    private TruckFacade truckFacade;
+    private ShipmentFacade shipmentFacade;
     private List<Destination> dropOffDestinations = new LinkedList<>();
+    private List<Supplier> suppliers = new LinkedList<>();
+
 
     private static CompanyManager instance = null;
 
     private CompanyManager(List<Supplier> suppliers,List<Truck> trucks,List<Driver> drivers) {
-        truckController = new TruckController(trucks,drivers);
-        shipmentController = new ShipmentController(suppliers);
+        this.truckFacade = new TruckFacade(trucks,drivers);
+        this.shipmentFacade = new ShipmentFacade(suppliers);
+        this.suppliers = suppliers;
     }
 
     public static CompanyManager getInstance(List<Supplier> suppliers,List<Truck> trucks,List<Driver> drivers) {
@@ -41,13 +43,21 @@ public class CompanyManager {
 
     public void startShipment(){
        boolean truckAndDriverMatch=false;
+       Truck truck=null;
+       Driver driver=null;
        while (!truckAndDriverMatch){
-           System.out.println("Choose a Domain.Truck and a matching Domain.Driver");
-           Truck t=truckController.chooseTruck();
-           Driver d=truckController.chooseDriver();
-           truckAndDriverMatch=t.getMinLicense()<=d.getLicense();
-           if(!truckAndDriverMatch) System.out.println("Domain.Truck and Domain.Driver chosen are not matching");
+           System.out.println("Choose a Truck and a matching Driver");
+           truck=truckFacade.chooseTruck();
+           driver=truckFacade.chooseDriver();
+           truckAndDriverMatch=truck.getMinLicense()<=driver.getLicense();
+           if(!truckAndDriverMatch) System.out.println("Truck and Driver chosen are not matching");
        }
+
+       truckFacade.removeTruck(truck);
+       truckFacade.removeDriver(driver);
+       shipmentFacade.startShipment(truck,driver,this.dropOffDestinations,truckFacade.getTrucks());
+
+
 
 
     }

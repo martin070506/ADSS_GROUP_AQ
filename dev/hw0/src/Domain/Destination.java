@@ -1,5 +1,7 @@
 package Domain;
 
+import java.util.List;
+
 public class Destination   {
     private Location location;
     private ProductFile productFile;
@@ -9,15 +11,27 @@ public class Destination   {
         this.productFile = productFile;
     }
 
-    public void handleShipment(Transport transport) {
-        System.out.println("Shipment successful");
+    public String getContactName(){
+        return location.getContactName();
     }
 
-    public int calculateWeightOfDropOff() {
+    public void handleShipment(Transport transport) {
+        boolean result=transport.removeItems(getProducts(),calculateWeightOfDropOff());
+        if(!result){
+            System.out.println("Shipment unsuccessful, not all products available, therefore NOTHING WAS DROPPED OFF (DEFAULT CHOICE)");
+        }
+
+    }
+
+    private int calculateWeightOfDropOff() {
         int sum = 0;
         for (ProductPair pair : productFile.getProducts())
             sum += pair.getProduct().getWeight() * pair.getAmount();
 
         return sum;
+    }
+
+    public List<ProductPair> getProducts() {
+        return productFile.getProducts();
     }
 }

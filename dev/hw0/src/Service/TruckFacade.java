@@ -5,13 +5,13 @@ import Domain.Truck;
 
 import java.util.*;
 
-public class TruckController {
+public class TruckFacade {
     private List<Truck> trucks;
     private List<Truck> availableTrucks;
     private List<Driver> drivers;
     private List<Driver> availableDrivers;
     private Scanner reader = new Scanner(System.in);
-    public TruckController(List<Truck> trucks, List<Driver> drivers) {
+    public TruckFacade(List<Truck> trucks, List<Driver> drivers) {
         this.trucks = trucks;
         this.drivers = drivers;
         this.availableTrucks = List.copyOf(trucks);
@@ -22,7 +22,9 @@ public class TruckController {
 
 
 
-
+    public List<Truck> getTrucks(){
+        return trucks;
+    }
     public void addTruck(Truck truck){
         trucks.add(truck);
         availableTrucks.add(truck);
@@ -67,7 +69,36 @@ public class TruckController {
     private void displayTruck(Truck truck){
         System.out.println("Domain.Truck Number: " + truck.getTruckNumber() + '\n'+
                 "Domain.Truck allowed Weight: " + (truck.getMaxWeight()- truck.getTruckWeight())+'\n'+
-                "Domain.Truck min License: " + truck.getMinLicense()+ 'n'+
-                "Domain.Truck Model: " +truck.getModel());
+                "Domain.Truck min License: " + truck.getMinLicense()+ '\n'+
+                "Domain.Truck Model: " +truck.getModel()+'\n');
+    }
+
+    public Driver chooseDriver(){
+        int index = 0;
+
+        if(availableDrivers.isEmpty()){
+            System.out.println("There are no Drivers available");
+            return null;
+        }
+
+        for (Driver driver : availableDrivers){
+            System.out.println(index+":");
+            System.out.println("--------------");
+            displayDriver(driver);
+            System.out.println("--------------");
+        }
+
+        System.out.println("###  Now choose one of them  ###");
+        int choice=reader.nextInt();
+        while (choice<0 || choice>availableDrivers.size()-1){
+            System.out.println("Invalid choice");
+            choice=reader.nextInt();
+        }
+        return availableDrivers.get(choice);
+    }
+
+    private void displayDriver(Driver d){
+        System.out.println("Driver name: " + d.getDriverName() + '\n' +
+                "License: " + d.getLicense()+ '\n');
     }
 }

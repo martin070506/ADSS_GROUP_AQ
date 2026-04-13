@@ -22,4 +22,10 @@ public class ProductPair {
     public void setProduct(Product product) {
         this.product = product;
     }
+
+    @Override
+    public String toString() {
+        // Assuming Product has a getName() method
+        return product.getName() + " (Quantity: " + amount + ")";
+    }
 }
