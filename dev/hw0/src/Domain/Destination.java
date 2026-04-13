@@ -20,6 +20,11 @@ public class Destination   {
         if(!result){
             System.out.println("Shipment unsuccessful, not all products available, therefore NOTHING WAS DROPPED OFF (DEFAULT CHOICE)");
         }
+        else{
+            System.out.println("Shipment successful to: " + location.getContactName());
+            location.addProductsAvailable(getProducts());
+
+        }
 
     }
 
