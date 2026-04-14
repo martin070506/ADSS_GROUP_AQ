@@ -67,10 +67,10 @@ public class TruckFacade {
     }
 
     private void displayTruck(Truck truck){
-        System.out.println("Domain.Truck Number: " + truck.getTruckNumber() + '\n'+
-                "Domain.Truck allowed Weight: " + (truck.getMaxWeight()- truck.getTruckWeight())+'\n'+
-                "Domain.Truck min License: " + truck.getMinLicense()+ '\n'+
-                "Domain.Truck Model: " +truck.getModel()+'\n');
+        System.out.println("Domain.Truck Number: " + truck.truckNumber() + '\n'+
+                "Domain.Truck allowed Weight: " + (truck.maxWeight()- truck.truckWeight())+'\n'+
+                "Domain.Truck min License: " + truck.minLicense()+ '\n'+
+                "Domain.Truck Model: " +truck.model()+'\n');
     }
 
     public Driver chooseDriver(){
@@ -97,8 +97,8 @@ public class TruckFacade {
         return availableDrivers.get(choice);
     }
 
-    private void displayDriver(Driver d){
-        System.out.println("Driver name: " + d.getDriverName() + '\n' +
-                "License: " + d.getLicense()+ '\n');
+    private void displayDriver(Driver driver){
+        System.out.println("Driver name: " + driver.driverName() + '\n' +
+                "License: " + driver.license()+ '\n');
     }
 }

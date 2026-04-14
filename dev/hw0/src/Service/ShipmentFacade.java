@@ -2,7 +2,9 @@ package Service;
 
 import Domain.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public class ShipmentFacade {
 
@@ -18,9 +20,16 @@ public class ShipmentFacade {
         suppliers.add(supplier);
     }
 
-    public void startShipment(Truck truck, Driver driver, List<Destination> dropOffDestinations, List<Truck> trucks){
-        Transport transport=new Transport(truck,driver,dropOffDestinations,trucks);
-        transport.chooseSuppliersToVisit(suppliers);
+    public void startShipment(Truck truck, Driver driver, Location source,
+                              List<Destination> destinations, List<Supplier> suppliers,
+                              List<Truck> replacementTrucks){
+
+
+        Map<Supplier, List<ProductPair>> supplierAllocations = chooseSuppliersToVisit(suppliers);
+
+        Transport transport = new Transport(LocalDate.now(), truck, driver, source, destinations,
+                supplierAllocations, replacementTrucks);
+
         transport.startShipmentProcess();
     }
 

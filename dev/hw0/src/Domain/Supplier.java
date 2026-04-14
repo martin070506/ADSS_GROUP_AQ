@@ -2,57 +2,66 @@ package Domain;
 
 import java.util.List;
 
-public class Supplier{
+public record Supplier(Location supplierLocation, List<ProductPair> productsAvailable) {
 
-    Location supplierLocation;
-    public Supplier(Location location, List<ProductPair> products){
-        this.supplierLocation = location;
-        this.supplierLocation.setProductsAvailable(products);
-    }
-
-    public Location getSupplierLocation() {
-        return supplierLocation;
+    public String getName() {
+        return supplierLocation.contactName();
     }
 
     public void printInventory() {
-        System.out.println("--- Inventory for Supplier: " + supplierLocation.getContactName() + " ---");
+        System.out.println("--- Inventory for Supplier: " + supplierLocation.contactName() + " ---");
 
-        if (supplierLocation.getProductsAvailable() == null || supplierLocation.getProductsAvailable().isEmpty()) {
+        if (productsAvailable == null || productsAvailable.isEmpty()) {
             System.out.println("No products currently in stock.");
             return;
         }
 
-        for (ProductPair pair : supplierLocation.getProductsAvailable()) {
+        for (ProductPair pair : productsAvailable) {
             System.out.println("- " + pair.toString());
         }
     }
 
-    public List<ProductPair> getProductsAvailable(){
-        return supplierLocation.getProductsAvailable();
+    public void handleShipment(List<ProductPair> supplierAllocations, Truck truck) {
+
+        if (!checkAvailability(supplierAllocations))
+            throw new IllegalArgumentException("Supplier is not available for this products");
+
+        truck.addProducts(supplierAllocations);
+        dispatchProducts(supplierAllocations);
     }
 
-    public int getWeight(){
-        int sum=0;
-        for (ProductPair pair : supplierLocation.getProductsAvailable()) {
-            sum+= pair.getAmount()*pair.getProduct().getWeight();
+    private boolean checkAvailability(List<ProductPair> supplierAllocations) {
+
+        for (ProductPair pair : supplierAllocations) {
+            boolean productFound = false;
+
+            for (ProductPair pair2 : productsAvailable)
+                if (pair2.product == pair.product) {
+                    if (pair2.getAmount() < pair.getAmount())
+                        // System.out.println("Product " + pair2.product.name() + " is lower than the required " + pair.getAmount());
+                        return false;
+
+                    productFound = true;
+                }
+
+            if (!productFound)
+                // System.out.println("Product " + pair.product.name() + " does not exist in the supplier stock.");
+                return false;
         }
-        return sum;
+
+        return true;
     }
 
+    private void dispatchProducts(List<ProductPair> supplierAllocations) {
 
-    public boolean handleShipment(Transport transport) {
-        int heldWeight = 0;
-        for(ProductPair pair : supplierLocation.getProductsAvailable()){
-            heldWeight += pair.getProduct().getWeight()*pair.getAmount();
-        }
-        transport.addItems(supplierLocation.getProductsAvailable(),heldWeight);
-        if(transport.getTruck().getAllowedWeight() >= transport.getCurrentThingsHeldWeight()+heldWeight){
-            return true;
-        }
-        else {
-            return false;
-            /// here the Transport will handle knowing its gonna be overWeight
-        }
+        if (!checkAvailability(supplierAllocations))
+            throw new IllegalArgumentException("Could not dispatch available products for this supplier");
+
+        for (ProductPair pair : supplierAllocations)
+            for (ProductPair pair2 : productsAvailable)
+                if (pair2.product == pair.product) {
+                    pair2.setAmount(pair2.getAmount() - pair.getAmount());
+                    break;
+                }
     }
-
 }

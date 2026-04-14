@@ -1,69 +1,70 @@
 package Domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Transport {
 
-    private Date departureTime;
+    private final LocalDate departureTime;
     private Truck truck;
-    private Location source;
-    private List<Destination> destinations;
-    private List<Supplier> suppliers;
-    private TransportFile transportFile;
     private Driver driver;
+    private final Location source;
+    private List<Destination> destinations;
+    private Map<Supplier, List<ProductPair>> supplierAllocations; // אנחנו לא צריכים לקחת את כל ה Available שיש לו, רק את מה שאנחנו צריכים
     private List<Truck> replacementTrucks;
-    private Map<String,ProductPair> currentThingsHeld;
-    private int currentThingsHeldWeight;
-    private Map<String,Integer> totalItemsNeeded;
+    private TransportFile transportFile;
+    // private Map<String,Integer> requiredQuantities; // זה כבר רשום אצל ה supplierAllocations
 
 
+    public Transport(LocalDate departureTime, Truck truck, Driver driver, Location source,
+                     List<Destination> destinations, Map<Supplier, List<ProductPair>> supplierAllocations,
+                     List<Truck> replacementTrucks) {
 
-    public Transport(Truck truck,Driver driver,List<Destination> destinations,List<Truck> replacementTrucks) {
-        this.replacementTrucks=replacementTrucks;
+        this.departureTime = departureTime;
         this.truck = truck;
-        this.driver=driver;
+        this.driver = driver;
+        this.source = source;
         this.destinations = destinations;
-        this.departureTime = new Date();
-        this.transportFile=new TransportFile();
-        this.currentThingsHeld=new HashMap<>();
-        this.currentThingsHeldWeight=0;
-        this.suppliers=new ArrayList<>();
-        this.totalItemsNeeded=calculateTotalThingsNeeded(destinations);
-
+        this.supplierAllocations = supplierAllocations;
+        this.replacementTrucks = replacementTrucks;
+        this.transportFile = new TransportFile(departureTime);
+        // this.requiredQuantities = sumQuantities(destinations);
     }
-    private Map<String,Integer> calculateTotalThingsNeeded(List<Destination> destinations) {
-        // 1. Create the map to store totals
+
+    public void startShipmentProcess(){
+
+        for (Supplier supplier : supplierAllocations.keySet())
+            supplier.handleShipment(supplierAllocations.get(supplier), truck);
+
+        for (Destination destination : destinations)
+            destination.handleShipment(truck);
+    }
+
+    private Map<String,Integer> sumQuantities(List<Destination> destinations) {
+
         Map<String, Integer> totals = new HashMap<>();
 
-        // 2. Loop through every destination
         for (Destination dest : destinations) {
-            // Assuming Destination has a getProducts() method that returns List<ProductPair>
-            List<ProductPair> neededItems = dest.getProducts();
+            List<ProductPair> requiredProducts = dest.getProducts();
 
-            if (neededItems != null) {
-                for (ProductPair pair : neededItems) {
+            if (requiredProducts != null)
+                for (ProductPair pair : requiredProducts) {
                     String productName = pair.getProduct().getName();
                     int amount = pair.getAmount();
 
-                    // 3. Update the map:
-                    // If the name exists, add the new amount to the old one.
-                    // If it doesn't exist, start at 0 and add the amount.
                     totals.put(productName, totals.getOrDefault(productName, 0) + amount);
                 }
-            }
         }
 
-        // 4. Display the results nicely
         return totals;
     }
 
     public void chooseSuppliersToVisit(List<Supplier> allSuppliers) {
+
         List<Supplier> selected = new ArrayList<>();
         Scanner reader = new Scanner(System.in);
 
-        // 1. Calculate exactly what we need for the whole trip
-        Map<String, Integer> requirements = this.totalItemsNeeded;
+        Map<String, Integer> requirements = this.requiredQuantities;
 
         displaySuppliers(allSuppliers);
         System.out.println("\nEnter supplier indices one by one. Type 'exit' to finish:");
@@ -73,12 +74,12 @@ public class Transport {
             String input = reader.nextLine().trim();
 
             if (input.equalsIgnoreCase("exit")) {
-                // 2. CHECK: Before we let them exit, do these suppliers have enough stuff?
+                // 2. CHECK: Before we let them exit, do these supplierAllocations have enough stuff?
                 if (hasEnoughStock(selected, requirements)) {
                     break; // Everything is good, exit the loop
                 } else {
-                    System.out.println("Wait! Your selected suppliers don't have enough items to fulfill the destinations.");
-                    System.out.println("Please add more suppliers or type 'exit' again to force exit anyway.");
+                    System.out.println("Wait! Your selected supplierAllocations don't have enough items to fulfill the destinations.");
+                    System.out.println("Please add more supplierAllocations or type 'exit' again to force exit anyway.");
                     // Optional: You could ask them if they want to force exit here.
                     continue;
                 }
@@ -87,15 +88,15 @@ public class Transport {
             processInput(input, allSuppliers, selected);
         }
 
-        this.suppliers = selected;
+        this.supplierAllocations = selected;
     }
 
     // New Helper Method for Validation
     private boolean hasEnoughStock(List<Supplier> selectedSuppliers, Map<String, Integer> requirements) {
-        // A. Calculate the total inventory of the SELECTED suppliers
+        // A. Calculate the total inventory of the SELECTED supplierAllocations
         Map<String, Integer> availableStock = new HashMap<>();
         for (Supplier s : selectedSuppliers) {
-            for (ProductPair pp : s.getProductsAvailable()) {
+            for (ProductPair pp : s.productsAvailable()) {
                 String name = pp.getProduct().getName();
                 availableStock.put(name, availableStock.getOrDefault(name, 0) + pp.getAmount());
             }
@@ -122,25 +123,25 @@ public class Transport {
     }
 
     // Helper 1: Handles the UI display
-    private void displaySuppliers(List<Supplier> suppliers) {
+    private void displaySuppliers(List<Supplier> supplierAllocations) {
         System.out.println("\n--- Available Suppliers ---");
-        for (int i = 0; i < suppliers.size(); i++) {
-            Supplier s = suppliers.get(i);
-            System.out.println(("[" + i + "] " + s.getSupplierLocation().getContactName()) + " (" + s.getSupplierLocation().getAddress() + ")");
+        for (int i = 0; i < supplierAllocations.size(); i++) {
+            Supplier s = supplierAllocations.get(i);
+            System.out.println(("[" + i + "] " + s.supplierLocation().getContactName()) + " (" + s.supplierLocation().getAddress() + ")");
             s.printInventory();
         }
     }
 
-    // Helper 2: Handles the logic and validation
     private void processInput(String input, List<Supplier> all, List<Supplier> selected) {
         try {
             int index = Integer.parseInt(input);
             if (isValidIndex(index, all.size())) {
                 Supplier choice = all.get(index);
                 addIfNotDuplicate(choice, selected);
-            } else {
-                System.out.println("Error: Index out of bounds.");
             }
+            else
+                System.out.println("Error: Index out of bounds.");
+
         } catch (NumberFormatException e) {
             System.out.println("Invalid input! Please enter a number or 'exit'.");
         }
@@ -154,39 +155,20 @@ public class Transport {
     private void addIfNotDuplicate(Supplier choice, List<Supplier> selected) {
         if (!selected.contains(choice)) {
             selected.add(choice);
-            System.out.println("Added: " + choice.getSupplierLocation().getContactName());
-        } else {
-            System.out.println("Supplier already selected.");
+            System.out.println("Added: " + choice.supplierLocation().getContactName());
         }
+        else
+            System.out.println("Supplier already selected.");
+
     }
     public Truck getTruck() {
         return truck;
-    }
-    public int getCurrentThingsHeldWeight() {
-        return currentThingsHeldWeight;
-    }
-
-
-    public void startShipmentProcess(){
-        transportFile.addDate(this.departureTime);
-
-        for (Supplier supplier : suppliers) {
-            boolean isSuccess;
-            isSuccess=supplier.handleShipment(this);
-            if(!isSuccess){
-                handleOverWeight(supplier);
-            }
-            transportFile.leaveSupplier(truck.getTruckWeight()+getCurrentThingsHeldWeight());
-        }
-        for(Destination destination : destinations){
-            destination.handleShipment(this);
-        }
     }
 
     private void handleOverWeight(Supplier problematicSupplier) {
         transportFile.overWeightAlert(truck.getTruckWeight()+getCurrentThingsHeldWeight());
         Scanner reader = new Scanner(System.in);
-        System.out.println("!!! ALERT: Truck is overweight at " + problematicSupplier.getSupplierLocation().getContactName());
+        System.out.println("!!! ALERT: Truck is overweight at " + problematicSupplier.supplierLocation().getContactName());
         System.out.println("1. Skip this supplier (Remove its items from truck)");
         System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
         System.out.println("3. Fine-tune: Remove specific items");
@@ -282,7 +264,7 @@ public class Transport {
     }
 
     private void skipSupplier(Supplier supplier) {
-        System.out.println("Supplier " + supplier.getSupplierLocation().getContactName() + " skipped.");
+        System.out.println("Supplier " + supplier.supplierLocation().getContactName() + " skipped.");
     }
 
     private void visitDestinationEarly() {

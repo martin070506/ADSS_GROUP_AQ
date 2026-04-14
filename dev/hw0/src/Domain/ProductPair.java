@@ -2,7 +2,7 @@ package Domain;
 
 public class ProductPair {
 
-    private Product product;
+    public final Product product;
     private int amount;
 
     public ProductPair(Product product, int amount) {
@@ -10,22 +10,17 @@ public class ProductPair {
         this.amount = amount;
     }
 
-    public int getAmount() {
-        return amount;
-    }
+    public int getAmount() { return amount; }
     public void setAmount(int amount) {
+        if (amount < 0)
+            throw new IllegalArgumentException("Amount can't be negative");
+
         this.amount = amount;
-    }
-    public Product getProduct() {
-        return product;
-    }
-    public void setProduct(Product product) {
-        this.product = product;
     }
 
     @Override
     public String toString() {
         // Assuming Product has a getName() method
-        return product.getName() + " (Quantity: " + amount + ")";
+        return product.name() + " (Quantity: " + amount + ")";
     }
 }
