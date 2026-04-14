@@ -31,136 +31,111 @@ public class Transport {
         // this.requiredQuantities = sumQuantities(destinations);
     }
 
-    public void startShipmentProcess(){
+    public void processShipment() {
 
-        for (Supplier supplier : supplierAllocations.keySet())
-            supplier.handleShipment(supplierAllocations.get(supplier), truck);
+        supplierAllocations.entrySet().removeIf(entry -> {
+            entry.getKey().handleShipment(entry.getValue(), truck);
+            return true;
+        });
 
-        for (Destination destination : destinations)
-            destination.handleShipment(truck);
-    }
-
-    private Map<String,Integer> sumQuantities(List<Destination> destinations) {
-
-        Map<String, Integer> totals = new HashMap<>();
-
-        for (Destination dest : destinations) {
-            List<ProductPair> requiredProducts = dest.getProducts();
-
-            if (requiredProducts != null)
-                for (ProductPair pair : requiredProducts) {
-                    String productName = pair.getProduct().getName();
-                    int amount = pair.getAmount();
-
-                    totals.put(productName, totals.getOrDefault(productName, 0) + amount);
-                }
-        }
-
-        return totals;
-    }
-
-    public void chooseSuppliersToVisit(List<Supplier> allSuppliers) {
-
-        List<Supplier> selected = new ArrayList<>();
-        Scanner reader = new Scanner(System.in);
-
-        Map<String, Integer> requirements = this.requiredQuantities;
-
-        displaySuppliers(allSuppliers);
-        System.out.println("\nEnter supplier indices one by one. Type 'exit' to finish:");
-
-        while (true) {
-            System.out.print("Enter index or 'exit': ");
-            String input = reader.nextLine().trim();
-
-            if (input.equalsIgnoreCase("exit")) {
-                // 2. CHECK: Before we let them exit, do these supplierAllocations have enough stuff?
-                if (hasEnoughStock(selected, requirements)) {
-                    break; // Everything is good, exit the loop
-                } else {
-                    System.out.println("Wait! Your selected supplierAllocations don't have enough items to fulfill the destinations.");
-                    System.out.println("Please add more supplierAllocations or type 'exit' again to force exit anyway.");
-                    // Optional: You could ask them if they want to force exit here.
-                    continue;
-                }
-            }
-
-            processInput(input, allSuppliers, selected);
-        }
-
-        this.supplierAllocations = selected;
-    }
-
-    // New Helper Method for Validation
-    private boolean hasEnoughStock(List<Supplier> selectedSuppliers, Map<String, Integer> requirements) {
-        // A. Calculate the total inventory of the SELECTED supplierAllocations
-        Map<String, Integer> availableStock = new HashMap<>();
-        for (Supplier s : selectedSuppliers) {
-            for (ProductPair pp : s.productsAvailable()) {
-                String name = pp.getProduct().getName();
-                availableStock.put(name, availableStock.getOrDefault(name, 0) + pp.getAmount());
-            }
-        }
-
-        // B. Compare available vs required
-        boolean isSufficient = true;
-        System.out.println("\n--- Stock Verification ---");
-
-        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
-            String product = entry.getKey();
-            int needed = entry.getValue();
-            int available = availableStock.getOrDefault(product, 0);
-
-            if (available < needed) {
-                System.out.println("CRITICAL: " + product + " | Need: " + needed + " | Selected: " + available + " (MISSING: " + (needed - available) + ")");
-                isSufficient = false;
-            } else {
-                System.out.println("OK: " + product + " (" + available + "/" + needed + ")");
-            }
-        }
-
-        return isSufficient;
-    }
-
-    // Helper 1: Handles the UI display
-    private void displaySuppliers(List<Supplier> supplierAllocations) {
-        System.out.println("\n--- Available Suppliers ---");
-        for (int i = 0; i < supplierAllocations.size(); i++) {
-            Supplier s = supplierAllocations.get(i);
-            System.out.println(("[" + i + "] " + s.supplierLocation().getContactName()) + " (" + s.supplierLocation().getAddress() + ")");
-            s.printInventory();
+        while (!destinations.isEmpty()) {
+            destinations.getFirst().handleShipment(truck);
+            destinations.removeFirst();
         }
     }
 
-    private void processInput(String input, List<Supplier> all, List<Supplier> selected) {
-        try {
-            int index = Integer.parseInt(input);
-            if (isValidIndex(index, all.size())) {
-                Supplier choice = all.get(index);
-                addIfNotDuplicate(choice, selected);
-            }
-            else
-                System.out.println("Error: Index out of bounds.");
 
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input! Please enter a number or 'exit'.");
-        }
-    }
 
-    // Helper 3: Specific logic checks (Very clean!)
-    private boolean isValidIndex(int index, int size) {
-        return index >= 0 && index < size;
-    }
+//
+//    private Map<String,Integer> sumQuantities(List<Destination> destinations) {
+//
+//        Map<String, Integer> totals = new HashMap<>();
+//
+//        for (Destination dest : destinations) {
+//            List<ProductPair> requiredProducts = dest.getProducts();
+//
+//            if (requiredProducts != null)
+//                for (ProductPair pair : requiredProducts) {
+//                    String productName = pair.getProduct().getName();
+//                    int amount = pair.getAmount();
+//
+//                    totals.put(productName, totals.getOrDefault(productName, 0) + amount);
+//                }
+//        }
+//
+//        return totals;
+//    }
 
-    private void addIfNotDuplicate(Supplier choice, List<Supplier> selected) {
-        if (!selected.contains(choice)) {
-            selected.add(choice);
-            System.out.println("Added: " + choice.supplierLocation().getContactName());
-        }
-        else
-            System.out.println("Supplier already selected.");
+//    // New Helper Method for Validation
+//    private boolean hasEnoughStock(List<Supplier> selectedSuppliers, Map<String, Integer> requirements) {
+//        // A. Calculate the total inventory of the SELECTED supplierAllocations
+//        Map<String, Integer> availableStock = new HashMap<>();
+//        for (Supplier s : selectedSuppliers) {
+//            for (ProductPair pp : s.productsAvailable()) {
+//                String name = pp.getProduct().getName();
+//                availableStock.put(name, availableStock.getOrDefault(name, 0) + pp.getAmount());
+//            }
+//        }
+//
+//        // B. Compare available vs required
+//        boolean isSufficient = true;
+//        System.out.println("\n--- Stock Verification ---");
+//
+//        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
+//            String product = entry.getKey();
+//            int needed = entry.getValue();
+//            int available = availableStock.getOrDefault(product, 0);
+//
+//            if (available < needed) {
+//                System.out.println("CRITICAL: " + product + " | Need: " + needed + " | Selected: " + available + " (MISSING: " + (needed - available) + ")");
+//                isSufficient = false;
+//            } else {
+//                System.out.println("OK: " + product + " (" + available + "/" + needed + ")");
+//            }
+//        }
+//
+//        return isSufficient;
+//    }
 
-    }
+//    // Helper 1: Handles the UI display
+//    private void displaySuppliers(List<Supplier> supplierAllocations) {
+//        System.out.println("\n--- Available Suppliers ---");
+//        for (int i = 0; i < supplierAllocations.size(); i++) {
+//            Supplier s = supplierAllocations.get(i);
+//            System.out.println(("[" + i + "] " + s.supplierLocation().getContactName()) + " (" + s.supplierLocation().getAddress() + ")");
+//            s.printInventory();
+//        }
+//    }
+
+//    private void processInput(String input, List<Supplier> all, List<Supplier> selected) {
+//        try {
+//            int index = Integer.parseInt(input);
+//            if (isValidIndex(index, all.size())) {
+//                Supplier choice = all.get(index);
+//                addIfNotDuplicate(choice, selected);
+//            }
+//            else
+//                System.out.println("Error: Index out of bounds.");
+//
+//        } catch (NumberFormatException e) {
+//            System.out.println("Invalid input! Please enter a number or 'exit'.");
+//        }
+//    }
+//
+//    // Helper 3: Specific logic checks (Very clean!)
+//    private boolean isValidIndex(int index, int size) {
+//        return index >= 0 && index < size;
+//    }
+
+//    private void addIfNotDuplicate(Supplier choice, List<Supplier> selected) {
+//        if (!selected.contains(choice)) {
+//            selected.add(choice);
+//            System.out.println("Added: " + choice.supplierLocation().getContactName());
+//        }
+//        else
+//            System.out.println("Supplier already selected.");
+//
+//    }
     public Truck getTruck() {
         return truck;
     }

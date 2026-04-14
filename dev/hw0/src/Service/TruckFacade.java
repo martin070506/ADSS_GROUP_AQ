@@ -16,8 +16,6 @@ public class TruckFacade {
         this.drivers = drivers;
         this.availableTrucks = List.copyOf(trucks);
         this.availableDrivers = List.copyOf(drivers);
-
-
     }
 
 

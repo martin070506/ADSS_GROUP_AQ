@@ -1,5 +1,7 @@
 package Domain;
 
+import Exceptions.InsufficientTruckStockException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,18 +16,11 @@ public record Truck(int truckNumber, String model, int truckWeight,
     public void addProducts(List<ProductPair> pairs) {
 
         if (pairs == null)
-            throw new IllegalArgumentException("Null pairs are not allowed");
+            throw new NullPointerException("Null pairs are not allowed");
 
-        int productsWeight = 0;
-        for (ProductPair pair : pairs) {
+        for (ProductPair pair : pairs)
             if (pair == null)
-                throw new IllegalArgumentException("Null pairs are not allowed");
-
-            productsWeight += pair.product.weight() * pair.getAmount();
-        }
-
-        if (maxWeight < truckWeight + loadedProductsWeight() + productsWeight)
-            throw new IllegalArgumentException("Truck Overload");
+                throw new NullPointerException("Null pairs are not allowed");
 
         for (ProductPair pair : pairs) {
             String name = pair.product.name();
@@ -41,15 +36,17 @@ public record Truck(int truckNumber, String model, int truckWeight,
     public void removeProducts(List<ProductPair> pairs) {
 
         if (pairs == null)
-            throw new IllegalArgumentException("Null pairs are not allowed");
+            throw new NullPointerException("Null pairs are not allowed");
 
         for (ProductPair pair : pairs) {
             if (pair == null)
-                throw new IllegalArgumentException("Null product pair");
-            if (!loadedProducts.containsKey(pair.product.name()))
-                throw new IllegalArgumentException("Product not found");
-            if (loadedProducts.get(pair.product.name()).getAmount() < pair.getAmount())
-                throw new IllegalArgumentException("Product amount too low");
+                throw new NullPointerException("Null product pair");
+            String name = pair.product.name();
+            if (!loadedProducts.containsKey(name))
+                throw new InsufficientTruckStockException(name, pair.getAmount(), 0);
+            if (loadedProducts.get(name).getAmount() < pair.getAmount())
+                throw new InsufficientTruckStockException(pair.product.name(), pair.getAmount(),
+                        loadedProducts.get(name).getAmount());
         }
 
         for (ProductPair pair : pairs) {

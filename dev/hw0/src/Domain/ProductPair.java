@@ -18,6 +18,8 @@ public class ProductPair {
         this.amount = amount;
     }
 
+    public int getWeight() { return product.weight() * amount; }
+
     @Override
     public String toString() {
         // Assuming Product has a getName() method
