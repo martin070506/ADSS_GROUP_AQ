@@ -28,7 +28,7 @@ public class ShipmentFacade {
                               List<Destination> destinations, List<Truck> replacementTrucks) {
 
         Map<Supplier, List<ProductPair>> supplierAllocations = chooseSuppliersAndProducts();
-        List<Supplier> suppliersAsList = supplierAllocations.keySet().stream().collect(Collectors.toList());
+        List<Supplier> suppliersAsList = new ArrayList<>(supplierAllocations.keySet());
         Transport transport = new Transport(LocalDate.now(), truck, driver, source, destinations,
                 supplierAllocations, replacementTrucks,suppliersAsList);
 
