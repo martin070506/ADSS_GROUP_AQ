@@ -65,10 +65,10 @@ public class TruckFacade {
     }
 
     private void displayTruck(Truck truck){
-        System.out.println("Domain.Truck Number: " + truck.truckNumber() + '\n'+
-                "Domain.Truck allowed Weight: " + (truck.maxWeight()- truck.truckWeight())+'\n'+
-                "Domain.Truck min License: " + truck.minLicense()+ '\n'+
-                "Domain.Truck Model: " +truck.model()+'\n');
+        System.out.println("Domain.Truck Number: " + truck.getTruckNumber() + '\n'+
+                "Domain.Truck allowed Weight: " + (truck.getMaxWeight()- truck.getCurrentWeight())+'\n'+
+                "Domain.Truck min License: " + truck.getMinLicense()+ '\n'+
+                "Domain.Truck Model: " +truck.getModel()+'\n');
     }
 
     public Driver chooseDriver(){

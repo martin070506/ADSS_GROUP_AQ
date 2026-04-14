@@ -8,6 +8,7 @@ import Exceptions.OverweightException;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShipmentFacade {
 
@@ -27,9 +28,9 @@ public class ShipmentFacade {
                               List<Destination> destinations, List<Truck> replacementTrucks) {
 
         Map<Supplier, List<ProductPair>> supplierAllocations = chooseSuppliersAndProducts();
-
+        List<Supplier> suppliersAsList = supplierAllocations.keySet().stream().collect(Collectors.toList());
         Transport transport = new Transport(LocalDate.now(), truck, driver, source, destinations,
-                supplierAllocations, replacementTrucks);
+                supplierAllocations, replacementTrucks,suppliersAsList);
 
         boolean shipmentFinish = false;
         while (!shipmentFinish)
@@ -40,7 +41,8 @@ public class ShipmentFacade {
                 switch (e) {
                     case OverweightException oe -> {
                         System.out.println("⚠️ Overweight Problem: " + oe.getMessage());
-                        handleOverweight();
+                        /// problematic supplier is suppliers.getFirst()
+                        handleOverWeight(suppliersAsList.getFirst(),transport);
                     }
 
                     case InsufficientSupplierStockException ise -> {
@@ -135,8 +137,191 @@ public class ShipmentFacade {
 
     }
 
-    private void handleOverweight() {
+    private void handleOverWeight(Supplier problematicSupplier,Transport transport) {
+        transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
+        Scanner reader = new Scanner(System.in);
+        System.out.println("!!! ALERT: Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
+        System.out.println("1. Skip this supplier (Remove its items from truck)");
+        System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
+        System.out.println("3. Fine-tune: Remove specific items");
+        System.out.println("4. Switch Truck");
 
+        boolean resolved=false;
+        while (!resolved) {
+            System.out.print("Choose an option: ");
+            String choice = reader.nextLine();
+
+            switch (choice) {
+                case "1" -> {
+                    skipSupplier(problematicSupplier,transport);
+                }
+                case "2" ->{
+                    visitDestinationEarly(transport);
+                }
+                case "3" ->{
+                    manuallyRemoveItems(transport);
+                }
+                case "4" -> {
+                    boolean swapped = replaceTruck(transport);
+                    if (swapped) {
+                        // Now that we have a bigger truck, try adding the items again
+                        // If it's STILL overweight, the loop will run again automatically
+
+                        if (transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
+                            resolved = true;
+                            transport.removeSupplierFromTransport(problematicSupplier);
+                        }
+                    } else {
+                        System.out.println("Returning to main menu...");
+                        // resolved remains false, so the while loop shows options 1, 2, 3, 4 again
+                    }
+                }
+                default -> {
+                    System.out.println("Invalid choice. Skipping supplier by default to ensure safety.");
+                    skipSupplier(problematicSupplier,transport);
+                }
+            }
+            transport.processShipment();
+        }
+
+    }
+
+    private void skipSupplier(Supplier supplier,Transport transport) {
+        System.out.println("Supplier " + supplier.supplierLocation().contactName() + " skipped.");
+        transport.removeSupplierFromTransport(supplier);
+    }
+
+    private void visitDestinationEarly(Transport transport) {
+        Scanner reader = new Scanner(System.in);
+        List<Destination> destinations = transport.getDestinations();
+        if (destinations.isEmpty()) {
+            System.out.println("No destinations left to visit!");
+            return;
+        }
+
+        System.out.println("Choose a destination to visit now:");
+        for (int i = 0; i < destinations.size(); i++) {
+            System.out.println("[" + i + "] " + destinations.get(i).getContactName());
+        }
+
+        try {
+            int index = Integer.parseInt(reader.nextLine());
+            if (index >= 0 && index < destinations.size()) {
+                Destination target = destinations.get(index);
+                transport.removeDestinationFromTransport(target);// Removes from the future list
+                target.handleShipment(transport.getTruck()); // Unloads items and reduces weight
+                System.out.println("Emergency drop-off completed at " + target.getContactName());
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid selection. No drop-off performed.");
+        }
+    }
+
+    private void manuallyRemoveItems(Transport transport) {
+        Scanner reader = new Scanner(System.in);
+        Map<String,ProductPair> currentThingsHeld=transport.getProductPairs();
+        while (true) {
+
+            if (currentThingsHeld.isEmpty()) {
+                System.out.println("The truck is now empty!");
+                break;
+            }
+
+            // 1. Show current inventory and status
+            System.out.println("\n--- Truck Status: " + transport.getTruck().getCurrentWeight() + " / " + transport.getTruck().getMaxWeight() + " ---");
+            currentThingsHeld.forEach((name, pair) ->
+                    System.out.println("- " + name + ": " + pair.getAmount() + " units")
+            );
+
+            System.out.print("\nEnter product name to remove (or type 'done' to stop): ");
+            String productName = reader.nextLine().trim();
+
+            if (productName.equalsIgnoreCase("done")&& transport.getTruck().getCurrentWeight()<= transport.getTruck().getMaxWeight()) {
+                break;
+            }
+            if (productName.equalsIgnoreCase("done")&& !(transport.getTruck().getCurrentWeight()<= transport.getTruck().getMaxWeight())) {
+                System.out.println("Cannot finish while still overweight");
+            }
+
+            if (currentThingsHeld.containsKey(productName)) {
+                ProductPair existing = currentThingsHeld.get(productName);
+                System.out.print("How many " + productName + " to remove? (Max " + existing.getAmount() + "): ");
+
+                try {
+                    int amountToRemove = Integer.parseInt(reader.nextLine());
+
+                    if (amountToRemove > 0 && amountToRemove <= existing.getAmount())
+                    {
+                        List<ProductPair> toRemove = new ArrayList<>();
+                        toRemove.add(new ProductPair(existing.product, amountToRemove));
+
+                        int weightReduction = amountToRemove * existing.product.weight();
+
+                        transport.removeItems(toRemove,weightReduction);
+                    } else {
+                        System.out.println("Invalid amount. Please try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Please enter a valid number for the amount.");
+                }
+            } else {
+                System.out.println("Product '" + productName + "' not found on the truck.");
+            }
+        }
+
+    }
+
+    private boolean replaceTruck(Transport transport) {
+        Scanner reader = new Scanner(System.in);
+
+        // 1. Filter trucks that are actually better than the current one
+        List<Truck> candidates = new ArrayList<>();
+        List<Truck> replacementTrucks = transport.getReplacementTrucks();
+        for (Truck t : replacementTrucks) {
+            if (t.getMaxWeight() > transport.getTruck().getMaxWeight()) {
+                candidates.add(t);
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            System.out.println("No larger trucks are currently available in the fleet.");
+            return false;
+        }
+
+        // 2. Display candidates
+        System.out.println("\n--- Available Larger Trucks ---");
+        for (int i = 0; i < candidates.size(); i++) {
+            Truck t = candidates.get(i);
+            System.out.println("[" + i + "] ID: " + t.getTruckNumber() + " | Capacity: " + t.getMaxWeight());
+        }
+        System.out.println("Type the index to swap, or 'exit' to go back.");
+
+        // 3. Handle selection
+        String input = reader.nextLine();
+        if (input.equalsIgnoreCase("exit")) return false;
+
+        try {
+            int index = Integer.parseInt(input);
+            if (index >= 0 && index < candidates.size()) {
+                Truck newTruck = candidates.get(index);
+
+                // Swap logic: Put the old truck back in available, take the new one out
+                replacementTrucks.add(transport.getTruck());
+
+                transport.getTruck().transferHoldingsToOtherTruck(newTruck);
+                transport.replaceTruck(newTruck);
+
+                replacementTrucks.remove(newTruck);
+
+
+                System.out.println("Truck swapped successfully! New capacity: " + transport.getTruck().getMaxWeight());
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input.");
+        }
+
+        return false;
     }
 
     private void handleInsufficientSupplierStock() {

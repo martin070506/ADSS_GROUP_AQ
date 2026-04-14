@@ -13,12 +13,17 @@ public class Transport {
     private Map<Supplier, List<ProductPair>> supplierAllocations; // אנחנו לא צריכים לקחת את כל ה Available שיש לו, רק את מה שאנחנו צריכים
     private List<Truck> replacementTrucks;
     private TransportFile transportFile;
+    private List<Supplier> suppliers;
     // private Map<String,Integer> requiredQuantities; // זה כבר רשום אצל ה supplierAllocations
 
 
+    public TransportFile getTransportFile() {
+        return transportFile;
+    }
+
     public Transport(LocalDate departureTime, Truck truck, Driver driver, Location source,
                      List<Destination> destinations, Map<Supplier, List<ProductPair>> supplierAllocations,
-                     List<Truck> replacementTrucks) {
+                     List<Truck> replacementTrucks, List<Supplier> suppliers) {
 
         this.departureTime = departureTime;
         this.truck = truck;
@@ -28,15 +33,17 @@ public class Transport {
         this.supplierAllocations = supplierAllocations;
         this.replacementTrucks = replacementTrucks;
         this.transportFile = new TransportFile(departureTime);
+        this.suppliers = suppliers;
         // this.requiredQuantities = sumQuantities(destinations);
     }
 
     public void processShipment() {
 
-        supplierAllocations.entrySet().removeIf(entry -> {
-            entry.getKey().handleShipment(entry.getValue(), truck);
-            return true;
-        });
+        for(Supplier supplier : suppliers) {
+            supplier.handleShipment(supplierAllocations.get(supplier),truck);
+            suppliers.remove(supplier);
+            supplierAllocations.remove(supplier);
+        }
 
         while (!destinations.isEmpty()) {
             destinations.getFirst().handleShipment(truck);
@@ -140,183 +147,15 @@ public class Transport {
         return truck;
     }
 
-    private void handleOverWeight(Supplier problematicSupplier) {
-        transportFile.overWeightAlert(truck.getTruckWeight()+getCurrentThingsHeldWeight());
-        Scanner reader = new Scanner(System.in);
-        System.out.println("!!! ALERT: Truck is overweight at " + problematicSupplier.supplierLocation().getContactName());
-        System.out.println("1. Skip this supplier (Remove its items from truck)");
-        System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
-        System.out.println("3. Fine-tune: Remove specific items");
-        System.out.println("4. Switch Truck");
-
-        boolean resolved=false;
-        while (!resolved) {
-            System.out.print("Choose an option: ");
-            String choice = reader.nextLine();
-
-            switch (choice) {
-                case "1" -> {
-                    skipSupplier(problematicSupplier);
-                }
-                case "2" ->{
-                    visitDestinationEarly();
-                    problematicSupplier.handleShipment(this);
-                }
-                case "3" ->{
-                    manuallyRemoveItems();
-                    problematicSupplier.handleShipment(this);
-                }
-                case "4" -> {
-                    boolean swapped = replaceTruck();
-                    if (swapped) {
-                        // Now that we have a bigger truck, try adding the items again
-                        // If it's STILL overweight, the loop will run again automatically
-                        problematicSupplier.handleShipment(this);
-                        if (currentThingsHeldWeight <= truck.getAllowedWeight()) {
-                            resolved = true;
-                        }
-                    } else {
-                        System.out.println("Returning to main menu...");
-                        // resolved remains false, so the while loop shows options 1, 2, 3, 4 again
-                    }
-                }
-                default -> {
-                    System.out.println("Invalid choice. Skipping supplier by default to ensure safety.");
-                    skipSupplier(problematicSupplier);
-                }
-            }
-        }
-
-    }
-
-    private boolean replaceTruck() {
-        Scanner reader = new Scanner(System.in);
-
-        // 1. Filter trucks that are actually better than the current one
-        List<Truck> candidates = new ArrayList<>();
-        for (Truck t : replacementTrucks) {
-            if (t.getAllowedWeight() > this.currentThingsHeldWeight) {
-                candidates.add(t);
-            }
-        }
-
-        if (candidates.isEmpty()) {
-            System.out.println("No larger trucks are currently available in the fleet.");
-            return false;
-        }
-
-        // 2. Display candidates
-        System.out.println("\n--- Available Larger Trucks ---");
-        for (int i = 0; i < candidates.size(); i++) {
-            Truck t = candidates.get(i);
-            System.out.println("[" + i + "] ID: " + t.getTruckNumber() + " | Capacity: " + t.getMaxWeight());
-        }
-        System.out.println("Type the index to swap, or 'exit' to go back.");
-
-        // 3. Handle selection
-        String input = reader.nextLine();
-        if (input.equalsIgnoreCase("exit")) return false;
-
-        try {
-            int index = Integer.parseInt(input);
-            if (index >= 0 && index < candidates.size()) {
-                Truck newTruck = candidates.get(index);
-
-                // Swap logic: Put the old truck back in available, take the new one out
-                this.replacementTrucks.add(this.truck);
-                this.truck = newTruck;
-                this.replacementTrucks.remove(newTruck);
 
 
-                System.out.println("Truck swapped successfully! New capacity: " + this.truck.getMaxWeight());
-                return true;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input.");
-        }
 
-        return false;
-    }
 
-    private void skipSupplier(Supplier supplier) {
-        System.out.println("Supplier " + supplier.supplierLocation().getContactName() + " skipped.");
-    }
 
-    private void visitDestinationEarly() {
-        Scanner reader = new Scanner(System.in);
-        if (destinations.isEmpty()) {
-            System.out.println("No destinations left to visit!");
-            return;
-        }
 
-        System.out.println("Choose a destination to visit now:");
-        for (int i = 0; i < destinations.size(); i++) {
-            System.out.println("[" + i + "] " + destinations.get(i).getContactName());
-        }
 
-        try {
-            int index = Integer.parseInt(reader.nextLine());
-            if (index >= 0 && index < destinations.size()) {
-                Destination target = destinations.remove(index); // Removes from the future list
-                target.handleShipment(this); // Unloads items and reduces weight
-                System.out.println("Emergency drop-off completed at " + target.getContactName());
-            }
-        } catch (Exception e) {
-            System.out.println("Invalid selection. No drop-off performed.");
-        }
-    }
 
-    private void manuallyRemoveItems() {
-        Scanner reader = new Scanner(System.in);
-        while (true) {
-            if (currentThingsHeld.isEmpty()) {
-                System.out.println("The truck is now empty!");
-                break;
-            }
 
-            // 1. Show current inventory and status
-            System.out.println("\n--- Truck Status: " + currentThingsHeldWeight + " / " + truck.getAllowedWeight() + " ---");
-            currentThingsHeld.forEach((name, pair) ->
-                    System.out.println("- " + name + ": " + pair.getAmount() + " units")
-            );
-
-            System.out.print("\nEnter product name to remove (or type 'done' to stop): ");
-            String productName = reader.nextLine().trim();
-
-            if (productName.equalsIgnoreCase("done")&& currentThingsHeldWeight<= getTruck().getAllowedWeight()) {
-                break;
-            }
-            if (productName.equalsIgnoreCase("done")&& !(currentThingsHeldWeight<= getTruck().getAllowedWeight())) {
-                System.out.println("Cannot finish while still overweight");
-            }
-
-            if (currentThingsHeld.containsKey(productName)) {
-                ProductPair existing = currentThingsHeld.get(productName);
-                System.out.print("How many " + productName + " to remove? (Max " + existing.getAmount() + "): ");
-
-                try {
-                    int amountToRemove = Integer.parseInt(reader.nextLine());
-
-                    if (amountToRemove > 0 && amountToRemove <= existing.getAmount())
-                    {
-                        List<ProductPair> toRemove = new ArrayList<>();
-                        toRemove.add(new ProductPair(existing.getProduct(), amountToRemove));
-
-                        int weightReduction = amountToRemove * existing.getProduct().getWeight();
-
-                        removeItems(toRemove, weightReduction);
-                    } else {
-                        System.out.println("Invalid amount. Please try again.");
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("Please enter a valid number for the amount.");
-                }
-            } else {
-                System.out.println("Product '" + productName + "' not found on the truck.");
-            }
-        }
-
-    }
 
     public boolean removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
         if (outgoingItems == null || outgoingItems.isEmpty()) return false;
@@ -327,22 +166,8 @@ public class Transport {
         }
 
         // 2. Execution: Since we know it's safe, perform the subtraction
-        this.currentThingsHeldWeight -= weightToRemove;
-
-        for (ProductPair outgoing : outgoingItems) {
-            String name = outgoing.getProduct().getName();
-            ProductPair existing = currentThingsHeld.get(name);
-
-            int newAmount = existing.getAmount() - outgoing.getAmount();
-
-            if (newAmount <= 0) {
-                currentThingsHeld.remove(name);
-                System.out.println("Removed " + name + " entirely from truck.");
-            } else {
-                existing.setAmount(newAmount);
-                System.out.println("Reduced " + name + " to: " + newAmount);
-            }
-        }
+        this.truck.setCurrentWeight(truck.getCurrentWeight() - weightToRemove);
+        this.truck.removeProducts(outgoingItems);
 
         return true;
     }
@@ -350,16 +175,16 @@ public class Transport {
 
     private boolean canRemoveAll(List<ProductPair> outgoingItems) {
         for (ProductPair outgoing : outgoingItems) {
-            String name = outgoing.getProduct().getName();
+            String name = outgoing.product.name();
 
             // Check if item exists at all
-            if (!currentThingsHeld.containsKey(name)) {
+            if (truck.getProductPairs().containsKey(name)) {
                 System.out.println("Error: Product '" + name + "' not found on truck.");
                 return false;
             }
 
             // Check if we have enough quantity
-            if (currentThingsHeld.get(name).getAmount() < outgoing.getAmount()) {
+            if (truck.getProductPairs().get(name).getAmount() < outgoing.getAmount()) {
                 System.out.println("Error: Not enough quantity for '" + name + "'.");
                 return false;
             }
@@ -367,30 +192,31 @@ public class Transport {
         return true; // All items passed the test
     }
 
-    public void addItems(List<ProductPair> incomingItems,int weight) {
-        if (incomingItems == null) return;
-        currentThingsHeldWeight+=weight;
-        for (ProductPair incoming : incomingItems) {
-            String name = incoming.getProduct().getName();
 
-            // The "Smart" part:
-            if (currentThingsHeld.containsKey(name)) {
-                // 1. Get the existing pair
-                ProductPair existing = currentThingsHeld.get(name);
 
-                // 2. Update the amount inside the existing object
-                int newAmount = existing.getAmount() + incoming.getAmount();
-                existing.setAmount(newAmount);
+    public void removeSupplierFromTransport(Supplier supplier) {
+        supplierAllocations.remove(supplier);
+        suppliers.remove(supplier);
+    }
 
-                System.out.println("Updated " + name + " total to: " + newAmount);
-            } else {
-                // 3. If it's new, add a NEW ProductPair so we don't mess with the original reference
-                ProductPair newPair = new ProductPair(incoming.getProduct(), incoming.getAmount());
-                currentThingsHeld.put(name, newPair);
+    public void removeDestinationFromTransport(Destination destination) {
+        destinations.remove(destination);
+    }
 
-                System.out.println("Added new product: " + name + " (" + incoming.getAmount() + ")");
-            }
-        }
+    public List<Destination> getDestinations() {
+        return destinations;
+    }
+
+    public Map<String,ProductPair> getProductPairs() {
+        return truck.getProductPairs();
+    }
+
+    public List<Truck> getReplacementTrucks() {
+        return replacementTrucks;
+    }
+
+    public void replaceTruck(Truck truck) {
+        this.truck = truck;
     }
 
 

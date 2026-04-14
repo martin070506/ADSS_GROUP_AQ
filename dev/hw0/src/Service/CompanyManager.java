@@ -50,7 +50,7 @@ public class CompanyManager {
            System.out.println("Choose a Truck and a matching Driver");
            truck = truckFacade.chooseTruck();
            driver = truckFacade.chooseDriver();
-           truckAndDriverMatch = truck.minLicense() <= driver.license();
+           truckAndDriverMatch = truck.getMinLicense() <= driver.license();
            if (!truckAndDriverMatch)
                System.out.println("Truck and Driver chosen are not matching");
        }

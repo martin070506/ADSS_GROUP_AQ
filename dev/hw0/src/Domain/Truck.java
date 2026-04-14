@@ -1,17 +1,62 @@
 package Domain;
 
 import Exceptions.InsufficientTruckStockException;
+import Exceptions.OverweightException;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record Truck(int truckNumber, String model, int truckWeight,
-                    int maxWeight, int minLicense, Map<String, ProductPair> loadedProducts) {
-
+public class Truck {
+    private int currentWeight;
+    private int maxWeight;
+    private int truckNumber;
+    private String model;
+    private int minLicense;
+    private Map<String,ProductPair> loadedProducts;
     public Truck(int truckNumber, String model, int truckWeight, int maxWeight, int minLicense) {
-        this(truckNumber, model, truckWeight, maxWeight, minLicense, new HashMap<>());
+        this.currentWeight = truckWeight;
+        this.maxWeight = maxWeight;
+        this.model = model;
+        this.truckNumber = truckNumber;
+        this.minLicense = minLicense;
+        loadedProducts = new HashMap<>();
+
     }
+
+    public int getCurrentWeight() {
+        return currentWeight;
+    }
+
+    public int getMaxWeight() {
+        return maxWeight;
+    }
+    public Map<String,ProductPair> getProductPairs() {
+        return loadedProducts;
+    }
+
+    public int getTruckNumber() {
+        return truckNumber;
+    }
+
+    public void transferHoldingsToOtherTruck(Truck replacement){
+        replacement.setLoadedProducts(loadedProducts);
+        this.loadedProducts=new HashMap<>();
+    }
+
+    public void setLoadedProducts(Map<String,ProductPair> loadedProducts) {
+        this.loadedProducts = loadedProducts;
+    }
+    public int getMinLicense() {
+        return minLicense;
+    }
+    public String getModel() {
+        return model;
+    }
+    public void setCurrentWeight(int currentWeight) {
+        this.currentWeight = currentWeight;
+    }
+
 
     public void addProducts(List<ProductPair> pairs) {
 
@@ -27,14 +72,19 @@ public record Truck(int truckNumber, String model, int truckWeight,
             if (loadedProducts.containsKey(name)) {
                 int currentAmount = loadedProducts.get(name).getAmount();
                 loadedProducts.get(name).setAmount(currentAmount + pair.getAmount());
+                currentWeight+=pair.product.weight()*pair.getAmount();
             }
-            else
+            else {
                 loadedProducts.put(name, pair);
+                currentWeight += pair.product.weight() * pair.getAmount();
+            }
         }
+        if(currentWeight > maxWeight)
+            throw new OverweightException(maxWeight, currentWeight);
     }
 
     public void removeProducts(List<ProductPair> pairs) {
-
+        /// DOES NOT HANDLE WEIGHT
         if (pairs == null)
             throw new NullPointerException("Null pairs are not allowed");
 
@@ -56,12 +106,5 @@ public record Truck(int truckNumber, String model, int truckWeight,
         }
     }
 
-    private int loadedProductsWeight() {
 
-        int weight = 0;
-        for (ProductPair pair : loadedProducts.values())
-            weight += pair.product.weight() * pair.getAmount();
-
-        return weight;
-    }
 }
