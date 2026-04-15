@@ -7,6 +7,7 @@ public class ProductFile {
     private List<ProductPair> products;
 
 
+
     public ProductFile(List<ProductPair> products, int fileNumber){
         this.products = products;
         this.fileNumber = fileNumber;

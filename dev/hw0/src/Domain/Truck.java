@@ -84,7 +84,7 @@ public class Truck {
     }
 
     public void removeProducts(List<ProductPair> pairs) {
-        /// DOES NOT HANDLE WEIGHT
+        /// HANDLES WEIGHT
         if (pairs == null)
             throw new NullPointerException("Null pairs are not allowed");
 
@@ -103,6 +103,7 @@ public class Truck {
             String name = pair.product.name();
             int currentAmount = loadedProducts.get(name).getAmount();
             loadedProducts.get(name).setAmount(currentAmount - pair.getAmount());
+            currentWeight -= pair.product.weight()*pair.getAmount();
         }
     }
 

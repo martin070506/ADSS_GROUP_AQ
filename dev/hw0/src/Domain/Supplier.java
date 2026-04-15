@@ -41,6 +41,7 @@ public record Supplier(Location supplierLocation, List<ProductPair> productsAvai
         for (ProductPair pair : supplierAllocations)
             for (ProductPair pair2 : productsAvailable)
                 if (pair2.product == pair.product) {
+                    /// WE CHECKED FOR AVAILABILITY SO NO NEED TO  CHECK FOR NEGATIVE AMOUNT HERE
                     pair2.setAmount(pair2.getAmount() - pair.getAmount());
                     break;
                 }
@@ -63,5 +64,9 @@ public record Supplier(Location supplierLocation, List<ProductPair> productsAvai
                 result += "  " + (i + 1) + ". " + productsAvailable.get(i).toString() + "\n";
 
         return result;
+    }
+
+    public Location getSupplierLocation() {
+        return supplierLocation;
     }
 }

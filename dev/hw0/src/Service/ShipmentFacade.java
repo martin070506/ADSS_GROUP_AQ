@@ -33,7 +33,7 @@ public class ShipmentFacade {
                 supplierAllocations, replacementTrucks,suppliersAsList);
 
         boolean shipmentFinish = false;
-        while (!shipmentFinish)
+        while (!shipmentFinish){
             try {
                 transport.processShipment();
                 shipmentFinish = true;
@@ -42,17 +42,17 @@ public class ShipmentFacade {
                     case OverweightException oe -> {
                         System.out.println("⚠️ Overweight Problem: " + oe.getMessage());
                         /// problematic supplier is suppliers.getFirst()
-                        handleOverWeight(suppliersAsList.getFirst(),transport);
+                        handleOverWeight(suppliersAsList.getFirst(), transport);
                     }
 
                     case InsufficientSupplierStockException ise -> {
                         System.out.println("⚠️ Stock Problem: " + ise.getMessage());
-                        handleInsufficientSupplierStock();
+                        handleInsufficientSupplierStock(suppliersAsList.getFirst(),transport);
                     }
 
                     case InsufficientTruckStockException ise -> {
                         System.out.println("⚠️ Stock Problem: " + ise.getMessage());
-                        handleInsufficientTruckStock();
+                        handleInsufficientTruckStock(transport);
                     }
 
                     case DomainException de -> {
@@ -66,6 +66,7 @@ public class ShipmentFacade {
                     }
                 }
             }
+        }
     }
 
 
@@ -73,7 +74,7 @@ public class ShipmentFacade {
         Map<Supplier, List<ProductPair>> supplierAllocations = new LinkedHashMap<>();
         Scanner reader = new Scanner(System.in);
 
-        showRequiredQuantities();
+        //showRequiredQuantities();
         displaySuppliers(suppliers);
 
         System.out.println("\nStep 1: Select Suppliers to visit");
@@ -133,9 +134,7 @@ public class ShipmentFacade {
     }
 
 
-    private void showRequiredQuantities() {
 
-    }
 
     private void handleOverWeight(Supplier problematicSupplier,Transport transport) {
         transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
@@ -169,7 +168,7 @@ public class ShipmentFacade {
 
                         if (transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                             resolved = true;
-                            transport.removeSupplierFromTransport(problematicSupplier);
+                            transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                         }
                     } else {
                         System.out.println("Returning to main menu...");
@@ -188,7 +187,17 @@ public class ShipmentFacade {
 
     private void skipSupplier(Supplier supplier,Transport transport) {
         System.out.println("Supplier " + supplier.supplierLocation().contactName() + " skipped.");
-        transport.removeSupplierFromTransport(supplier);
+        List<ProductPair> thingsToRemove = transport.getSupplierAllocations().get(supplier);
+        int weight= calculateWeightOfItems(thingsToRemove);
+        transport.removeItems(thingsToRemove,weight);
+        transport.removeSupplierFromTransportAndFile(supplier);
+    }
+    private int calculateWeightOfItems(List<ProductPair> products) {
+        int sum=0;
+        for (ProductPair pair : products) {
+            sum+= pair.getAmount()* pair.getWeight();
+        }
+        return sum;
     }
 
     private void visitDestinationEarly(Transport transport) {
@@ -324,12 +333,18 @@ public class ShipmentFacade {
         return false;
     }
 
-    private void handleInsufficientSupplierStock() {
-
+    private void handleInsufficientSupplierStock(Supplier problematicSupplier,Transport transport) {
+        skipSupplierNotEnoughStock(problematicSupplier, transport);
     }
 
-    private void handleInsufficientTruckStock() {
+    private void skipSupplierNotEnoughStock(Supplier problematicSupplier,Transport transport){
+        transport.removeSupplierFromTransportAndFile(problematicSupplier);
+    }
 
+    private void handleInsufficientTruckStock(Transport transport) {
+        Destination problematicDestination=transport.getDestinations().getFirst();
+        System.out.println(problematicDestination.toString() + '\n' + "THE FOLLOWING DESTINATION DID NOT GET SERVED, NOT ENOUGH STOCK ON TRUCK");
+        transport.removeDestinationFromTransport(problematicDestination);
     }
 
     private void displaySuppliers(List<Supplier> supplierAllocations) {

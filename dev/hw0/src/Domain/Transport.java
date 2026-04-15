@@ -14,7 +14,7 @@ public class Transport {
     private List<Truck> replacementTrucks;
     private TransportFile transportFile;
     private List<Supplier> suppliers;
-    // private Map<String,Integer> requiredQuantities; // זה כבר רשום אצל ה supplierAllocations
+
 
 
     public TransportFile getTransportFile() {
@@ -32,9 +32,9 @@ public class Transport {
         this.destinations = destinations;
         this.supplierAllocations = supplierAllocations;
         this.replacementTrucks = replacementTrucks;
-        this.transportFile = new TransportFile(departureTime);
         this.suppliers = suppliers;
-        // this.requiredQuantities = sumQuantities(destinations);
+        this.transportFile = new TransportFile(departureTime,this);
+
     }
 
     public void processShipment() {
@@ -43,6 +43,7 @@ public class Transport {
             supplier.handleShipment(supplierAllocations.get(supplier),truck);
             suppliers.remove(supplier);
             supplierAllocations.remove(supplier);
+
         }
 
         while (!destinations.isEmpty()) {
@@ -50,6 +51,16 @@ public class Transport {
             destinations.removeFirst();
         }
     }
+
+    public List<Supplier> getSuppliers() {
+        return suppliers;
+    }
+    public Map<Supplier, List<ProductPair>> getSupplierAllocations() {
+        return supplierAllocations;
+    }
+
+
+
 
 
 
@@ -194,17 +205,28 @@ public class Transport {
 
 
 
-    public void removeSupplierFromTransport(Supplier supplier) {
+    public void removeSupplierFromTransportAndFile(Supplier supplier) {
+        supplierAllocations.remove(supplier);
+        suppliers.remove(supplier);
+        transportFile.removeLocation(supplier);
+    }
+
+    public void removeSupplierFromTransportButNotFile(Supplier supplier) {
         supplierAllocations.remove(supplier);
         suppliers.remove(supplier);
     }
 
     public void removeDestinationFromTransport(Destination destination) {
         destinations.remove(destination);
+        transportFile.removeDestination(destination);
     }
 
     public List<Destination> getDestinations() {
         return destinations;
+    }
+
+    public Driver getDriver() {
+        return driver;
     }
 
     public Map<String,ProductPair> getProductPairs() {
@@ -217,6 +239,7 @@ public class Transport {
 
     public void replaceTruck(Truck truck) {
         this.truck = truck;
+        transportFile.changeTruck(truck);
     }
 
 
