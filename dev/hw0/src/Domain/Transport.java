@@ -59,12 +59,11 @@ public class Transport {
         return supplierAllocations;
     }
 
+    public Location getSource() {
+        return source;
+    }
 
-
-
-
-
-//
+    //
 //    private Map<String,Integer> sumQuantities(List<Destination> destinations) {
 //
 //        Map<String, Integer> totals = new HashMap<>();

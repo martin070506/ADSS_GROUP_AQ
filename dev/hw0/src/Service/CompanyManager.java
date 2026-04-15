@@ -14,12 +14,13 @@ public class CompanyManager {
     private final List<Location> locations;
 
 
+
     private static CompanyManager instance = null;
 
     private CompanyManager(List<Truck> trucks, List<Driver> drivers, List<Supplier> suppliers,
                            List<Location> locations) {
         this.truckFacade = new TruckFacade(trucks, drivers);
-        this.shipmentFacade = new ShipmentFacade(suppliers);
+        this.shipmentFacade = new ShipmentFacade(suppliers,trucks);
         this.locations = locations;
     }
 
@@ -39,6 +40,7 @@ public class CompanyManager {
         ProductFile productFile = new ProductFile(neededItems, ++globalFileNumber);
         Destination destination = new Destination(storeLocation, productFile);
         dropOffDestinations.add(destination);
+
     }
 
     public void startShipment(){
@@ -56,8 +58,8 @@ public class CompanyManager {
        }
 
        Location source = selectSourceLocation();
-       truckFacade.removeTruck(truck);
-       truckFacade.removeDriver(driver);
+       truckFacade.takeTruck(truck);
+       truckFacade.takeDriver(driver);
        shipmentFacade.startShipment(truck, driver, source, dropOffDestinations, truckFacade.getTrucks());
 
     }

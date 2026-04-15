@@ -14,10 +14,14 @@ public class ShipmentFacade {
 
     private int shipmentNumber;
     private final List<Supplier> suppliers;
+    private List<Truck> availableTrucks;
+    private List<Driver> availableDrivers;
 
-    public ShipmentFacade(List<Supplier> suppliers) {
+    public ShipmentFacade(List<Supplier> suppliers,List<Truck> availableTrucks,List<Driver> availableDrivers) {
 
         this.suppliers = suppliers;
+        this.availableTrucks = availableTrucks;
+        this.availableDrivers = availableDrivers;
     }
 
     public void addSupplier(Supplier supplier) {
@@ -67,6 +71,8 @@ public class ShipmentFacade {
                 }
             }
         }
+        availableTrucks.add(truck);
+        availableDrivers.add(driver);
     }
 
 
@@ -318,8 +324,10 @@ public class ShipmentFacade {
                 replacementTrucks.add(transport.getTruck());
 
                 transport.getTruck().transferHoldingsToOtherTruck(newTruck);
+                availableTrucks.add(transport.getTruck());
                 transport.replaceTruck(newTruck);
 
+                availableTrucks.remove(newTruck);
                 replacementTrucks.remove(newTruck);
 
 

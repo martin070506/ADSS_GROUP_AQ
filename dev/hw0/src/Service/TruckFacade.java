@@ -14,8 +14,8 @@ public class TruckFacade {
     public TruckFacade(List<Truck> trucks, List<Driver> drivers) {
         this.trucks = trucks;
         this.drivers = drivers;
-        this.availableTrucks = List.copyOf(trucks);
-        this.availableDrivers = List.copyOf(drivers);
+        this.availableTrucks = new ArrayList<>(this.trucks);
+        this.availableDrivers = new ArrayList<>(this.drivers);
     }
 
 
@@ -30,6 +30,12 @@ public class TruckFacade {
     public void removeTruck(Truck truck){
         trucks.remove(truck);
         availableTrucks.remove(truck);
+    }
+    public void takeTruck(Truck truck){
+        availableTrucks.remove(truck);
+    }
+    public void takeDriver(Driver driver){
+        availableDrivers.remove(driver);
     }
     public void addDriver(Driver driver){
         drivers.add(driver);
@@ -53,6 +59,7 @@ public class TruckFacade {
             System.out.println("--------------");
             displayTruck(truck);
             System.out.println("--------------");
+            index++;
         }
 
         System.out.println("###  Now choose one of them  ###");
@@ -65,10 +72,10 @@ public class TruckFacade {
     }
 
     private void displayTruck(Truck truck){
-        System.out.println("Domain.Truck Number: " + truck.getTruckNumber() + '\n'+
-                "Domain.Truck allowed Weight: " + (truck.getMaxWeight()- truck.getCurrentWeight())+'\n'+
-                "Domain.Truck min License: " + truck.getMinLicense()+ '\n'+
-                "Domain.Truck Model: " +truck.getModel()+'\n');
+        System.out.println("Truck Number: " + truck.getTruckNumber() + '\n'+
+                "Truck allowed Weight: " + (truck.getMaxWeight()- truck.getCurrentWeight())+'\n'+
+                "Truck min License: " + truck.getMinLicense()+ '\n'+
+                "Truck Model: " +truck.getModel()+'\n');
     }
 
     public Driver chooseDriver(){
@@ -84,6 +91,7 @@ public class TruckFacade {
             System.out.println("--------------");
             displayDriver(driver);
             System.out.println("--------------");
+            index++;
         }
 
         System.out.println("###  Now choose one of them  ###");

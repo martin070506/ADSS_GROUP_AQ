@@ -11,14 +11,17 @@ public class TransportFile {
     private Map<Supplier,List<ProductPair>> supplierAllocations;
     private Truck truck;
     private Driver driver;
+    private Location source;
     public TransportFile(LocalDate departureTime, Transport transport) {
-        text = "Departure Time: " + departureTime + '\n';
+        text = "Source: " + source.address()+ '\n'+
+                "Departure Time: " + departureTime + '\n';
         /// we need copy constructors
         suppliers = new ArrayList<>(transport.getSuppliers());
         destinations = new ArrayList<>(transport.getDestinations());
         supplierAllocations = new HashMap<>(transport.getSupplierAllocations());
         truck = transport.getTruck();
         driver = transport.getDriver();
+        source=transport.getSource();
     }
     public void leaveSupplier(int weight){
         text=text+"Left Supplier, current Weight:" +weight+'\n';

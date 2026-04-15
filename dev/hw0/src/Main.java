@@ -1,6 +1,8 @@
 import Domain.*;
+import Service.BranchManager;
 import Service.CompanyManager;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +18,13 @@ public class Main {
 
         fillLists(locations, products, suppliers, trucks, drivers);
 
-        CompanyManager companyManager;
+        CompanyManager companyManager=CompanyManager.getInstance(trucks,drivers,suppliers,locations);
+        BranchManager b1=new BranchManager(locations.get(0));
+        ProductPair p1=new ProductPair(new Product("Kiwi",250),4);
+        List<ProductPair> pairs=new LinkedList<>();
+        pairs.add(p1);
+        b1.requestShipment(pairs);
+        companyManager.startShipment();
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,
@@ -66,5 +74,8 @@ public class Main {
         drivers.add(new Driver("Charlie", 2));
         drivers.add(new Driver("David", 3));
         drivers.add(new Driver("Eve", 3));
+
+
+
     }
 }
