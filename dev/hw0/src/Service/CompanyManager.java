@@ -20,7 +20,7 @@ public class CompanyManager {
     private CompanyManager(List<Truck> trucks, List<Driver> drivers, List<Supplier> suppliers,
                            List<Location> locations) {
         this.truckFacade = new TruckFacade(trucks, drivers);
-        this.shipmentFacade = new ShipmentFacade(suppliers,trucks);
+        this.shipmentFacade = new ShipmentFacade(suppliers,trucks,drivers);
         this.locations = locations;
     }
 
