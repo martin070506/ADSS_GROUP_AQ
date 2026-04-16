@@ -4,6 +4,7 @@ import Domain.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class CompanyManager {
@@ -36,6 +37,10 @@ public class CompanyManager {
         return getInstance(List.of(), List.of(), List.of(), List.of());
     }
 
+    public static void resetInstance() {
+        instance = null;
+    }
+
     public void addDestination(Location storeLocation, List<ProductPair> neededItems){
         ProductFile productFile = new ProductFile(neededItems, ++globalFileNumber);
         Destination destination = new Destination(storeLocation, productFile);
@@ -43,56 +48,20 @@ public class CompanyManager {
 
     }
 
-    public void startShipment(){
+    // הפונקציה מחזירה עכשיו Transport
+    public Transport startShipment(Truck truck, Driver driver, Location source, Map<Supplier, List<ProductPair>> supplierAllocations) {
+        truckFacade.takeTruck(truck);
+        truckFacade.takeDriver(driver);
 
-       boolean truckAndDriverMatch = false;
-       Truck truck = null;
-       Driver driver = null;
-       while (!truckAndDriverMatch){
-           System.out.println("Choose a Truck and a matching Driver");
-           truck = truckFacade.chooseTruck();
-           driver = truckFacade.chooseDriver();
-           truckAndDriverMatch = truck.getMinLicense() <= driver.license();
-           if (!truckAndDriverMatch)
-               System.out.println("Truck and Driver chosen are not matching");
-       }
-
-       Location source = selectSourceLocation();
-       truckFacade.takeTruck(truck);
-       truckFacade.takeDriver(driver);
-       shipmentFacade.startShipment(truck, driver, source, dropOffDestinations, truckFacade.getTrucks());
-
+        return shipmentFacade.createTransport(truck, driver, source, dropOffDestinations, truckFacade.getTrucks(), supplierAllocations);
     }
 
-    private Location selectSourceLocation() {
+    // הוספת פונקציות גישור ל-ShipmentFacade
+    public void processTransport(Transport transport) throws Exception {
+        shipmentFacade.processTransport(transport);
+    }
 
-        Scanner reader = new Scanner(System.in);
-
-        System.out.println("\n--- Select Source Location ---");
-
-        for (int i = 0; i < locations.size(); i++) {
-            Location location = locations.get(i);
-            System.out.println((i + 1) + ". " + location.toString());
-        }
-
-        while (true) {
-            System.out.print("Enter location index: ");
-            String input = reader.nextLine().trim();
-
-            try {
-                int index = Integer.parseInt(input) - 1;
-
-                if (index >= 0 && index < locations.size()) {
-                    Location selected = locations.get(index);
-                    System.out.println("Selected: " + selected.address());
-                    return selected;
-                }
-                else
-                    System.out.println("Please choose between 1 and " + locations.size());
-
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number.");
-            }
-        }
+    public void finishShipment(Truck truck, Driver driver) {
+        shipmentFacade.finishShipment(truck, driver);
     }
 }

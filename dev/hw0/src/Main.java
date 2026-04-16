@@ -7,6 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 
+import Domain.*;
+import Presentation.MainConsole;
+import Service.BranchManager;
+import Service.CompanyManager;
+
+import java.util.LinkedList;
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) {
 
@@ -18,13 +26,20 @@ public class Main {
 
         fillLists(locations, products, suppliers, trucks, drivers);
 
-        CompanyManager companyManager=CompanyManager.getInstance(trucks,drivers,suppliers,locations);
-        BranchManager b1=new BranchManager(locations.get(0));
-        ProductPair p1=new ProductPair(new Product("Kiwi",250),4);
-        List<ProductPair> pairs=new LinkedList<>();
-        pairs.add(p1);
-        b1.requestShipment(pairs);
-        companyManager.startShipment();
+        // 1. אתחול שכבת הלוגיקה (Service Layer)
+        CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
+        BranchManager branchManager = new BranchManager(locations.getFirst());
+
+        // 2. יצירת בקשת מלאי
+        ProductPair pair = new ProductPair(new Product("Kiwi", 250), 4);
+        List<ProductPair> pairs = new LinkedList<>();
+        pairs.add(pair);
+        branchManager.requestShipment(pairs);
+
+        // 3. הפעלת המערכת דרך שכבת התצוגה (Presentation Layer)
+        // מריצים את ה-Console שמנהל את הקלטים מהמשתמש.
+        MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
+        console.run();
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,
@@ -74,8 +89,5 @@ public class Main {
         drivers.add(new Driver("Charlie", 2));
         drivers.add(new Driver("David", 3));
         drivers.add(new Driver("Eve", 3));
-
-
-
     }
 }

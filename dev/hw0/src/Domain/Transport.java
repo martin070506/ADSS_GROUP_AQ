@@ -168,19 +168,18 @@ public class Transport {
 
 
 
-    public boolean removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
-        if (outgoingItems == null || outgoingItems.isEmpty()) return false;
+    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
+        if (outgoingItems == null || outgoingItems.isEmpty()) return;
 
         // 1. Use helper to verify the whole set exists
         if (!canRemoveAll(outgoingItems)) {
-            return false; // Helper already printed the specific error message
+            return; // Helper already printed the specific error message
         }
 
         // 2. Execution: Since we know it's safe, perform the subtraction
         this.truck.setCurrentWeight(truck.getCurrentWeight() - weightToRemove);
         this.truck.removeProducts(outgoingItems);
 
-        return true;
     }
 
 
@@ -206,10 +205,10 @@ public class Transport {
 
 
     public void removeSupplierFromTransportAndFile(Supplier supplier) {
-        supplierAllocations.remove(supplier);
         suppliers.remove(supplier);
         transportFile.removeLocation(supplier);
         transportFile.removeProductsFromAggregate(supplierAllocations.get(supplier));
+        supplierAllocations.remove(supplier);
     }
 
     public void removeSupplierFromTransportButNotFile(Supplier supplier) {
@@ -242,6 +241,4 @@ public class Transport {
         this.truck = truck;
         transportFile.changeTruck(truck);
     }
-
-
 }

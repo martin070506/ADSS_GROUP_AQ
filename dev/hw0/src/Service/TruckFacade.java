@@ -10,7 +10,7 @@ public class TruckFacade {
     private List<Truck> availableTrucks;
     private List<Driver> drivers;
     private List<Driver> availableDrivers;
-    private Scanner reader = new Scanner(System.in);
+
     public TruckFacade(List<Truck> trucks, List<Driver> drivers) {
         this.trucks = trucks;
         this.drivers = drivers;
@@ -46,65 +46,11 @@ public class TruckFacade {
         availableDrivers.remove(driver);
     }
 
-    public Truck chooseTruck(){
-        int index = 0;
-
-        if(availableTrucks.isEmpty()){
-            System.out.println("There are no trucks available");
-            return null;
-        }
-
-        for (Truck truck : availableTrucks){
-            System.out.println(index+":");
-            System.out.println("--------------");
-            displayTruck(truck);
-            System.out.println("--------------");
-            index++;
-        }
-
-        System.out.println("###  Now choose one of them  ###");
-        int choice=reader.nextInt();
-        while (choice<0 || choice>availableTrucks.size()-1){
-            System.out.println("Invalid choice");
-            choice=reader.nextInt();
-        }
-        return availableTrucks.get(choice);
+    public List<Truck> getAvailableTrucks() {
+        return availableTrucks;
     }
 
-    private void displayTruck(Truck truck){
-        System.out.println("Truck Number: " + truck.getTruckNumber() + '\n'+
-                "Truck allowed Weight: " + (truck.getMaxWeight()- truck.getCurrentWeight())+'\n'+
-                "Truck min License: " + truck.getMinLicense()+ '\n'+
-                "Truck Model: " +truck.getModel()+'\n');
-    }
-
-    public Driver chooseDriver(){
-        int index = 0;
-
-        if(availableDrivers.isEmpty()){
-            System.out.println("There are no Drivers available");
-            return null;
-        }
-
-        for (Driver driver : availableDrivers){
-            System.out.println(index+":");
-            System.out.println("--------------");
-            displayDriver(driver);
-            System.out.println("--------------");
-            index++;
-        }
-
-        System.out.println("###  Now choose one of them  ###");
-        int choice=reader.nextInt();
-        while (choice<0 || choice>availableDrivers.size()-1){
-            System.out.println("Invalid choice");
-            choice=reader.nextInt();
-        }
-        return availableDrivers.get(choice);
-    }
-
-    private void displayDriver(Driver driver){
-        System.out.println("Driver name: " + driver.driverName() + '\n' +
-                "License: " + driver.license()+ '\n');
+    public List<Driver> getAvailableDrivers() {
+        return availableDrivers;
     }
 }

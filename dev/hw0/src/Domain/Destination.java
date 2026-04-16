@@ -34,4 +34,22 @@ public class Destination   {
     public boolean isVisited() {
         return wasVisited;
     }
+
+    @Override
+    public String toString() {
+        String result = "Destination: " + location.address() +
+                " | Contact: " + location.contactName() +
+                " | File #" + productFile.getFileNumber() + "\n";
+
+        result += "Products to deliver:\n";
+
+        if (productFile.getProducts() == null || productFile.getProducts().isEmpty()) {
+            result += "  (No products assigned)";
+        } else {
+            for (int i = 0; i < productFile.getProducts().size(); i++) {
+                result += "  " + (i + 1) + ". " + productFile.getProducts().get(i).toString() + "\n";
+            }
+        }
+        return result;
+    }
 }

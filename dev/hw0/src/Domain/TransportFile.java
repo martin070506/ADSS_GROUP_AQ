@@ -68,6 +68,7 @@ public class TransportFile {
     }
 
     public void removeProductsFromAggregate(List<ProductPair> products){
+        if (products == null) return;
         for (ProductPair p: products){
             int currentAmount = totalProductsNeeded.getOrDefault(p.product,0);
             totalProductsNeeded.put(p.product, currentAmount - p.getAmount());
@@ -132,7 +133,15 @@ public class TransportFile {
         appendSectionHeader(sb, "TOTAL ITEMS HELD");
         Map<String, Integer> totals = getAggregatedInventory();
 
-        if (totals.isEmpty()) {
+        boolean is = true;
+        for (Map.Entry<String, Integer> entry : totals.entrySet()) {
+            if (entry.getValue() != 0) {
+                is = false;
+                break;
+            }
+        }
+
+        if (totals.isEmpty() || is) {
             sb.append("No items currently held.\n");
         } else {
             totals.forEach((name, amount) ->

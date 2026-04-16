@@ -16,6 +16,9 @@ public class ProductFile {
     public List<ProductPair> getProducts() {
         return products;
     }
+    public int getFileNumber() {
+        return fileNumber;
+    }
 
     public void setProducts(List<ProductPair> products) {
         this.products = products;

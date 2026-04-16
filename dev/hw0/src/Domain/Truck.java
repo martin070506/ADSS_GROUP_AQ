@@ -21,7 +21,6 @@ public class Truck {
         this.truckNumber = truckNumber;
         this.minLicense = minLicense;
         loadedProducts = new HashMap<>();
-
     }
 
     public int getCurrentWeight() {

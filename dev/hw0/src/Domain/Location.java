@@ -9,6 +9,6 @@ public record Location(String address, String phoneNumber, String contactName) {
     public String toString() {
         return "Name: " + contactName() +
                 " | Address: " + address() +
-                " | Phone: " + phoneNumber() + "\n";
+                " | Phone: " + phoneNumber();
     }
 }
