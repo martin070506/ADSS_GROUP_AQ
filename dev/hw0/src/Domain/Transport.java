@@ -39,7 +39,8 @@ public class Transport {
 
     public void processShipment() {
 
-        for(Supplier supplier : suppliers) {
+        while(!suppliers.isEmpty()) {
+            Supplier supplier = suppliers.getFirst();
             supplier.handleShipment(supplierAllocations.get(supplier),truck);
             suppliers.remove(supplier);
             supplierAllocations.remove(supplier);
@@ -208,6 +209,7 @@ public class Transport {
         supplierAllocations.remove(supplier);
         suppliers.remove(supplier);
         transportFile.removeLocation(supplier);
+        transportFile.removeProductsFromAggregate(supplierAllocations.get(supplier));
     }
 
     public void removeSupplierFromTransportButNotFile(Supplier supplier) {

@@ -8,17 +8,20 @@ public class TransportFile {
     private String text;
     private List<Supplier> suppliers;
     private List<Destination> destinations;
-    private Map<Supplier,List<ProductPair>> supplierAllocations;
+    private Map<Product,Integer> totalProductsNeeded;
     private Truck truck;
     private Driver driver;
     private Location source;
     public TransportFile(LocalDate departureTime, Transport transport) {
+        source=transport.getSource();
         text = "Source: " + source.address()+ '\n'+
                 "Departure Time: " + departureTime + '\n';
+
         /// we need copy constructors
         suppliers = new ArrayList<>(transport.getSuppliers());
         destinations = new ArrayList<>(transport.getDestinations());
-        supplierAllocations = new HashMap<>(transport.getSupplierAllocations());
+        totalProductsNeeded = aggregateProductsToInteger(transport.getSupplierAllocations());
+
         truck = transport.getTruck();
         driver = transport.getDriver();
         source=transport.getSource();
@@ -42,8 +45,33 @@ public class TransportFile {
 
 
 
-    void changeTruck(Truck toAdd){
+    public void changeTruck(Truck toAdd){
         this.truck = toAdd;
+    }
+
+    private Map<Product, Integer> aggregateProductsToInteger(Map<Supplier, List<ProductPair>> supplierAllocations) {
+        Map<Product, Integer> totalProductCounts = new HashMap<>();
+
+        for (List<ProductPair> productList : supplierAllocations.values()) {
+            if (productList == null) continue;
+
+            for (ProductPair pair : productList) {
+                Product product = pair.product;
+                int amount = pair.getAmount();
+
+                // Merge the amount into the map using the Product object as the key
+                totalProductCounts.put(product, totalProductCounts.getOrDefault(product, 0) + amount);
+            }
+        }
+
+        return totalProductCounts;
+    }
+
+    public void removeProductsFromAggregate(List<ProductPair> products){
+        for (ProductPair p: products){
+            int currentAmount = totalProductsNeeded.getOrDefault(p.product,0);
+            totalProductsNeeded.put(p.product, currentAmount - p.getAmount());
+        }
     }
 
 
@@ -116,11 +144,8 @@ public class TransportFile {
 
     private Map<String, Integer> getAggregatedInventory() {
         Map<String, Integer> totals = new HashMap<>();
-        for (List<ProductPair> pairs : supplierAllocations.values()) {
-            for (ProductPair pair : pairs) {
-                String name = pair.product.name();
-                totals.put(name, totals.getOrDefault(name, 0) + pair.getAmount());
-            }
+        for (Product p : totalProductsNeeded.keySet()) {
+            totals.put(p.name(),totalProductsNeeded.get(p));
         }
         return totals;
     }

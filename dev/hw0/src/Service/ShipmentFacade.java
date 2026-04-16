@@ -159,12 +159,22 @@ public class ShipmentFacade {
             switch (choice) {
                 case "1" -> {
                     skipSupplier(problematicSupplier,transport);
+                    resolved=true;
                 }
                 case "2" ->{
                     visitDestinationEarly(transport);
+                    if(transport.getTruck().getCurrentWeight()<=transport.getTruck().getCurrentWeight()){
+                        resolved=true;
+                        transport.removeSupplierFromTransportButNotFile(problematicSupplier);
+                    }
+                    else{
+                        System.out.println("After visiting this location early, truck is still overWeight");
+                    }
                 }
                 case "3" ->{
                     manuallyRemoveItems(transport);
+                    transport.removeSupplierFromTransportButNotFile(problematicSupplier);
+                    resolved=true;
                 }
                 case "4" -> {
                     boolean swapped = replaceTruck(transport);
@@ -186,9 +196,8 @@ public class ShipmentFacade {
                     skipSupplier(problematicSupplier,transport);
                 }
             }
-            transport.processShipment();
-        }
 
+        }
     }
 
     private void skipSupplier(Supplier supplier,Transport transport) {
@@ -196,7 +205,10 @@ public class ShipmentFacade {
         List<ProductPair> thingsToRemove = transport.getSupplierAllocations().get(supplier);
         int weight= calculateWeightOfItems(thingsToRemove);
         transport.removeItems(thingsToRemove,weight);
+
+
         transport.removeSupplierFromTransportAndFile(supplier);
+
     }
     private int calculateWeightOfItems(List<ProductPair> products) {
         int sum=0;
@@ -273,6 +285,10 @@ public class ShipmentFacade {
                         int weightReduction = amountToRemove * existing.product.weight();
 
                         transport.removeItems(toRemove,weightReduction);
+
+                        /// removing these items from transportFile
+                        transport.getTransportFile().removeProductsFromAggregate(toRemove);
+
                     } else {
                         System.out.println("Invalid amount. Please try again.");
                     }
