@@ -1,6 +1,7 @@
 package Tests;
 
 import Domain.*;
+import Exceptions.InsufficientTruckStockException;
 import Service.BranchManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +43,7 @@ public class BranchManagerTest extends BaseTest {
 
         // בדיקה שהפונקציות המעודכנות רצות ללא קריסה
         assertDoesNotThrow(() -> {
-            Transport t = companyManager.startShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
+            Transport t = companyManager.createShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
             // אם רוצים לבדוק ריצה מלאה אפשר להוסיף: companyManager.processTransport(t);
         });
     }
@@ -63,7 +64,7 @@ public class BranchManagerTest extends BaseTest {
         Map<Supplier, List<ProductPair>> emptySupplierAllocations = new HashMap<>();
 
         assertDoesNotThrow(() -> {
-            companyManager.startShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
+            companyManager.createShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
         });
     }
 
@@ -76,5 +77,38 @@ public class BranchManagerTest extends BaseTest {
         assertThrows(IllegalArgumentException.class, () -> {
             telAvivBranch.requestShipment(emptyOrder);
         });
+    }
+
+    @Test
+    @DisplayName("The Destination should not be served (not enough items)")
+    void testDestinationNotServed(){
+        List<ProductPair> order = new LinkedList<>();
+        order.add(new ProductPair(TestData.Products.Banana, 10));
+        ashdodBranch.requestShipment(order);
+
+        Truck t=TestData.Trucks.DAFLF;
+
+        Driver d=TestData.Drivers.Bob;
+
+        Location l=TestData.Locations.Haifa;
+
+        Map<Supplier, List<ProductPair>> supplierAllocations = new HashMap<>();
+
+        Supplier s=TestData.allSuppliers.get(0);
+
+        List<ProductPair> productPairs = new LinkedList<>();
+        productPairs.add(new ProductPair(TestData.Products.Apple, 10));
+
+        supplierAllocations.put(s,productPairs);
+
+        Transport transport = companyManager.createShipment(t,d,l,supplierAllocations);
+
+        Destination onlyDestination=transport.getDestinations().getFirst();
+        assertThrows(InsufficientTruckStockException.class, () -> {
+            companyManager.processTransport(transport);
+        });
+        assertFalse(onlyDestination.isVisited());
+
+
     }
 }

@@ -110,7 +110,7 @@ public class TransportFile {
     }
 
     private void appendSupplierDetails(StringBuilder sb) {
-        appendSectionHeader(sb, "SCHEDULED SUPPLIERS");
+        appendSectionHeader(sb, "SUPPLIERS THAT WERE VISITED");
         for (Supplier s : suppliers) {
             Location loc = s.getSupplierLocation();
             sb.append("- ").append(loc.contactName())

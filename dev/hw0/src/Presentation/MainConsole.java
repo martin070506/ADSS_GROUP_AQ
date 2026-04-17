@@ -59,7 +59,7 @@ public class MainConsole {
 
         // שליחת כל הנתונים ללוגיקה העסקית - נקי מ-Scanner!
 // מקבלים את אובייקט המסע שנוצר
-        Transport transport = companyManager.startShipment(truck, driver, source, supplierAllocations);
+        Transport transport = companyManager.createShipment(truck, driver, source, supplierAllocations);
 
         // הלולאה עברה לכאן! ה-UI מנהל את הניסיונות
         boolean shipmentFinish = false;
@@ -70,12 +70,12 @@ public class MainConsole {
 
             } catch (Exceptions.OverweightException oe) {
                 // שולפים את הספק הראשון שעשה לנו בעיות (כפי שהיה בקוד המקורי)
-                Supplier problematicSupplier = transport.getSupplierAllocations().keySet().iterator().next();
+                Supplier problematicSupplier = transport.getSuppliers().getFirst();
                 handleOverWeight(transport, problematicSupplier);
 
             } catch (Exceptions.InsufficientSupplierStockException ise) {
                 System.out.println("⚠️ Stock Problem: " + ise.getMessage());
-                Supplier problematicSupplier = transport.getSupplierAllocations().keySet().iterator().next();
+                Supplier problematicSupplier = transport.getSuppliers().getFirst();
                 System.out.println("Skipping supplier " + problematicSupplier.supplierLocation().contactName() + " due to insufficient stock.");
                 transport.removeSupplierFromTransportAndFile(problematicSupplier);
 
@@ -96,6 +96,8 @@ public class MainConsole {
         }
 
         if (shipmentFinish) {
+            System.out.println("Shipment finished" + " TRANSPORT FILE: \n\n\n\n");
+            System.out.println(transport.getTransportFile().toString());
             companyManager.finishShipment(truck, driver);
             System.out.println("\nShipment completed successfully!");
         }

@@ -11,7 +11,7 @@ public class CompanyManager {
     private int globalFileNumber = 0;
     private final TruckFacade truckFacade;
     private final ShipmentFacade shipmentFacade;
-    private final List<Destination> dropOffDestinations = new LinkedList<>();
+    private final List<Destination> dropOffDestinations;
     private final List<Location> locations;
 
 
@@ -22,6 +22,7 @@ public class CompanyManager {
                            List<Location> locations) {
         this.truckFacade = new TruckFacade(trucks, drivers);
         this.shipmentFacade = new ShipmentFacade(suppliers,trucks,drivers);
+        this.dropOffDestinations = new LinkedList<>();
         this.locations = locations;
     }
 
@@ -42,14 +43,20 @@ public class CompanyManager {
     }
 
     public void addDestination(Location storeLocation, List<ProductPair> neededItems){
+        checkValidListOfItems(neededItems);
         ProductFile productFile = new ProductFile(neededItems, ++globalFileNumber);
         Destination destination = new Destination(storeLocation, productFile);
         dropOffDestinations.add(destination);
 
     }
+    private void checkValidListOfItems(List<ProductPair> neededItems){
+        if(new LinkedList<>(neededItems).isEmpty()){
+            throw new IllegalArgumentException("List of destinations is empty");
+        }
+    }
 
     // הפונקציה מחזירה עכשיו Transport
-    public Transport startShipment(Truck truck, Driver driver, Location source, Map<Supplier, List<ProductPair>> supplierAllocations) {
+    public Transport createShipment(Truck truck, Driver driver, Location source, Map<Supplier, List<ProductPair>> supplierAllocations) {
         truckFacade.takeTruck(truck);
         truckFacade.takeDriver(driver);
 

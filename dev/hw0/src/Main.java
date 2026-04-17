@@ -28,18 +28,25 @@ public class Main {
 
         // 1. אתחול שכבת הלוגיקה (Service Layer)
         CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
-        BranchManager branchManager = new BranchManager(locations.getFirst());
+        BranchManager branchManager1 = new BranchManager(locations.getFirst());
 
         // 2. יצירת בקשת מלאי
-        ProductPair pair = new ProductPair(new Product("Kiwi", 250), 4);
+        ProductPair pair1 = new ProductPair(new Product("Kiwi", 250), 4);
         List<ProductPair> pairs = new LinkedList<>();
-        pairs.add(pair);
-        branchManager.requestShipment(pairs);
+        pairs.add(pair1);
+        branchManager1.requestShipment(pairs);
+        BranchManager branchManager2 = new BranchManager(locations.get(1));
+        List<ProductPair> pairs2 = new LinkedList<>();
+        ProductPair pair2 = new ProductPair(new Product("Apple", 250), 6);
+        pairs2.add(pair2);
+        branchManager2.requestShipment(pairs2);
+
 
         // 3. הפעלת המערכת דרך שכבת התצוגה (Presentation Layer)
         // מריצים את ה-Console שמנהל את הקלטים מהמשתמש.
         MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
         console.run();
+
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,

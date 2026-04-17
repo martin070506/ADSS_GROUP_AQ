@@ -64,108 +64,10 @@ public class Transport {
         return source;
     }
 
-    //
-//    private Map<String,Integer> sumQuantities(List<Destination> destinations) {
-//
-//        Map<String, Integer> totals = new HashMap<>();
-//
-//        for (Destination dest : destinations) {
-//            List<ProductPair> requiredProducts = dest.getProducts();
-//
-//            if (requiredProducts != null)
-//                for (ProductPair pair : requiredProducts) {
-//                    String productName = pair.getProduct().getName();
-//                    int amount = pair.getAmount();
-//
-//                    totals.put(productName, totals.getOrDefault(productName, 0) + amount);
-//                }
-//        }
-//
-//        return totals;
-//    }
 
-//    // New Helper Method for Validation
-//    private boolean hasEnoughStock(List<Supplier> selectedSuppliers, Map<String, Integer> requirements) {
-//        // A. Calculate the total inventory of the SELECTED supplierAllocations
-//        Map<String, Integer> availableStock = new HashMap<>();
-//        for (Supplier s : selectedSuppliers) {
-//            for (ProductPair pp : s.productsAvailable()) {
-//                String name = pp.getProduct().getName();
-//                availableStock.put(name, availableStock.getOrDefault(name, 0) + pp.getAmount());
-//            }
-//        }
-//
-//        // B. Compare available vs required
-//        boolean isSufficient = true;
-//        System.out.println("\n--- Stock Verification ---");
-//
-//        for (Map.Entry<String, Integer> entry : requirements.entrySet()) {
-//            String product = entry.getKey();
-//            int needed = entry.getValue();
-//            int available = availableStock.getOrDefault(product, 0);
-//
-//            if (available < needed) {
-//                System.out.println("CRITICAL: " + product + " | Need: " + needed + " | Selected: " + available + " (MISSING: " + (needed - available) + ")");
-//                isSufficient = false;
-//            } else {
-//                System.out.println("OK: " + product + " (" + available + "/" + needed + ")");
-//            }
-//        }
-//
-//        return isSufficient;
-//    }
-
-//    // Helper 1: Handles the UI display
-//    private void displaySuppliers(List<Supplier> supplierAllocations) {
-//        System.out.println("\n--- Available Suppliers ---");
-//        for (int i = 0; i < supplierAllocations.size(); i++) {
-//            Supplier s = supplierAllocations.get(i);
-//            System.out.println(("[" + i + "] " + s.supplierLocation().getContactName()) + " (" + s.supplierLocation().getAddress() + ")");
-//            s.printInventory();
-//        }
-//    }
-
-//    private void processInput(String input, List<Supplier> all, List<Supplier> selected) {
-//        try {
-//            int index = Integer.parseInt(input);
-//            if (isValidIndex(index, all.size())) {
-//                Supplier choice = all.get(index);
-//                addIfNotDuplicate(choice, selected);
-//            }
-//            else
-//                System.out.println("Error: Index out of bounds.");
-//
-//        } catch (NumberFormatException e) {
-//            System.out.println("Invalid input! Please enter a number or 'exit'.");
-//        }
-//    }
-//
-//    // Helper 3: Specific logic checks (Very clean!)
-//    private boolean isValidIndex(int index, int size) {
-//        return index >= 0 && index < size;
-//    }
-
-//    private void addIfNotDuplicate(Supplier choice, List<Supplier> selected) {
-//        if (!selected.contains(choice)) {
-//            selected.add(choice);
-//            System.out.println("Added: " + choice.supplierLocation().getContactName());
-//        }
-//        else
-//            System.out.println("Supplier already selected.");
-//
-//    }
     public Truck getTruck() {
         return truck;
     }
-
-
-
-
-
-
-
-
-
 
 
     public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
