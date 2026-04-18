@@ -42,6 +42,7 @@ public class Transport {
         while(!suppliers.isEmpty()) {
             Supplier supplier = suppliers.getFirst();
             supplier.handleShipment(supplierAllocations.get(supplier),truck);
+            transportFile.leaveSupplier(truck.getCurrentWeight());
             suppliers.remove(supplier);
             supplierAllocations.remove(supplier);
 

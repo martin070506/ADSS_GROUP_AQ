@@ -18,4 +18,8 @@ public class BranchManager {
     public void requestShipment(List<ProductPair> neededItems){
         companyManager.addDestination(storeLocation, neededItems);
     }
+
+    public Location getLocation(){
+        return storeLocation;
+    }
 }

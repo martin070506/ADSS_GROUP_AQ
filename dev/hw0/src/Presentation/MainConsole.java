@@ -24,12 +24,12 @@ public class MainConsole {
         this.allSuppliers = allSuppliers;
     }
 
-    public void run() {
+    public Transport run() {
         System.out.println("Welcome to the Shipment System!");
-        initiateShipment();
+        return initiateShipment();
     }
 
-    private void initiateShipment() {
+    private Transport initiateShipment() {
         boolean truckAndDriverMatch = false;
         Truck truck = null;
         Driver driver = null;
@@ -43,7 +43,7 @@ public class MainConsole {
 
             if (truck == null || driver == null) {
                 System.out.println("Operation cancelled.");
-                return;
+                return null;
             }
 
             truckAndDriverMatch = truck.getMinLicense() <= driver.license();
@@ -77,6 +77,7 @@ public class MainConsole {
                 System.out.println("⚠️ Stock Problem: " + ise.getMessage());
                 Supplier problematicSupplier = transport.getSuppliers().getFirst();
                 System.out.println("Skipping supplier " + problematicSupplier.supplierLocation().contactName() + " due to insufficient stock.");
+                transport.getTransportFile().leaveSupplier(truck.getCurrentWeight());
                 transport.removeSupplierFromTransportAndFile(problematicSupplier);
 
             } catch (Exceptions.InsufficientTruckStockException ise) {
@@ -101,6 +102,7 @@ public class MainConsole {
             companyManager.finishShipment(truck, driver);
             System.out.println("\nShipment completed successfully!");
         }
+        return transport;
     }
 
     private void handleOverWeight(Transport transport, Supplier problematicSupplier) {
@@ -125,6 +127,7 @@ public class MainConsole {
                     visitDestinationEarly(transport);
                     if (transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                         resolved = true;
+                        transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     } else {
                         System.out.println("After visiting this location early, truck is still overWeight");
@@ -133,12 +136,14 @@ public class MainConsole {
                 case "3" -> {
                     manuallyRemoveItems(transport);
                     transport.removeSupplierFromTransportButNotFile(problematicSupplier);
+                    transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
                     resolved = true;
                 }
                 case "4" -> {
                     boolean swapped = replaceTruck(transport);
                     if (swapped && transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                         resolved = true;
+                        transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     }
                 }

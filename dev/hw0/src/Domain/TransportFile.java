@@ -39,6 +39,14 @@ public class TransportFile {
 
     }
 
+    public List<Supplier> getSuppliers(){
+        return suppliers;
+    }
+
+    public List<Destination> getDestinations(){
+        return destinations;
+    }
+
     public void removeDestination(Destination destination){
         destinations.remove(destination);
     }
