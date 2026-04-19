@@ -21,12 +21,12 @@ public class Main {
 
         BranchManager branchManager1 = new BranchManager(locations.get(0));
         List<ProductPair> pairs1 = new LinkedList<>();
-        pairs1.add(new ProductPair(products.get(5), 4)); // 4 יחידות קיווי
+        pairs1.add(new ProductPair(products.get(5), 4));
         branchManager1.requestShipment(pairs1);
 
         BranchManager branchManager2 = new BranchManager(locations.get(1));
         List<ProductPair> pairs2 = new LinkedList<>();
-        pairs2.add(new ProductPair(products.get(0), 6)); // 6 יחידות תפוח
+        pairs2.add(new ProductPair(products.get(0), 6));
         branchManager2.requestShipment(pairs2);
 
         BranchManager branchManager3 = new BranchManager(locations.get(2));

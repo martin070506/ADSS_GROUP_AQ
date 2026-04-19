@@ -40,11 +40,10 @@ public class BranchManagerTest extends BaseTest {
         Truck testTruck = TestData.Trucks.IsuzuSumo;
         Driver testDriver = TestData.Drivers.Alice;
         Location testSource = TestData.Locations.Haifa;
-        Map<Supplier, List<ProductPair>> emptySupplierAllocations = new HashMap<>(); // מפה ריקה לבדיקה בסיסית
+        Map<Supplier, List<ProductPair>> emptySupplierAllocations = new HashMap<>();
 
         assertDoesNotThrow(() -> {
             Transport t = companyManager.createShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
-            // אם רוצים לבדוק ריצה מלאה אפשר להוסיף: companyManager.processTransport(t);
         });
     }
 
@@ -186,18 +185,10 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("CHECK CONSOLE HANDLES SKIPPING SUPPLIERS AND UPDATES TRANSPORT FILE")
     void testSuppliersSkipsViaConsole() {
-        // 1. הגדרת ספקים - אחד תקין ואחד ריק
         Supplier goodSupplier = TestData.allSuppliers.get(0);
         Supplier emptySupplier = TestData.allSuppliers.get(1);
         emptySupplier.productsAvailable().clear();
 
-        // 2. סימולציה של קלט (Input Stream)
-        // "2" - משאית DAF LF (רישיון 2)
-        // "2" - נהג Bob (רישיון 2) -> התאמה מושלמת!
-        // "1" - מיקום מקור
-        // "1, 2" - בחירת שני הספקים
-        // "1" -> "10" -> "done" (עבור ספק 1)
-        // "1" -> "10" -> "done" (עבור ספק 2)
         String simulatedInput = "2\n2\n1\n1, 2\n1\n10\ndone\n1\n10\ndone\n";
 
         InputStream savedStandardIn = System.in;
@@ -214,10 +205,6 @@ public class BranchManagerTest extends BaseTest {
 
             Transport transport =console.run();
 
-            // שליפת הטרנספורט האחרון לבדיקה
-
-            // בדיקה שהלוגיקה ב-Catch עבדה:
-            // המערכת צריכה להסיר את הספק הריק ולהשאיר רק את התקין
             assertEquals(1, transport.getTransportFile().getSuppliers().size(), "Should skip the empty supplier");
             assertTrue(transport.getTransportFile().getSuppliers().contains(goodSupplier));
             assertFalse(transport.getTransportFile().getSuppliers().contains(emptySupplier));
@@ -254,7 +241,6 @@ public class BranchManagerTest extends BaseTest {
 
             Transport transport = console.run();
 
-            // שורת המחץ - בודקת ישירות על הסטרינג שהיעד לא נמצא
             assertFalse(transport.getTransportFile().toString().contains("- " +
                             ashdodBranch.getLocation().contactName() + " | Address: " +
                             ashdodBranch.getLocation().address()),
@@ -269,20 +255,14 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("DESTINATION SHOULD APPEAR IN TRANSPORT FILE")
     void testDestinationIsInsideFile(){
-        // 1. הגדרת נתונים בסיסיים: ספק ומוצר
         Supplier s = TestData.allSuppliers.get(0);
         Product apple = TestData.Products.Apple;
 
-        // שימוש ב-BranchManager כדי לבקש משלוח לסניף (למשל סניף אשדוד)
         List<ProductPair> order = new LinkedList<>();
         order.add(new ProductPair(apple, 10));
 
-        ashdodBranch.requestShipment(order); // כאן נוצרת הדרישה במערכת
+        ashdodBranch.requestShipment(order);
 
-        // 2. סימולציה של קלט (Input Stream)
-        // "2" - משאית, "2" - נהג, "1" - מקור
-        // "1" - בחירת ספק אחד
-        // "1" -> "10" -> "done" - בחירת מוצרים
         String simulatedInput = "2\n2\n1\n1\n1\n10\ndone\n";
 
         InputStream savedStandardIn = System.in;
@@ -297,19 +277,13 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            // 3. הרצת הקונסול
-            // ה-run יקרא ל-createShipment, שימשוך את הדרישה מה-BranchManager וייצר Destination
             Transport transport = console.run();
 
-            // 4. ולידציה
-            // בדיקה שהיעד הוסר מהרשימה האקטיבית בטרנספורט (כי ה-Console תפס Exception)
-            // (הערה: כדי שהטסט יעבור, ה-processTransport חייב לזרוק InsufficientTruckStockException)
             boolean destExists = transport.getTransportFile().getDestinations().stream()
                     .anyMatch(d -> d.getContactName().equals(ashdodBranch.getLocation().contactName()));
 
             assertTrue(destExists, "The destination should be in the File");
 
-            // 5. בדיקה שהיעד לא מופיע בטקסט של ה-TransportFile
             String fileContent = transport.getTransportFile().toString();
             assertTrue(transport.getTransportFile().toString().contains("- " +
                     ashdodBranch.getLocation().contactName() + " | Address: " +
@@ -324,15 +298,13 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("Should correctly sum products from multiple suppliers")
     void testProductAggregation() {
-        Supplier s1 = TestData.allSuppliers.get(0); // Tel Aviv
-        Supplier s2 = TestData.allSuppliers.get(5); // Jerusalem
+        Supplier s1 = TestData.allSuppliers.get(0);
+        Supplier s2 = TestData.allSuppliers.get(5);
 
         Map<Supplier, List<ProductPair>> allocations = new HashMap<>();
-        // Both suppliers providing Apples
         allocations.put(s1, new ArrayList<>(List.of(new ProductPair(TestData.Products.Apple, 10))));
         allocations.put(s2, new ArrayList<>(List.of(new ProductPair(TestData.Products.Apple, 20))));
 
-        // We use the helper method logic we built earlier
         Transport transport = companyManager.createShipment(
                 TestData.Trucks.IsuzuSumo,
                 TestData.Drivers.Alice,
@@ -340,7 +312,6 @@ public class BranchManagerTest extends BaseTest {
                 allocations
         );
 
-        // Get the combined map from the transport file
         Map<Product, Integer> totals = transport.getTransportFile().getTotalProductsNeeded();
 
         assertEquals(30, totals.get(TestData.Products.Apple), "Total Apples should be 30 (10 from s1 + 20 from s2)");
@@ -349,16 +320,14 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("Should throw exception when shipment exceeds truck weight capacity")
     void testOverweightShipment() {
-        Truck lightTruck = TestData.Trucks.IsuzuSumo; // Assume max weight is 5000
+        Truck lightTruck = TestData.Trucks.IsuzuSumo;
         int maxWeight = lightTruck.getMaxWeight();
 
-        // Create a product list that is exactly 1kg over the limit
         List<ProductPair> overweightList = List.of(new ProductPair(TestData.Products.Apple, 100));
 
         Map<Supplier, List<ProductPair>> allocations = new HashMap<>();
         allocations.put(TestData.allSuppliers.get(0), overweightList);
 
-        // Verify that the system prevents creating or processing an overweight shipment
         assertThrows(OverweightException.class, () -> {
             Transport t=companyManager.createShipment(lightTruck, TestData.Drivers.Alice, TestData.Locations.Haifa, allocations);
             companyManager.processTransport(t);
@@ -368,18 +337,13 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("Truck should keep extra items while TransportFile records full pickup")
     void testExtraItemsInTruckVsFile() {
-        // 1. Setup: Branch requests 10 Apples
-        Supplier s = TestData.allSuppliers.get(0); // Tel Aviv Supplier
+        Supplier s = TestData.allSuppliers.get(0);
         Product apple = TestData.Products.Apple;
 
         List<ProductPair> order = new LinkedList<>();
         order.add(new ProductPair(apple, 10));
         telAvivBranch.requestShipment(order);
 
-        // 2. Simulation Input:
-        // "2" (Truck), "2" (Driver), "1" (Source)
-        // "1" (Select Supplier 1)
-        // "1" -> "20" -> "done" (USER OVERRIDES: Picks up 20 instead of 10)
         String simulatedInput = "2\n2\n1\n1\n1\n20\ndone\n";
 
         InputStream savedStandardIn = System.in;
@@ -394,22 +358,16 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            // 3. Run the logic
             Transport transport = console.run();
 
-            // Process the transport (this simulates driving and dropping off items)
             assertDoesNotThrow(() -> {
                 companyManager.processTransport(transport);
             });
 
-            // 4. Validation: Check the TransportFile (The Paperwork)
-            // It should show the full amount the user typed (20)
             Map<Product, Integer> fileTotals = transport.getTransportFile().getTotalProductsNeeded();
             assertEquals(20, fileTotals.get(apple),
                     "The TransportFile should record the actual pickup of 20 apples");
 
-            // 5. Validation: Check the Truck (The Physical Inventory)
-            // Truck had 20, dropped off 10 at the branch, should have 10 left
             ProductPair truckBalance = transport.getTruck().getProductPairs().getOrDefault("Apple", null);
             assertEquals(10, truckBalance.getAmount(),
                     "The truck should still hold 10 'extra' apples after delivering the requested 10");
