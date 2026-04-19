@@ -3,6 +3,7 @@ package Tests;
 import Domain.*;
 import Exceptions.InsufficientSupplierStockException;
 import Exceptions.InsufficientTruckStockException;
+import Exceptions.OverweightException;
 import Presentation.MainConsole;
 import Service.BranchManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -329,6 +330,104 @@ public class BranchManagerTest extends BaseTest {
             String fileContent = transport.getTransportFile().toString();
             assertTrue(fileContent.contains(ashdodBranch.getLocation().contactName()),
                     "The  destination should appear in the final transport file report");
+
+        } finally {
+            System.setIn(savedStandardIn);
+        }
+    }
+
+    @Test
+    @DisplayName("Should correctly sum products from multiple suppliers")
+    void testProductAggregation() {
+        Supplier s1 = TestData.allSuppliers.get(0); // Tel Aviv
+        Supplier s2 = TestData.allSuppliers.get(5); // Jerusalem
+
+        Map<Supplier, List<ProductPair>> allocations = new HashMap<>();
+        // Both suppliers providing Apples
+        allocations.put(s1, new ArrayList<>(List.of(new ProductPair(TestData.Products.Apple, 10))));
+        allocations.put(s2, new ArrayList<>(List.of(new ProductPair(TestData.Products.Apple, 20))));
+
+        // We use the helper method logic we built earlier
+        Transport transport = companyManager.createShipment(
+                TestData.Trucks.IsuzuSumo,
+                TestData.Drivers.Alice,
+                TestData.Locations.Haifa,
+                allocations
+        );
+
+        // Get the combined map from the transport file
+        Map<Product, Integer> totals = transport.getTransportFile().getTotalProductsNeeded();
+
+        assertEquals(30, totals.get(TestData.Products.Apple), "Total Apples should be 30 (10 from s1 + 20 from s2)");
+    }
+
+    @Test
+    @DisplayName("Should throw exception when shipment exceeds truck weight capacity")
+    void testOverweightShipment() {
+        Truck lightTruck = TestData.Trucks.IsuzuSumo; // Assume max weight is 5000
+        int maxWeight = lightTruck.getMaxWeight();
+
+        // Create a product list that is exactly 1kg over the limit
+        List<ProductPair> overweightList = List.of(new ProductPair(TestData.Products.Apple, 100));
+
+        Map<Supplier, List<ProductPair>> allocations = new HashMap<>();
+        allocations.put(TestData.allSuppliers.get(0), overweightList);
+
+        // Verify that the system prevents creating or processing an overweight shipment
+        assertThrows(OverweightException.class, () -> {
+            Transport t=companyManager.createShipment(lightTruck, TestData.Drivers.Alice, TestData.Locations.Haifa, allocations);
+            companyManager.processTransport(t);
+        }, "Should not allow shipment exceeding truck capacity");
+    }
+
+    @Test
+    @DisplayName("Truck should keep extra items while TransportFile records full pickup")
+    void testExtraItemsInTruckVsFile() {
+        // 1. Setup: Branch requests 10 Apples
+        Supplier s = TestData.allSuppliers.get(0); // Tel Aviv Supplier
+        Product apple = TestData.Products.Apple;
+
+        List<ProductPair> order = new LinkedList<>();
+        order.add(new ProductPair(apple, 10));
+        telAvivBranch.requestShipment(order);
+
+        // 2. Simulation Input:
+        // "2" (Truck), "2" (Driver), "1" (Source)
+        // "1" (Select Supplier 1)
+        // "1" -> "20" -> "done" (USER OVERRIDES: Picks up 20 instead of 10)
+        String simulatedInput = "2\n2\n1\n1\n1\n20\ndone\n";
+
+        InputStream savedStandardIn = System.in;
+        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
+
+        try {
+            MainConsole console = new MainConsole(
+                    companyManager,
+                    new ArrayList<>(TestData.allTrucks),
+                    new ArrayList<>(TestData.allDrivers),
+                    new ArrayList<>(TestData.allLocations),
+                    Arrays.asList(s)
+            );
+
+            // 3. Run the logic
+            Transport transport = console.run();
+
+            // Process the transport (this simulates driving and dropping off items)
+            assertDoesNotThrow(() -> {
+                companyManager.processTransport(transport);
+            });
+
+            // 4. Validation: Check the TransportFile (The Paperwork)
+            // It should show the full amount the user typed (20)
+            Map<Product, Integer> fileTotals = transport.getTransportFile().getTotalProductsNeeded();
+            assertEquals(20, fileTotals.get(apple),
+                    "The TransportFile should record the actual pickup of 20 apples");
+
+            // 5. Validation: Check the Truck (The Physical Inventory)
+            // Truck had 20, dropped off 10 at the branch, should have 10 left
+            ProductPair truckBalance = transport.getTruck().getProductPairs().getOrDefault("Apple", null);
+            assertEquals(10, truckBalance.getAmount(),
+                    "The truck should still hold 10 'extra' apples after delivering the requested 10");
 
         } finally {
             System.setIn(savedStandardIn);

@@ -39,6 +39,10 @@ public class TransportFile {
 
     }
 
+    public Map<Product,Integer> getTotalProductsNeeded() {
+        return totalProductsNeeded;
+    }
+
     public List<Supplier> getSuppliers(){
         return suppliers;
     }
