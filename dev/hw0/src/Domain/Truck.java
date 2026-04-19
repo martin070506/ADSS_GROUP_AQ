@@ -53,6 +53,9 @@ public class Truck {
         return model;
     }
     public void setCurrentWeight(int currentWeight) {
+         if (currentWeight < 0)
+            throw new IllegalArgumentException("Truck Weight can't be Negative");
+
         this.currentWeight = currentWeight;
     }
 
@@ -74,7 +77,7 @@ public class Truck {
                 currentWeight+=pair.product.weight()*pair.getAmount();
             }
             else {
-                loadedProducts.put(name, pair);
+                loadedProducts.put(name, new ProductPair(pair));
                 currentWeight += pair.product.weight() * pair.getAmount();
             }
         }
@@ -105,6 +108,4 @@ public class Truck {
             currentWeight -= pair.product.weight() * pair.getAmount();
         }
     }
-
-
 }

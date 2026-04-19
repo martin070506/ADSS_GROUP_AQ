@@ -10,7 +10,7 @@ public class Transport {
     private Driver driver;
     private final Location source;
     private List<Destination> destinations;
-    private Map<Supplier, List<ProductPair>> supplierAllocations; // אנחנו לא צריכים לקחת את כל ה Available שיש לו, רק את מה שאנחנו צריכים
+    private Map<Supplier, List<ProductPair>> supplierAllocations;
     private List<Truck> replacementTrucks;
     private TransportFile transportFile;
     private List<Supplier> suppliers;
@@ -38,17 +38,19 @@ public class Transport {
 
     public void processShipment() {
 
-        while(!suppliers.isEmpty()) {
+        while (!suppliers.isEmpty()) {
             Supplier supplier = suppliers.getFirst();
+            transportFile.arriveAtSupplier(supplier.getName());
             supplier.handleShipment(supplierAllocations.get(supplier),truck);
-            transportFile.leaveSupplier(truck.getCurrentWeight());
+            transportFile.leaveSupplier(supplier.getName(), truck.getCurrentWeight());
             suppliers.remove(supplier);
             supplierAllocations.remove(supplier);
-
         }
 
         while (!destinations.isEmpty()) {
+            transportFile.arriveAtDestination(destinations.getFirst().getContactName());
             destinations.getFirst().handleShipment(truck);
+            transportFile.leaveDestination(destinations.getFirst().getContactName());
             destinations.removeFirst();
         }
     }
@@ -70,13 +72,12 @@ public class Transport {
     }
 
 
-    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) throws Exceptions.ProductNotFoundOnTruckException {
+    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
         if (outgoingItems == null || outgoingItems.isEmpty())
             return;
 
         canRemoveAll(outgoingItems);
 
-        this.truck.setCurrentWeight(truck.getCurrentWeight() - weightToRemove);
         this.truck.removeProducts(outgoingItems);
     }
 

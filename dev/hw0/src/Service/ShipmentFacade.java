@@ -37,7 +37,6 @@ public class ShipmentFacade {
                 supplierAllocations, replacementTrucks, suppliersAsList);
     }
 
-    // פונקציה 2: מנסה להריץ את המסע. אם יש בעיה, היא זורקת אותה החוצה ל-UI!
     public void processTransport(Transport transport) throws Exception {
         transport.processShipment();
     }

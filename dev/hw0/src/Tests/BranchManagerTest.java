@@ -230,20 +230,14 @@ public class BranchManagerTest extends BaseTest {
     @Test
     @DisplayName("DESTINATION SHOULD NOT APPEAR IN TRANSPORT FILE")
     void testDestinationIsNotInFile(){
-        // 1. הגדרת נתונים בסיסיים: ספק ומוצר
         Supplier s = TestData.allSuppliers.get(0);
         Product banana = TestData.Products.Banana;
 
-        // שימוש ב-BranchManager כדי לבקש משלוח לסניף (למשל סניף אשדוד)
         List<ProductPair> order = new LinkedList<>();
         order.add(new ProductPair(banana, 10));
 
-        ashdodBranch.requestShipment(order); // כאן נוצרת הדרישה במערכת
+        ashdodBranch.requestShipment(order);
 
-        // 2. סימולציה של קלט (Input Stream)
-        // "2" - משאית, "2" - נהג, "1" - מקור
-        // "1" - בחירת ספק אחד
-        // "1" -> "10" -> "done" - בחירת מוצרים
         String simulatedInput = "2\n2\n1\n1\n1\n10\ndone\n";
 
         InputStream savedStandardIn = System.in;
@@ -258,21 +252,12 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            // 3. הרצת הקונסול
-            // ה-run יקרא ל-createShipment, שימשוך את הדרישה מה-BranchManager וייצר Destination
             Transport transport = console.run();
 
-            // 4. ולידציה
-            // בדיקה שהיעד הוסר מהרשימה האקטיבית בטרנספורט (כי ה-Console תפס Exception)
-            // (הערה: כדי שהטסט יעבור, ה-processTransport חייב לזרוק InsufficientTruckStockException)
-            boolean destExists = transport.getTransportFile().getDestinations().stream()
-                    .anyMatch(d -> d.getContactName().equals(ashdodBranch.getLocation().contactName()));
-
-            assertFalse(destExists, "The problematic destination should be removed from the transport");
-
-            // 5. בדיקה שהיעד לא מופיע בטקסט של ה-TransportFile
-            String fileContent = transport.getTransportFile().toString();
-            assertFalse(fileContent.contains(ashdodBranch.getLocation().contactName()),
+            // שורת המחץ - בודקת ישירות על הסטרינג שהיעד לא נמצא
+            assertFalse(transport.getTransportFile().toString().contains("- " +
+                            ashdodBranch.getLocation().contactName() + " | Address: " +
+                            ashdodBranch.getLocation().address()),
                     "The skipped destination should not appear in the final transport file report");
 
         } finally {
@@ -282,7 +267,7 @@ public class BranchManagerTest extends BaseTest {
 
 
     @Test
-    @DisplayName("DESTINATION SHOULD  APPEAR IN TRANSPORT FILE")
+    @DisplayName("DESTINATION SHOULD APPEAR IN TRANSPORT FILE")
     void testDestinationIsInsideFile(){
         // 1. הגדרת נתונים בסיסיים: ספק ומוצר
         Supplier s = TestData.allSuppliers.get(0);
@@ -326,8 +311,10 @@ public class BranchManagerTest extends BaseTest {
 
             // 5. בדיקה שהיעד לא מופיע בטקסט של ה-TransportFile
             String fileContent = transport.getTransportFile().toString();
-            assertTrue(fileContent.contains(ashdodBranch.getLocation().contactName()),
-                    "The  destination should appear in the final transport file report");
+            assertTrue(transport.getTransportFile().toString().contains("- " +
+                    ashdodBranch.getLocation().contactName() + " | Address: " +
+                    ashdodBranch.getLocation().address()),
+                    "The destination should appear in the final transport file report");
 
         } finally {
             System.setIn(savedStandardIn);

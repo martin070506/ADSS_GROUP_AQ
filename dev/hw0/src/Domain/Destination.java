@@ -16,7 +16,7 @@ public class Destination   {
 
         List<ProductPair> requestedProducts = productFile.getProducts();
         truck.removeProducts(requestedProducts); /// throws Exception if not enough stock
-        wasVisited=true;
+        wasVisited = true;
     }
 
     public String getContactName(){

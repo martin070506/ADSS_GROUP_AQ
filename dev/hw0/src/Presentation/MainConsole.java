@@ -69,16 +69,17 @@ public class MainConsole {
             } catch (Exceptions.InsufficientSupplierStockException ise) {
                 System.out.println("⚠️ Stock Problem: " + ise.getMessage());
                 Supplier problematicSupplier = transport.getSuppliers().getFirst();
-                System.out.println("Skipping supplier " + problematicSupplier.supplierLocation().contactName() + " due to insufficient stock.");
-                transport.getTransportFile().leaveSupplier(truck.getCurrentWeight());
+                System.out.println("Skipping supplier " + problematicSupplier.supplierLocation().contactName() + " due to insufficient stock.\n");
+                transport.getTransportFile().skipSupplier(problematicSupplier.supplierLocation().contactName());
                 transport.removeSupplierFromTransportAndFile(problematicSupplier);
 
             } catch (Exceptions.InsufficientTruckStockException ise) {
                 System.out.println("⚠️ Truck Stock Problem: " + ise.getMessage());
                 Destination problematicDestination = transport.getDestinations().getFirst();
                 System.out.println("Skipping destination " + problematicDestination.getContactName() + " due to missing items.");
-                transport.removeDestinationFromTransport(problematicDestination);
+                transport.getTransportFile().skipDestination(problematicDestination.getContactName());
 
+                transport.removeDestinationFromTransport(problematicDestination);
             } catch (Exceptions.DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
                 break;
@@ -93,7 +94,7 @@ public class MainConsole {
             System.out.println("Shipment finished." + "\n\n\nTransport File : \n");
             System.out.println(transport.getTransportFile().toString());
             companyManager.finishShipment(truck, driver);
-            System.out.println("\nShipment completed successfully!");
+            System.out.println("\n✅ Shipment completed successfully!");
         }
         return transport;
     }
@@ -101,13 +102,13 @@ public class MainConsole {
     private void handleOverWeight(Transport transport, Supplier problematicSupplier) {
         transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
         System.out.println("\uD83D\uDED1 Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
-        System.out.println("1. Skip this supplier (Remove its items from truck)");
-        System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
-        System.out.println("3. Fine-tune: Remove specific items");
-        System.out.println("4. Switch Truck");
 
         boolean resolved = false;
         while (!resolved) {
+            System.out.println("1. Skip this supplier (Remove its items from truck)");
+            System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
+            System.out.println("3. Fine-tune: Remove specific items");
+            System.out.println("4. Switch Truck");
             System.out.print("Choose an option: ");
             String choice = scanner.nextLine().trim();
 
@@ -120,23 +121,23 @@ public class MainConsole {
                     visitDestinationEarly(transport);
                     if (transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                         resolved = true;
-                        transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
+                        transport.getTransportFile().leaveSupplier(problematicSupplier.getName(), transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     } else {
-                        System.out.println("After visiting this location early, truck is still overWeight");
+                        System.out.println("After visiting this location early, truck is still overweight");
                     }
                 }
                 case "3" -> {
                     manuallyRemoveItems(transport);
                     transport.removeSupplierFromTransportButNotFile(problematicSupplier);
-                    transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
+                    transport.getTransportFile().leaveSupplier(problematicSupplier.getName(), transport.getTruck().getCurrentWeight());
                     resolved = true;
                 }
                 case "4" -> {
                     boolean swapped = replaceTruck(transport);
                     if (swapped && transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                         resolved = true;
-                        transport.getTransportFile().leaveSupplier(transport.getTruck().getCurrentWeight());
+                        transport.getTransportFile().leaveSupplier(problematicSupplier.getName(), transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     }
                 }
@@ -146,12 +147,14 @@ public class MainConsole {
                     resolved = true;
                 }
             }
+            System.out.println();
         }
     }
 
     private void skipSupplier(Supplier supplier, Transport transport) {
 
         System.out.println("Supplier " + supplier.supplierLocation().contactName() + " skipped.");
+        transport.getTransportFile().skipSupplier(supplier.supplierLocation().contactName());
         List<ProductPair> thingsToRemove = transport.getSupplierAllocations().get(supplier);
 
         int weight = 0;
@@ -167,6 +170,7 @@ public class MainConsole {
 
         transport.removeSupplierFromTransportAndFile(supplier);
     }
+
     private void manuallyRemoveItems(Transport transport) {
         Map<String, ProductPair> currentThingsHeld = transport.getProductPairs();
         while (true) {
@@ -202,6 +206,8 @@ public class MainConsole {
                         try {
                             transport.removeItems(toRemove, weightReduction);
                             transport.getTransportFile().removeProductsFromAggregate(toRemove);
+                            System.out.println("Successfully removed " + amountToRemove + " units of " + productName + ".");
+                            transport.getTransportFile().removeItemFromTruck(amountToRemove, productName);
                         } catch (Exceptions.ProductNotFoundOnTruckException e) {
                             System.out.println(e.getMessage());
                         }
@@ -227,15 +233,17 @@ public class MainConsole {
 
         System.out.println("Choose a destination to visit now:");
         for (int i = 0; i < destinations.size(); i++) {
-            System.out.println("[" + i + "] " + destinations.get(i).getContactName());
+            System.out.println("[" + (i+1) + "] " + destinations.get(i).getContactName());
         }
 
         try {
-            int index = Integer.parseInt(scanner.nextLine().trim());
+            int index = Integer.parseInt(scanner.nextLine().trim())-1;
             if (index >= 0 && index < destinations.size()) {
                 Destination target = destinations.get(index);
-                transport.removeDestinationFromTransport(target);
+                transport.getTransportFile().arriveAtDestination(target.getContactName());
                 target.handleShipment(transport.getTruck());
+                transport.getTransportFile().leaveDestination(target.getContactName());
+                transport.removeDestinationFromTransport(target);
                 System.out.println("Emergency drop-off completed at " + target.getContactName());
             }
         } catch (Exception e) {
@@ -259,7 +267,7 @@ public class MainConsole {
 
         System.out.println("\n--- Available Larger Trucks ---");
         for (int i = 0; i < candidates.size(); i++) {
-            System.out.println("[" + i + "] ID: " + candidates.get(i).getTruckNumber() + " | Capacity: " + candidates.get(i).getMaxWeight());
+            System.out.println("[" + (i+1) + "] ID: " + candidates.get(i).getTruckNumber() + " | Capacity: " + candidates.get(i).getMaxWeight());
         }
         System.out.println("Type index to swap, or 'exit':");
 
@@ -267,14 +275,13 @@ public class MainConsole {
         if (input.equalsIgnoreCase("exit")) return false;
 
         try {
-            int index = Integer.parseInt(input);
+            int index = Integer.parseInt(input)-1;
             if (index >= 0 && index < candidates.size()) {
                 Truck newTruck = candidates.get(index);
 
                 replacementTrucks.add(transport.getTruck());
                 transport.getTruck().transferHoldingsToOtherTruck(newTruck);
 
-                // עדכון הרשימות של המערכת
                 this.availableTrucks.add(transport.getTruck());
                 this.availableTrucks.remove(newTruck);
 
@@ -282,6 +289,7 @@ public class MainConsole {
                 replacementTrucks.remove(newTruck);
 
                 System.out.println("Truck swapped! New capacity: " + transport.getTruck().getMaxWeight());
+
                 return true;
             }
         } catch (NumberFormatException e) {
@@ -289,8 +297,6 @@ public class MainConsole {
         }
         return false;
     }
-
-    // --- הפונקציה שהועתקה מ-ShipmentFacade ועודכנה לשימוש ב-scanner של המחלקה ---
     private Map<Supplier, List<ProductPair>> chooseSuppliersAndProducts(List<Supplier> suppliers) {
         Map<Supplier, List<ProductPair>> supplierAllocations = new LinkedHashMap<>();
 

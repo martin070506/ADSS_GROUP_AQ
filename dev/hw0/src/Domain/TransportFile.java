@@ -26,12 +26,21 @@ public class TransportFile {
         driver = transport.getDriver();
         source = transport.getSource();
     }
-    public void leaveSupplier(int weight) {
-        text += "Left Supplier, Truck Weight : " +weight+'\n';
+
+    public void leaveSupplier(String productName, int weight) {
+        text += "Left Supplier " + productName + ", Truck Weight : " + weight + '\n';
     }
 
-    public void overWeightAlert(int weight){
-        text += "Over Weight Alert, Truck Weight : " +weight+'\n';
+    public void arriveAtSupplier(String supplierName) {
+        text += "Arrived at Supplier " + supplierName + '\n';
+    }
+
+    public void skipSupplier(String name) {
+        text += "Skipped Supplier " + name + '\n';
+    }
+
+    public void overWeightAlert(int weight) {
+        text += "Over Weight Alert, Truck Weight : " + weight + '\n';
     }
 
     public void removeLocation(Supplier supplier){
@@ -56,6 +65,7 @@ public class TransportFile {
 
     public void changeTruck(Truck toAdd){
         this.truck = toAdd;
+        text += "Truck swapped, New capacity: " + truck.getMaxWeight() + '\n';
     }
 
     private Map<Product, Integer> aggregateProductsToInteger(Map<Supplier, List<ProductPair>> supplierAllocations) {
@@ -169,5 +179,19 @@ public class TransportFile {
     }
 
 
+    public void removeItemFromTruck(int amountToRemove, String productName) {
+        text += "Removed " + amountToRemove + " units of " + productName + '\n';
+    }
 
+    public void skipDestination(String contactName) {
+        text += "Skipped Destination " + contactName + '\n';
+    }
+
+    public void arriveAtDestination(String contactName) {
+        text += "Arrived at Destination " + contactName + '\n';
+    }
+
+    public void leaveDestination(String contactName) {
+        text += "Left Destination " + contactName + '\n';
+    }
 }

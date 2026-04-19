@@ -10,6 +10,11 @@ public class ProductPair {
         this.amount = amount;
     }
 
+    public ProductPair(ProductPair pair) {
+        this.product = pair.product;
+        this.amount = pair.amount;
+    }
+
     public int getAmount() { return amount; }
     public void setAmount(int amount) {
         if (amount < 0)
