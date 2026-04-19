@@ -96,4 +96,13 @@ public class Main {
         drivers.add(new Driver("David", 3));
         drivers.add(new Driver("Eve", 3));
     }
+
+    public static List<ProductFile> addProductFile(List<ProductFile> productFiles, Transport transport) {
+        List<Destination> destinations = transport.getDestinations();
+
+        for (Destination destination : destinations)
+            productFiles.add(destination.getProductFile());
+
+        return productFiles;
+    }
 }

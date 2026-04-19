@@ -22,6 +22,7 @@ public class Destination   {
     public String getContactName(){
         return location.contactName();
     }
+    public ProductFile getProductFile() { return productFile; }
 
     public List<ProductPair> getProducts() {
         return productFile.getProducts();
