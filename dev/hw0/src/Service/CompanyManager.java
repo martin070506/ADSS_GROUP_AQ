@@ -55,7 +55,6 @@ public class CompanyManager {
         }
     }
 
-    // הפונקציה מחזירה עכשיו Transport
     public Transport createShipment(Truck truck, Driver driver, Location source, Map<Supplier, List<ProductPair>> supplierAllocations) {
         truckFacade.takeTruck(truck);
         truckFacade.takeDriver(driver);
@@ -63,7 +62,6 @@ public class CompanyManager {
         return shipmentFacade.createTransport(truck, driver, source, dropOffDestinations, truckFacade.getTrucks(), supplierAllocations);
     }
 
-    // הוספת פונקציות גישור ל-ShipmentFacade
     public void processTransport(Transport transport) throws Exception {
         shipmentFacade.processTransport(transport);
     }

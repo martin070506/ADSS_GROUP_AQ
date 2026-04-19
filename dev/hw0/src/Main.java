@@ -26,11 +26,9 @@ public class Main {
 
         fillLists(locations, products, suppliers, trucks, drivers);
 
-        // 1. אתחול שכבת הלוגיקה (Service Layer)
         CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
         BranchManager branchManager1 = new BranchManager(locations.getFirst());
 
-        // 2. יצירת בקשת מלאי
         ProductPair pair1 = new ProductPair(new Product("Kiwi", 250), 4);
         List<ProductPair> pairs = new LinkedList<>();
         pairs.add(pair1);
@@ -42,11 +40,8 @@ public class Main {
         branchManager2.requestShipment(pairs2);
 
 
-        // 3. הפעלת המערכת דרך שכבת התצוגה (Presentation Layer)
-        // מריצים את ה-Console שמנהל את הקלטים מהמשתמש.
         MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
         console.run();
-
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,
@@ -71,19 +66,19 @@ public class Main {
 
         suppliers.add(new Supplier(locations.get(0),
                 new LinkedList<>(List.of(
-                        new ProductPair(products.get(0), 100)))));
+                        new ProductPair(products.get(0), 120)))));
         suppliers.add(new Supplier(locations.get(1),
                 new LinkedList<>(List.of(
-                        new ProductPair(products.get(1), 100)))));
+                        new ProductPair(products.get(1), 120)))));
         suppliers.add(new Supplier(locations.get(2),
                 new LinkedList<>(List.of(
-                        new ProductPair(products.get(2), 100)))));
+                        new ProductPair(products.get(2), 120)))));
         suppliers.add(new Supplier(locations.get(3),
                 new LinkedList<>(List.of(
-                        new ProductPair(products.get(3), 100)))));
+                        new ProductPair(products.get(3), 120)))));
         suppliers.add(new Supplier(locations.get(4),
                 new LinkedList<>(List.of(
-                        new ProductPair(products.get(4), 100)))));
+                        new ProductPair(products.get(4), 120)))));
 
         trucks.add(new Truck(101, "Isuzu Sumo", 3500, 7500, 2));
         trucks.add(new Truck(102, "DAF LF", 5000, 12000, 2));

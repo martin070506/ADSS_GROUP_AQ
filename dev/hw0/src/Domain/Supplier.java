@@ -55,7 +55,7 @@ public record Supplier(Location supplierLocation, List<ProductPair> productsAvai
     public String toString() {
         String result = supplierLocation.toString();
 
-        result += "Available Products:\n";
+        result += ".    Available Products:\n";
 
         if (productsAvailable.isEmpty())
             result += "  (Empty Inventory)";

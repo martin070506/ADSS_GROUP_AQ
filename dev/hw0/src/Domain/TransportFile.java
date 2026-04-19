@@ -24,19 +24,18 @@ public class TransportFile {
 
         truck = transport.getTruck();
         driver = transport.getDriver();
-        source=transport.getSource();
+        source = transport.getSource();
     }
-    public void leaveSupplier(int weight){
-        text=text+"Left Supplier, current Weight:" +weight+'\n';
+    public void leaveSupplier(int weight) {
+        text += "Left Supplier, Truck Weight : " +weight+'\n';
     }
 
     public void overWeightAlert(int weight){
-        text=text+"Over Weight Alert, current Weight:" +weight+'\n';
+        text += "Over Weight Alert, Truck Weight : " +weight+'\n';
     }
 
     public void removeLocation(Supplier supplier){
         suppliers.remove(supplier);
-
     }
 
     public Map<Product,Integer> getTotalProductsNeeded() {
@@ -54,8 +53,6 @@ public class TransportFile {
     public void removeDestination(Destination destination){
         destinations.remove(destination);
     }
-
-
 
     public void changeTruck(Truck toAdd){
         this.truck = toAdd;
@@ -82,11 +79,16 @@ public class TransportFile {
     public void removeProductsFromAggregate(List<ProductPair> products){
         if (products == null) return;
         for (ProductPair p: products){
-            int currentAmount = totalProductsNeeded.getOrDefault(p.product,0);
-            totalProductsNeeded.put(p.product, currentAmount - p.getAmount());
+            int currentAmount = totalProductsNeeded.getOrDefault(p.product, 0);
+            int newAmount = currentAmount - p.getAmount();
+
+            if (newAmount <= 0) {
+                totalProductsNeeded.remove(p.product);
+            } else {
+                totalProductsNeeded.put(p.product, newAmount);
+            }
         }
     }
-
 
     @Override
     public String toString() {
@@ -145,23 +147,18 @@ public class TransportFile {
         appendSectionHeader(sb, "TOTAL ITEMS HELD");
         Map<String, Integer> totals = getAggregatedInventory();
 
-        boolean is = true;
+        boolean hasItems = false;
         for (Map.Entry<String, Integer> entry : totals.entrySet()) {
-            if (entry.getValue() != 0) {
-                is = false;
-                break;
+            if (entry.getValue() > 0) {
+                sb.append("- ").append(entry.getKey()).append(": ").append(entry.getValue()).append(" units\n");
+                hasItems = true;
             }
         }
 
-        if (totals.isEmpty() || is) {
+        if (!hasItems) {
             sb.append("No items currently held.\n");
-        } else {
-            totals.forEach((name, amount) ->
-                    sb.append("- ").append(name).append(": ").append(amount).append(" units\n")
-            );
         }
     }
-
 
     private Map<String, Integer> getAggregatedInventory() {
         Map<String, Integer> totals = new HashMap<>();

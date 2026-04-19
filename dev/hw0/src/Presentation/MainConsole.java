@@ -11,9 +11,8 @@ public class MainConsole {
     private final List<Truck> availableTrucks;
     private final List<Driver> availableDrivers;
     private final List<Location> allLocations;
-    private final List<Supplier> allSuppliers; // הוספנו את הספקים
+    private final List<Supplier> allSuppliers;
 
-    // עדכון הבנאי
     public MainConsole(CompanyManager companyManager, List<Truck> availableTrucks,
                        List<Driver> availableDrivers, List<Location> allLocations,
                        List<Supplier> allSuppliers) {
@@ -47,21 +46,16 @@ public class MainConsole {
             }
 
             truckAndDriverMatch = truck.getMinLicense() <= driver.license();
-            if (!truckAndDriverMatch) {
+            if (!truckAndDriverMatch)
                 System.out.println("Error: Driver's license does not match Truck min license. Try again.");
-            }
         }
 
         Location source = selectSourceLocation(this.allLocations);
 
-        // 🌟 התוספת החדשה: קריאה לפונקציית בחירת הספקים והמוצרים
         Map<Supplier, List<ProductPair>> supplierAllocations = chooseSuppliersAndProducts(this.allSuppliers);
 
-        // שליחת כל הנתונים ללוגיקה העסקית - נקי מ-Scanner!
-// מקבלים את אובייקט המסע שנוצר
         Transport transport = companyManager.createShipment(truck, driver, source, supplierAllocations);
 
-        // הלולאה עברה לכאן! ה-UI מנהל את הניסיונות
         boolean shipmentFinish = false;
         while (!shipmentFinish) {
             try {
@@ -69,7 +63,6 @@ public class MainConsole {
                 shipmentFinish = true;
 
             } catch (Exceptions.OverweightException oe) {
-                // שולפים את הספק הראשון שעשה לנו בעיות (כפי שהיה בקוד המקורי)
                 Supplier problematicSupplier = transport.getSuppliers().getFirst();
                 handleOverWeight(transport, problematicSupplier);
 
@@ -97,7 +90,7 @@ public class MainConsole {
         }
 
         if (shipmentFinish) {
-            System.out.println("Shipment finished" + " TRANSPORT FILE: \n\n\n\n");
+            System.out.println("Shipment finished." + "\n\n\nTransport File : \n");
             System.out.println(transport.getTransportFile().toString());
             companyManager.finishShipment(truck, driver);
             System.out.println("\nShipment completed successfully!");
@@ -107,7 +100,7 @@ public class MainConsole {
 
     private void handleOverWeight(Transport transport, Supplier problematicSupplier) {
         transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
-        System.out.println("!!! ALERT: Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
+        System.out.println("\uD83D\uDED1 Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
         System.out.println("1. Skip this supplier (Remove its items from truck)");
         System.out.println("2. Emergency Drop-off (Visit a destination now to unload)");
         System.out.println("3. Fine-tune: Remove specific items");
@@ -157,41 +150,23 @@ public class MainConsole {
     }
 
     private void skipSupplier(Supplier supplier, Transport transport) {
+
         System.out.println("Supplier " + supplier.supplierLocation().contactName() + " skipped.");
         List<ProductPair> thingsToRemove = transport.getSupplierAllocations().get(supplier);
+
         int weight = 0;
         for (ProductPair pair : thingsToRemove) {
             weight += pair.getAmount() * pair.product.weight();
         }
-        transport.removeItems(thingsToRemove, weight);
-        transport.removeSupplierFromTransportAndFile(supplier);
-    }
-
-    private void visitDestinationEarly(Transport transport) {
-        List<Destination> destinations = transport.getDestinations();
-        if (destinations.isEmpty()) {
-            System.out.println("No destinations left to visit!");
-            return;
-        }
-
-        System.out.println("Choose a destination to visit now:");
-        for (int i = 0; i < destinations.size(); i++) {
-            System.out.println("[" + i + "] " + destinations.get(i).getContactName());
-        }
 
         try {
-            int index = Integer.parseInt(scanner.nextLine().trim());
-            if (index >= 0 && index < destinations.size()) {
-                Destination target = destinations.get(index);
-                transport.removeDestinationFromTransport(target);
-                target.handleShipment(transport.getTruck());
-                System.out.println("Emergency drop-off completed at " + target.getContactName());
-            }
-        } catch (Exception e) {
-            System.out.println("Invalid selection. No drop-off performed.");
+            transport.removeItems(thingsToRemove, weight);
+        } catch (Exceptions.ProductNotFoundOnTruckException e) {
+            System.out.println("Note: Items were not yet on truck, skipping physical removal.");
         }
-    }
 
+        transport.removeSupplierFromTransportAndFile(supplier);
+    }
     private void manuallyRemoveItems(Transport transport) {
         Map<String, ProductPair> currentThingsHeld = transport.getProductPairs();
         while (true) {
@@ -223,8 +198,14 @@ public class MainConsole {
                         List<ProductPair> toRemove = new ArrayList<>();
                         toRemove.add(new ProductPair(existing.product, amountToRemove));
                         int weightReduction = amountToRemove * existing.product.weight();
-                        transport.removeItems(toRemove, weightReduction);
-                        transport.getTransportFile().removeProductsFromAggregate(toRemove);
+
+                        try {
+                            transport.removeItems(toRemove, weightReduction);
+                            transport.getTransportFile().removeProductsFromAggregate(toRemove);
+                        } catch (Exceptions.ProductNotFoundOnTruckException e) {
+                            System.out.println(e.getMessage());
+                        }
+
                     } else {
                         System.out.println("Invalid amount.");
                     }
@@ -232,8 +213,33 @@ public class MainConsole {
                     System.out.println("Please enter a valid number.");
                 }
             } else {
-                System.out.println("Product not found.");
+                System.out.println("Product not found on truck.");
             }
+        }
+    }
+
+    private void visitDestinationEarly(Transport transport) {
+        List<Destination> destinations = transport.getDestinations();
+        if (destinations.isEmpty()) {
+            System.out.println("No destinations left to visit!");
+            return;
+        }
+
+        System.out.println("Choose a destination to visit now:");
+        for (int i = 0; i < destinations.size(); i++) {
+            System.out.println("[" + i + "] " + destinations.get(i).getContactName());
+        }
+
+        try {
+            int index = Integer.parseInt(scanner.nextLine().trim());
+            if (index >= 0 && index < destinations.size()) {
+                Destination target = destinations.get(index);
+                transport.removeDestinationFromTransport(target);
+                target.handleShipment(transport.getTruck());
+                System.out.println("Emergency drop-off completed at " + target.getContactName());
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid selection. No drop-off performed.");
         }
     }
 
@@ -289,9 +295,9 @@ public class MainConsole {
         Map<Supplier, List<ProductPair>> supplierAllocations = new LinkedHashMap<>();
 
         System.out.println("\n--- Available Suppliers ---");
-        for (int i = 0; i < suppliers.size(); i++) {
+        for (int i = 0; i < suppliers.size(); i++)
             System.out.println("[" + (i + 1) + "] " + suppliers.get(i).toString());
-        }
+
 
         System.out.println("\nStep 1: Select Suppliers to visit");
         System.out.print("Enter indexes '1, 3, 4'.. or 'all': ");
@@ -346,6 +352,8 @@ public class MainConsole {
                             productsToBuy.add(new ProductPair(product, amount));
                         }
                     }
+                    else
+                        System.out.println("Invalid input, Enter positive quantity.");
                 } catch (Exception e) {
                     System.out.println("Invalid input, please try again.");
                 }
@@ -354,6 +362,8 @@ public class MainConsole {
                 supplierAllocations.put(supplier, productsToBuy);
             }
         }
+
+        System.out.println("\n\n");
         return supplierAllocations;
     }
     private Truck chooseTruck(List<Truck> availableTrucks) {
@@ -362,10 +372,8 @@ public class MainConsole {
             return null;
         }
 
-        System.out.println("\n--- Available Trucks ---");
         for (int i = 0; i < availableTrucks.size(); i++) {
             Truck t = availableTrucks.get(i);
-            // הכל הודק לשורה אחת מרוכזת
             System.out.println("[" + (i + 1) + "] Truck " + t.getTruckNumber() + " | Model: " + t.getModel() +
                     " | Capacity: " + (t.getMaxWeight() - t.getCurrentWeight()) + " | Min License: " + t.getMinLicense());
         }
@@ -381,14 +389,12 @@ public class MainConsole {
             System.out.println("Invalid choice, try again.");
         }
     }
-
     private Driver chooseDriver(List<Driver> availableDrivers) {
         if (availableDrivers.isEmpty()) {
             System.out.println("There are no Drivers available.");
             return null;
         }
 
-        System.out.println("\n--- Available Drivers ---");
         for (int i = 0; i < availableDrivers.size(); i++) {
             Driver d = availableDrivers.get(i);
             // שורה אחת לכל נהג
@@ -418,11 +424,8 @@ public class MainConsole {
             System.out.print("Enter location index: ");
             try {
                 int index = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                if (index >= 0 && index < locations.size()) {
-                    Location selected = locations.get(index);
-                    System.out.println("\nSelected Source: " + selected.address());
-                    return selected;
-                }
+                if (index >= 0 && index < locations.size()-1)
+                    return locations.get(index);
             } catch (NumberFormatException ignored) {}
             System.out.println("Invalid input! Please enter a valid number.");
         }

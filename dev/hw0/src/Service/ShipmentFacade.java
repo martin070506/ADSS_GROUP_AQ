@@ -28,7 +28,6 @@ public class ShipmentFacade {
         suppliers.add(supplier);
     }
 
-    // פונקציה 1: רק יוצרת את אובייקט המסע ומחזירה אותו
     public Transport createTransport(Truck truck, Driver driver, Location source,
                                      List<Destination> destinations, List<Truck> replacementTrucks,
                                      Map<Supplier, List<ProductPair>> supplierAllocations) {

@@ -102,7 +102,7 @@ public class Truck {
             String name = pair.product.name();
             int currentAmount = loadedProducts.get(name).getAmount();
             loadedProducts.get(name).setAmount(currentAmount - pair.getAmount());
-            currentWeight -= pair.product.weight()*pair.getAmount();
+            currentWeight -= pair.product.weight() * pair.getAmount();
         }
     }
 

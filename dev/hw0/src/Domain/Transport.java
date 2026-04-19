@@ -16,7 +16,6 @@ public class Transport {
     private List<Supplier> suppliers;
 
 
-
     public TransportFile getTransportFile() {
         return transportFile;
     }
@@ -71,40 +70,31 @@ public class Transport {
     }
 
 
-    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
-        if (outgoingItems == null || outgoingItems.isEmpty()) return;
+    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) throws Exceptions.ProductNotFoundOnTruckException {
+        if (outgoingItems == null || outgoingItems.isEmpty())
+            return;
 
-        // 1. Use helper to verify the whole set exists
-        if (!canRemoveAll(outgoingItems)) {
-            return; // Helper already printed the specific error message
-        }
+        canRemoveAll(outgoingItems);
 
-        // 2. Execution: Since we know it's safe, perform the subtraction
         this.truck.setCurrentWeight(truck.getCurrentWeight() - weightToRemove);
         this.truck.removeProducts(outgoingItems);
-
     }
 
 
-    private boolean canRemoveAll(List<ProductPair> outgoingItems) {
+    private void canRemoveAll(List<ProductPair> outgoingItems) throws Exceptions.ProductNotFoundOnTruckException {
         for (ProductPair outgoing : outgoingItems) {
             String name = outgoing.product.name();
 
-            // Check if item exists at all
-            if (truck.getProductPairs().containsKey(name)) {
-                System.out.println("Error: Product '" + name + "' not found on truck.");
-                return false;
-            }
+            if (!truck.getProductPairs().containsKey(name))
+                throw new Exceptions.ProductNotFoundOnTruckException(name);
 
-            // Check if we have enough quantity
-            if (truck.getProductPairs().get(name).getAmount() < outgoing.getAmount()) {
-                System.out.println("Error: Not enough quantity for '" + name + "'.");
-                return false;
-            }
+            int availableAmount = truck.getProductPairs().get(name).getAmount();
+            int requestedAmount = outgoing.getAmount();
+
+            if (availableAmount < requestedAmount)
+                throw new Exceptions.ProductNotFoundOnTruckException(name, requestedAmount, availableAmount);
         }
-        return true; // All items passed the test
     }
-
 
 
     public void removeSupplierFromTransportAndFile(Supplier supplier) {

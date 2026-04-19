@@ -37,13 +37,11 @@ public class BranchManagerTest extends BaseTest {
 
         telAvivBranch.requestShipment(order);
 
-        // יצירת נתוני דמה חוקיים עבור הריצה
         Truck testTruck = TestData.Trucks.IsuzuSumo;
         Driver testDriver = TestData.Drivers.Alice;
         Location testSource = TestData.Locations.Haifa;
         Map<Supplier, List<ProductPair>> emptySupplierAllocations = new HashMap<>(); // מפה ריקה לבדיקה בסיסית
 
-        // בדיקה שהפונקציות המעודכנות רצות ללא קריסה
         assertDoesNotThrow(() -> {
             Transport t = companyManager.createShipment(testTruck, testDriver, testSource, emptySupplierAllocations);
             // אם רוצים לבדוק ריצה מלאה אפשר להוסיף: companyManager.processTransport(t);
