@@ -6,6 +6,7 @@ public class Destination   {
     private final Location location;
     private final ProductFile productFile;
     private boolean wasVisited=false;
+
     public Destination(Location location, ProductFile productFile){
         this.location = location;
         this.productFile = productFile;

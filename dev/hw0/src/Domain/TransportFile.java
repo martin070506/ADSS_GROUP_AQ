@@ -12,6 +12,7 @@ public class TransportFile {
     private Truck truck;
     private Driver driver;
     private Location source;
+
     public TransportFile(LocalDate departureTime, Transport transport) {
         source=transport.getSource();
         text = "Source: " + source.address()+ '\n'+
@@ -78,7 +79,6 @@ public class TransportFile {
                 Product product = pair.product;
                 int amount = pair.getAmount();
 
-                // Merge the amount into the map using the Product object as the key
                 totalProductCounts.put(product, totalProductCounts.getOrDefault(product, 0) + amount);
             }
         }
@@ -104,7 +104,6 @@ public class TransportFile {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        // Using helpers to build each section
         appendSectionHeader(sb, "TRANSPORT LOG");
         sb.append(text).append("\n");
 
@@ -116,7 +115,6 @@ public class TransportFile {
         return sb.toString();
     }
 
-// --- PRIVATE HELPER METHODS ---
 
     private void appendSectionHeader(StringBuilder sb, String title) {
         sb.append("--- ").append(title).append(" ---\n");

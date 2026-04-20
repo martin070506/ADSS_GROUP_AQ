@@ -24,10 +24,6 @@ public class ShipmentFacade {
         this.availableDrivers = availableDrivers;
     }
 
-    public void addSupplier(Supplier supplier) {
-        suppliers.add(supplier);
-    }
-
     public Transport createTransport(Truck truck, Driver driver, Location source,
                                      List<Destination> destinations, List<Truck> replacementTrucks,
                                      Map<Supplier, List<ProductPair>> supplierAllocations) {
@@ -37,11 +33,12 @@ public class ShipmentFacade {
                 supplierAllocations, replacementTrucks, suppliersAsList);
     }
 
+    public void addSupplier(Supplier supplier) {
+        suppliers.add(supplier);
+    }
     public void processTransport(Transport transport) throws Exception {
         transport.processShipment();
     }
-
-    // פונקציה 3: משחררת את המשאית והנהג בסוף
     public void finishShipment(Truck truck, Driver driver) {
         availableTrucks.add(truck);
         availableDrivers.add(driver);

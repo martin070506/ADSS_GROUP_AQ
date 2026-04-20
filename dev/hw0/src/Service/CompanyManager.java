@@ -15,7 +15,6 @@ public class CompanyManager {
     private final List<Location> locations;
 
 
-
     private static CompanyManager instance = null;
 
     private CompanyManager(List<Truck> trucks, List<Driver> drivers, List<Supplier> suppliers,
@@ -37,7 +36,10 @@ public class CompanyManager {
     public static CompanyManager getInstance() {
         return getInstance(List.of(), List.of(), List.of(), List.of());
     }
-
+    public void addLocation(Location location) {
+        if (!locations.contains(location))
+            locations.add(location);
+    }
     public static void resetInstance() {
         instance = null;
     }

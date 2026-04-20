@@ -3,7 +3,7 @@ package Domain;
 import java.util.List;
 
 public class ProductFile {
-    private int fileNumber;
+    private final int fileNumber;
     private List<ProductPair> products;
 
 

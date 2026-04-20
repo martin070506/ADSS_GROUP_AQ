@@ -14,6 +14,7 @@ public class Truck {
     private String model;
     private int minLicense;
     private Map<String,ProductPair> loadedProducts;
+
     public Truck(int truckNumber, String model, int truckWeight, int maxWeight, int minLicense) {
         this.currentWeight = truckWeight;
         this.maxWeight = maxWeight;

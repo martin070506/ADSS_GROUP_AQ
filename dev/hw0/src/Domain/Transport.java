@@ -54,24 +54,18 @@ public class Transport {
             destinations.removeFirst();
         }
     }
-
     public List<Supplier> getSuppliers() {
         return suppliers;
     }
     public Map<Supplier, List<ProductPair>> getSupplierAllocations() {
         return supplierAllocations;
     }
-
     public Location getSource() {
         return source;
     }
-
-
     public Truck getTruck() {
         return truck;
     }
-
-
     public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
         if (outgoingItems == null || outgoingItems.isEmpty())
             return;
@@ -80,7 +74,36 @@ public class Transport {
 
         this.truck.removeProducts(outgoingItems);
     }
-
+    public void removeSupplierFromTransportAndFile(Supplier supplier) {
+        suppliers.remove(supplier);
+        transportFile.removeLocation(supplier);
+        transportFile.removeProductsFromAggregate(supplierAllocations.get(supplier));
+        supplierAllocations.remove(supplier);
+    }
+    public void removeSupplierFromTransportButNotFile(Supplier supplier) {
+        supplierAllocations.remove(supplier);
+        suppliers.remove(supplier);
+    }
+    public void removeDestinationFromTransport(Destination destination) {
+        destinations.remove(destination);
+        transportFile.removeDestination(destination);
+    }
+    public List<Destination> getDestinations() {
+        return destinations;
+    }
+    public Driver getDriver() {
+        return driver;
+    }
+    public Map<String,ProductPair> getProductPairs() {
+        return truck.getProductPairs();
+    }
+    public List<Truck> getReplacementTrucks() {
+        return replacementTrucks;
+    }
+    public void replaceTruck(Truck truck) {
+        this.truck = truck;
+        transportFile.changeTruck(truck);
+    }
 
     private void canRemoveAll(List<ProductPair> outgoingItems) throws Exceptions.ProductNotFoundOnTruckException {
         for (ProductPair outgoing : outgoingItems) {
@@ -95,44 +118,5 @@ public class Transport {
             if (availableAmount < requestedAmount)
                 throw new Exceptions.ProductNotFoundOnTruckException(name, requestedAmount, availableAmount);
         }
-    }
-
-
-    public void removeSupplierFromTransportAndFile(Supplier supplier) {
-        suppliers.remove(supplier);
-        transportFile.removeLocation(supplier);
-        transportFile.removeProductsFromAggregate(supplierAllocations.get(supplier));
-        supplierAllocations.remove(supplier);
-    }
-
-    public void removeSupplierFromTransportButNotFile(Supplier supplier) {
-        supplierAllocations.remove(supplier);
-        suppliers.remove(supplier);
-    }
-
-    public void removeDestinationFromTransport(Destination destination) {
-        destinations.remove(destination);
-        transportFile.removeDestination(destination);
-    }
-
-    public List<Destination> getDestinations() {
-        return destinations;
-    }
-
-    public Driver getDriver() {
-        return driver;
-    }
-
-    public Map<String,ProductPair> getProductPairs() {
-        return truck.getProductPairs();
-    }
-
-    public List<Truck> getReplacementTrucks() {
-        return replacementTrucks;
-    }
-
-    public void replaceTruck(Truck truck) {
-        this.truck = truck;
-        transportFile.changeTruck(truck);
     }
 }

@@ -12,6 +12,7 @@ public class MainConsole {
     private final List<Driver> availableDrivers;
     private final List<Location> allLocations;
     private final List<Supplier> allSuppliers;
+    private final GlobalStorage globalStorage;
 
     public MainConsole(CompanyManager companyManager, List<Truck> availableTrucks,
                        List<Driver> availableDrivers, List<Location> allLocations,
@@ -21,14 +22,34 @@ public class MainConsole {
         this.availableDrivers = availableDrivers;
         this.allLocations = allLocations;
         this.allSuppliers = allSuppliers;
+        this.globalStorage = new GlobalStorage();
     }
 
-    public Transport run() {
+    public void run() {
         System.out.println("Welcome to the Shipment System!");
-        return initiateShipment();
+        while (true) {
+            System.out.println("\n----------------------------------");
+            System.out.print("Would you like to start a new shipment? (yes/no): ");
+            String input = scanner.nextLine().trim();
+
+            if (input.equalsIgnoreCase("no") || input.equalsIgnoreCase("n")) {
+                System.out.println("Exiting the system. Goodbye!");
+                break;
+            } else if (!input.equalsIgnoreCase("yes") && !input.equalsIgnoreCase("y")) {
+                System.out.println("Invalid input, please type 'yes' or 'no'.");
+                continue;
+            }
+
+            Transport transport = initiateShipment();
+
+            if (transport == null)
+                continue;
+
+            globalStorage.add(transport);
+        }
     }
 
-    private Transport initiateShipment() {
+    public Transport initiateShipment() {
         boolean truckAndDriverMatch = false;
         Truck truck = null;
         Driver driver = null;
@@ -67,14 +88,14 @@ public class MainConsole {
                 handleOverWeight(transport, problematicSupplier);
 
             } catch (Exceptions.InsufficientSupplierStockException ise) {
-                System.out.println("⚠️ Stock Problem: " + ise.getMessage());
+                System.out.println("Stock Problem: " + ise.getMessage());
                 Supplier problematicSupplier = transport.getSuppliers().getFirst();
                 System.out.println("Skipping supplier " + problematicSupplier.supplierLocation().contactName() + " due to insufficient stock.\n");
                 transport.getTransportFile().skipSupplier(problematicSupplier.supplierLocation().contactName());
                 transport.removeSupplierFromTransportAndFile(problematicSupplier);
 
             } catch (Exceptions.InsufficientTruckStockException ise) {
-                System.out.println("⚠️ Truck Stock Problem: " + ise.getMessage());
+                System.out.println("Truck Stock Problem: " + ise.getMessage());
                 Destination problematicDestination = transport.getDestinations().getFirst();
                 System.out.println("Skipping destination " + problematicDestination.getContactName() + " due to missing items.");
                 transport.getTransportFile().skipDestination(problematicDestination.getContactName());
@@ -94,14 +115,15 @@ public class MainConsole {
             System.out.println("Shipment finished." + "\n\n\nTransport File : \n");
             System.out.println(transport.getTransportFile().toString());
             companyManager.finishShipment(truck, driver);
-            System.out.println("\n✅ Shipment completed successfully!");
+            System.out.println("\nShipment completed successfully!");
         }
+
         return transport;
     }
 
     private void handleOverWeight(Transport transport, Supplier problematicSupplier) {
         transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
-        System.out.println("\uD83D\uDED1 Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
+        System.out.println("Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
 
         boolean resolved = false;
         while (!resolved) {
@@ -403,7 +425,6 @@ public class MainConsole {
 
         for (int i = 0; i < availableDrivers.size(); i++) {
             Driver d = availableDrivers.get(i);
-            // שורה אחת לכל נהג
             System.out.println("[" + (i + 1) + "] " + d.driverName() + " | License Level: " + d.license());
         }
 
@@ -422,7 +443,6 @@ public class MainConsole {
         System.out.println("\n--- Select Source Location ---");
         for (int i = 0; i < locations.size(); i++) {
             Location loc = locations.get(i);
-            // נניח שיש למחלקה Location מתודות כמו שצריך (אם לא, תחליף ל-toString() שלך)
             System.out.println("[" + (i + 1) + "] " + loc.address() + " (Contact: " + loc.contactName() + ", Phone: " + loc.phoneNumber() + ")");
         }
 

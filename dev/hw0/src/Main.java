@@ -31,8 +31,8 @@ public class Main {
 
         BranchManager branchManager3 = new BranchManager(locations.get(2));
         List<ProductPair> pairs3 = new LinkedList<>();
-        pairs3.add(new ProductPair(products.get(7), 10)); // 10 יחידות מלפפון
-        pairs3.add(new ProductPair(products.get(8), 5));  // 5 יחידות חלב
+        pairs3.add(new ProductPair(products.get(7), 10));
+        pairs3.add(new ProductPair(products.get(8), 5));
         branchManager3.requestShipment(pairs3);
 
 
@@ -43,16 +43,16 @@ public class Main {
     public static void fillLists(List<Location> locations, List<Product> products,
                                  List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers) {
 
-        locations.add(new Location("Tel Aviv", "03-1234567", "Alice"));    // 0
-        locations.add(new Location("Holon", "03-7654321", "Bob"));         // 1
-        locations.add(new Location("Haifa", "04-1112233", "Charlie"));     // 2
-        locations.add(new Location("Netanya", "09-4445566", "David"));     // 3
-        locations.add(new Location("Beer Sheva", "08-9998877", "Eve"));    // 4
-        locations.add(new Location("Jerusalem", "02-5556677", "Frank"));   // 5
-        locations.add(new Location("Ashdod", "08-2223344", "Grace"));      // 6
-        locations.add(new Location("Petah Tikva", "03-9990011", "Henry")); // 7
-        locations.add(new Location("Ramat Gan", "03-4445556", "Isabella"));// 8
-        locations.add(new Location("Rehovot", "08-7778899", "Jack"));      // 9
+        locations.add(new Location("Tel Aviv", "03-1234567", "Alice"));     // 0
+        locations.add(new Location("Holon", "03-7654321", "Bob"));          // 1
+        locations.add(new Location("Haifa", "04-1112233", "Charlie"));      // 2
+        locations.add(new Location("Netanya", "09-4445566", "David"));      // 3
+        locations.add(new Location("Beer Sheva", "08-9998877", "Eve"));     // 4
+        locations.add(new Location("Jerusalem", "02-5556677", "Frank"));    // 5
+        locations.add(new Location("Ashdod", "08-2223344", "Grace"));       // 6
+        locations.add(new Location("Petah Tikva", "03-9990011", "Henry"));  // 7
+        locations.add(new Location("Ramat Gan", "03-4445556", "Isabella")); // 8
+        locations.add(new Location("Rehovot", "08-7778899", "Jack"));       // 9
 
         products.add(new Product("Apple", 150));      // 0
         products.add(new Product("Banana", 120));     // 1
@@ -65,7 +65,6 @@ public class Main {
         products.add(new Product("Milk", 6));         // 8
         products.add(new Product("Bread", 12));       // 9
 
-        // ספקים בסיסיים
         suppliers.add(new Supplier(locations.get(0), new LinkedList<>(List.of(new ProductPair(products.get(0), 100)))));
         suppliers.add(new Supplier(locations.get(1), new LinkedList<>(List.of(new ProductPair(products.get(1), 100)))));
         suppliers.add(new Supplier(locations.get(2), new LinkedList<>(List.of(new ProductPair(products.get(2), 100)))));
@@ -74,9 +73,9 @@ public class Main {
         suppliers.add(new Supplier(locations.get(5), new LinkedList<>(List.of(new ProductPair(products.get(5), 100)))));
 
         suppliers.add(new Supplier(locations.get(6), new LinkedList<>(List.of(
-                new ProductPair(products.get(6), 80),  // עגבנייה
-                new ProductPair(products.get(7), 80),  // מלפפון
-                new ProductPair(products.get(8), 80)   // חלב
+                new ProductPair(products.get(6), 80),
+                new ProductPair(products.get(7), 80),
+                new ProductPair(products.get(8), 80)
         ))));
 
         suppliers.add(new Supplier(locations.get(7), new LinkedList<>(List.of(
@@ -95,14 +94,5 @@ public class Main {
         drivers.add(new Driver("Charlie", 2));
         drivers.add(new Driver("David", 3));
         drivers.add(new Driver("Eve", 3));
-    }
-
-    public static List<ProductFile> addProductFile(List<ProductFile> productFiles, Transport transport) {
-        List<Destination> destinations = transport.getDestinations();
-
-        for (Destination destination : destinations)
-            productFiles.add(destination.getProductFile());
-
-        return productFiles;
     }
 }

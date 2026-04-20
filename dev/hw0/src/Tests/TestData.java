@@ -24,7 +24,6 @@ public class TestData {
         public static Product Lemon;
         public static Product Pineapple;
         public static Product Kiwi;
-        // 4 מוצרים חדשים
         public static Product Tomato;
         public static Product Cucumber;
         public static Product Milk;

@@ -1,7 +1,6 @@
 package Tests;
 
 import Domain.*;
-import Exceptions.InsufficientSupplierStockException;
 import Exceptions.InsufficientTruckStockException;
 import Exceptions.OverweightException;
 import Presentation.MainConsole;
@@ -203,7 +202,7 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(goodSupplier, emptySupplier)
             );
 
-            Transport transport =console.run();
+            Transport transport = console.initiateShipment();;
 
             assertEquals(1, transport.getTransportFile().getSuppliers().size(), "Should skip the empty supplier");
             assertTrue(transport.getTransportFile().getSuppliers().contains(goodSupplier));
@@ -239,7 +238,7 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            Transport transport = console.run();
+            Transport transport = console.initiateShipment();;
 
             assertFalse(transport.getTransportFile().toString().contains("- " +
                             ashdodBranch.getLocation().contactName() + " | Address: " +
@@ -277,7 +276,7 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            Transport transport = console.run();
+            Transport transport = console.initiateShipment();;
 
             boolean destExists = transport.getTransportFile().getDestinations().stream()
                     .anyMatch(d -> d.getContactName().equals(ashdodBranch.getLocation().contactName()));
@@ -358,7 +357,7 @@ public class BranchManagerTest extends BaseTest {
                     Arrays.asList(s)
             );
 
-            Transport transport = console.run();
+            Transport transport = console.initiateShipment();;
 
             assertDoesNotThrow(() -> {
                 companyManager.processTransport(transport);

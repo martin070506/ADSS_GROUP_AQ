@@ -27,7 +27,6 @@ public class ProductPair {
 
     @Override
     public String toString() {
-        // Assuming Product has a getName() method
         return product.name() + " (Quantity: " + amount + ")";
     }
 }
