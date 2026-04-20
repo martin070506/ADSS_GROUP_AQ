@@ -1,6 +1,7 @@
 package Presentation;
 
 import Domain.*;
+import Exceptions.ConsoleEndException;
 import Service.CompanyManager;
 
 import java.util.*;
@@ -34,7 +35,7 @@ public class MainConsole {
 
             if (input.equalsIgnoreCase("no") || input.equalsIgnoreCase("n")) {
                 System.out.println("Exiting the system. Goodbye!");
-                break;
+                throw  new ConsoleEndException("Exiting the system. Goodbye!");
             } else if (!input.equalsIgnoreCase("yes") && !input.equalsIgnoreCase("y")) {
                 System.out.println("Invalid input, please type 'yes' or 'no'.");
                 continue;

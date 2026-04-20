@@ -90,7 +90,7 @@ public class Truck {
         /// HANDLES WEIGHT
         if (pairs == null)
             throw new NullPointerException("Null pairs are not allowed");
-
+         /// this checks that we have enough of every item
         for (ProductPair pair : pairs) {
             if (pair == null)
                 throw new NullPointerException("Null product pair");

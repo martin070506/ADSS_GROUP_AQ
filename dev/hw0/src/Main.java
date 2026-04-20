@@ -1,4 +1,5 @@
 import Domain.*;
+import Exceptions.ConsoleEndException;
 import Presentation.MainConsole;
 import Service.BranchManager;
 import Service.CompanyManager;
@@ -15,10 +16,10 @@ public class Main {
         List<Supplier> suppliers = new LinkedList<>();
         List<Truck> trucks = new LinkedList<>();
         List<Driver> drivers = new LinkedList<>();
-
-        fillLists(locations, products, suppliers, trucks, drivers);
-
+        List<Location> storeLocations = new LinkedList<>();
+        fillLists(locations, products, suppliers, trucks, drivers,storeLocations);
         CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
+        MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("=== Branch Shipment Requests Setup ===");
@@ -35,16 +36,16 @@ public class Main {
             }
 
             System.out.println("\n--- Select Branch Location ---");
-            for (int i = 0; i < locations.size(); i++)
-                System.out.println("[" + (i + 1) + "] " + locations.get(i).address() + " (Contact: " + locations.get(i).contactName() + ")");
+            for (int i = 0; i < storeLocations.size(); i++)
+                System.out.println("[" + (i + 1) + "] " + storeLocations.get(i).address() + " (Contact: " + storeLocations.get(i).contactName() + ")");
 
             BranchManager currentBranch = null;
             while (currentBranch == null) {
                 System.out.print("Enter location index: ");
                 try {
                     int locIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                    if (locIndex >= 0 && locIndex < locations.size())
-                        currentBranch = new BranchManager(locations.get(locIndex));
+                    if (locIndex >= 0 && locIndex < storeLocations.size())
+                        currentBranch = new BranchManager(storeLocations.get(locIndex));
                     else
                         System.out.println("Invalid index. Try again.");
 
@@ -96,18 +97,26 @@ public class Main {
             } else {
                 System.out.println("\nNo products selected. Request cancelled.");
             }
+
+            System.out.println("\n======================================");
+            System.out.println("Starting Main System Console...");
+            System.out.println("======================================\n");
+            try{
+
+                console.run();
+            }
+            catch (ConsoleEndException e){
+
+            }
+
         }
 
-        System.out.println("\n======================================");
-        System.out.println("Starting Main System Console...");
-        System.out.println("======================================\n");
 
-        MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
-        console.run();
+
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,
-                                 List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers) {
+                                 List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers,List<Location> storeLocations) {
 
         locations.add(new Location("Tel Aviv", "03-1234567", "Alice"));     // 0
         locations.add(new Location("Holon", "03-7654321", "Bob"));          // 1
@@ -135,19 +144,23 @@ public class Main {
         suppliers.add(new Supplier(locations.get(1), new LinkedList<>(List.of(new ProductPair(products.get(1), 100)))));
         suppliers.add(new Supplier(locations.get(2), new LinkedList<>(List.of(new ProductPair(products.get(2), 100)))));
         suppliers.add(new Supplier(locations.get(3), new LinkedList<>(List.of(new ProductPair(products.get(3), 100)))));
-        suppliers.add(new Supplier(locations.get(4), new LinkedList<>(List.of(new ProductPair(products.get(4), 100)))));
-        suppliers.add(new Supplier(locations.get(5), new LinkedList<>(List.of(new ProductPair(products.get(5), 100)))));
 
-        suppliers.add(new Supplier(locations.get(6), new LinkedList<>(List.of(
-                new ProductPair(products.get(6), 80),
-                new ProductPair(products.get(7), 80),
-                new ProductPair(products.get(8), 80)
+        suppliers.add(new Supplier(locations.get(4), new LinkedList<>(List.of(
+                new ProductPair(products.get(4), 80),
+                new ProductPair(products.get(5), 80),
+                new ProductPair(products.get(6), 80)
         ))));
 
-        suppliers.add(new Supplier(locations.get(7), new LinkedList<>(List.of(
-                new ProductPair(products.get(5), 150),
-                new ProductPair(products.get(0), 200)
+        suppliers.add(new Supplier(locations.get(5), new LinkedList<>(List.of(
+                new ProductPair(products.get(7), 150),
+                new ProductPair(products.get(8), 200)
         ))));
+
+
+        storeLocations.add(locations.get(6));
+        storeLocations.add(locations.get(7));
+        storeLocations.add(locations.get(8));
+        storeLocations.add(locations.get(9));
 
         trucks.add(new Truck(101, "Isuzu Sumo", 3500, 7500, 2));
         trucks.add(new Truck(102, "DAF LF", 5000, 12000, 2));
