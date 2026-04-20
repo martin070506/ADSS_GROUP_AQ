@@ -5,6 +5,7 @@ import Service.CompanyManager;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,22 +20,87 @@ public class Main {
 
         CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
 
-        BranchManager branchManager1 = new BranchManager(locations.get(0));
-        List<ProductPair> pairs1 = new LinkedList<>();
-        pairs1.add(new ProductPair(products.get(5), 4));
-        branchManager1.requestShipment(pairs1);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("=== Branch Shipment Requests Setup ===");
 
-        BranchManager branchManager2 = new BranchManager(locations.get(1));
-        List<ProductPair> pairs2 = new LinkedList<>();
-        pairs2.add(new ProductPair(products.get(0), 6));
-        branchManager2.requestShipment(pairs2);
+        while (true) {
+            System.out.print("\nWould you like to add a request for a branch? (yes/no): ");
+            String ans = scanner.nextLine().trim();
 
-        BranchManager branchManager3 = new BranchManager(locations.get(2));
-        List<ProductPair> pairs3 = new LinkedList<>();
-        pairs3.add(new ProductPair(products.get(7), 10));
-        pairs3.add(new ProductPair(products.get(8), 5));
-        branchManager3.requestShipment(pairs3);
+            if (ans.equalsIgnoreCase("no") || ans.equalsIgnoreCase("n")) {
+                break;
+            } else if (!ans.equalsIgnoreCase("yes") && !ans.equalsIgnoreCase("y")) {
+                System.out.println("Invalid input. Please type 'yes' or 'no'.");
+                continue;
+            }
 
+            System.out.println("\n--- Select Branch Location ---");
+            for (int i = 0; i < locations.size(); i++)
+                System.out.println("[" + (i + 1) + "] " + locations.get(i).address() + " (Contact: " + locations.get(i).contactName() + ")");
+
+            BranchManager currentBranch = null;
+            while (currentBranch == null) {
+                System.out.print("Enter location index: ");
+                try {
+                    int locIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                    if (locIndex >= 0 && locIndex < locations.size())
+                        currentBranch = new BranchManager(locations.get(locIndex));
+                    else
+                        System.out.println("Invalid index. Try again.");
+
+                } catch (NumberFormatException e) {
+                    System.out.println("Please enter a valid number.");
+                }
+            }
+
+            List<ProductPair> requestedItems = new LinkedList<>();
+            System.out.println("\n--- Select Products for " + currentBranch.getLocation().address() + " ---");
+
+            while (true) {
+                System.out.println("\nAvailable Products:");
+                for (int i = 0; i < products.size(); i++) {
+                    System.out.println("[" + (i + 1) + "] " + products.get(i).name());
+                }
+                System.out.print("Enter product index to add (or type 'done' to finish branch request): ");
+                String prodInput = scanner.nextLine().trim();
+
+                if (prodInput.equalsIgnoreCase("done")) {
+                    break;
+                }
+
+                try {
+                    int prodIndex = Integer.parseInt(prodInput) - 1;
+                    if (prodIndex >= 0 && prodIndex < products.size()) {
+                        Product selectedProduct = products.get(prodIndex);
+
+                        System.out.print("Enter quantity for " + selectedProduct.name() + ": ");
+                        int quantity = Integer.parseInt(scanner.nextLine().trim());
+
+                        if (quantity > 0) {
+                            requestedItems.add(new ProductPair(selectedProduct, quantity));
+                            System.out.println("Added " + quantity + " x " + selectedProduct.name() + ".");
+                        } else {
+                            System.out.println("Quantity must be greater than 0.");
+                        }
+                    } else {
+                        System.out.println("Invalid product index. Try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                }
+            }
+
+            if (!requestedItems.isEmpty()) {
+                currentBranch.requestShipment(requestedItems);
+                System.out.println("\nRequest for branch " + currentBranch.getLocation().address() + " has been successfully submitted!");
+            } else {
+                System.out.println("\nNo products selected. Request cancelled.");
+            }
+        }
+
+        System.out.println("\n======================================");
+        System.out.println("Starting Main System Console...");
+        System.out.println("======================================\n");
 
         MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
         console.run();
