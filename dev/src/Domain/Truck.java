@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class Truck {
     private int currentWeight;
+    private int startWeight;
     private int maxWeight;
     private int truckNumber;
     private String model;
@@ -17,6 +18,7 @@ public class Truck {
 
     public Truck(int truckNumber, String model, int truckWeight, int maxWeight, int minLicense) {
         this.currentWeight = truckWeight;
+        this.startWeight = truckWeight;
         this.maxWeight = maxWeight;
         this.model = model;
         this.truckNumber = truckNumber;
@@ -33,6 +35,10 @@ public class Truck {
     }
     public Map<String,ProductPair> getProductPairs() {
         return loadedProducts;
+    }
+    public void emptyTruck(){
+        this.currentWeight = startWeight;
+        loadedProducts.clear();
     }
 
     public int getTruckNumber() {

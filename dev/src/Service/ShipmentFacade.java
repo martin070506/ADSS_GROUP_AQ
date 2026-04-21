@@ -40,6 +40,7 @@ public class ShipmentFacade {
         transport.processShipment();
     }
     public void finishShipment(Truck truck, Driver driver) {
+        truck.emptyTruck();
         availableTrucks.add(truck);
         availableDrivers.add(driver);
     }

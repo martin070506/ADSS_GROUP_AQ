@@ -10,113 +10,131 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
-        List<Location> locations = new LinkedList<>();
-        List<Product> products = new LinkedList<>();
-        List<Supplier> suppliers = new LinkedList<>();
-        List<Truck> trucks = new LinkedList<>();
-        List<Driver> drivers = new LinkedList<>();
-        List<Location> storeLocations = new LinkedList<>();
-        fillLists(locations, products, suppliers, trucks, drivers,storeLocations);
-        CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
-        MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
-
         Scanner scanner = new Scanner(System.in);
-        System.out.println("=== Branch Shipment Requests Setup ===");
 
+        // GRAND LOOP: This wraps the entire lifecycle of the application
         while (true) {
-            System.out.print("\nWould you like to add a request for a branch? (yes/no): ");
-            String ans = scanner.nextLine().trim();
+            // 1. Initialize/Reset Data for a fresh cycle
+            List<Location> locations = new LinkedList<>();
+            List<Product> products = new LinkedList<>();
+            List<Supplier> suppliers = new LinkedList<>();
+            List<Truck> trucks = new LinkedList<>();
+            List<Driver> drivers = new LinkedList<>();
+            List<Location> storeLocations = new LinkedList<>();
 
-            if (ans.equalsIgnoreCase("no") || ans.equalsIgnoreCase("n")) {
-                break;
-            } else if (!ans.equalsIgnoreCase("yes") && !ans.equalsIgnoreCase("y")) {
-                System.out.println("Invalid input. Please type 'yes' or 'no'.");
-                continue;
-            }
+            fillLists(locations, products, suppliers, trucks, drivers, storeLocations);
 
-            System.out.println("\n--- Select Branch Location ---");
-            for (int i = 0; i < storeLocations.size(); i++)
-                System.out.println("[" + (i + 1) + "] " + storeLocations.get(i).address() + " (Contact: " + storeLocations.get(i).contactName() + ")");
+            // Note: If getInstance always returns the same object,
+            // ensure your Manager class has a way to clear old state.
+            CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
 
-            BranchManager currentBranch = null;
-            while (currentBranch == null) {
-                System.out.print("Enter location index: ");
-                try {
-                    int locIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
-                    if (locIndex >= 0 && locIndex < storeLocations.size())
-                        currentBranch = new BranchManager(storeLocations.get(locIndex));
-                    else
-                        System.out.println("Invalid index. Try again.");
+            MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
 
-                } catch (NumberFormatException e) {
-                    System.out.println("Please enter a valid number.");
-                }
-            }
+            System.out.println("\n======================================");
+            System.out.println("=== NEW SHIPMENT CYCLE INITIATED ===");
+            System.out.println("======================================");
 
-            List<ProductPair> requestedItems = new LinkedList<>();
-            System.out.println("\n--- Select Products for " + currentBranch.getLocation().address() + " ---");
-
+            // 2. DATA ENTRY PHASE: Collect as many branches as the user wants
             while (true) {
-                System.out.println("\nAvailable Products:");
-                for (int i = 0; i < products.size(); i++) {
-                    System.out.println("[" + (i + 1) + "] " + products.get(i).name());
+                System.out.print("\nWould you like to add a request for a branch? (yes/no): ");
+                String ans = scanner.nextLine().trim();
+
+                if (ans.equalsIgnoreCase("no") || ans.equalsIgnoreCase("n")) {
+                    break; // Exit this inner loop to move to the console phase
+                } else if (!ans.equalsIgnoreCase("yes") && !ans.equalsIgnoreCase("y")) {
+                    System.out.println("Invalid input. Please type 'yes' or 'no'.");
+                    continue;
                 }
-                System.out.print("Enter product index to add (or type 'done' to finish branch request): ");
-                String prodInput = scanner.nextLine().trim();
 
-                if (prodInput.equalsIgnoreCase("done")) {
-                    break;
+                // --- Select Branch Location ---
+                System.out.println("\n--- Select Branch Location ---");
+                for (int i = 0; i < storeLocations.size(); i++) {
+                    System.out.println("[" + (i + 1) + "] " + storeLocations.get(i).address() + " (Contact: " + storeLocations.get(i).contactName() + ")");
                 }
 
-                try {
-                    int prodIndex = Integer.parseInt(prodInput) - 1;
-                    if (prodIndex >= 0 && prodIndex < products.size()) {
-                        Product selectedProduct = products.get(prodIndex);
-
-                        System.out.print("Enter quantity for " + selectedProduct.name() + ": ");
-                        int quantity = Integer.parseInt(scanner.nextLine().trim());
-
-                        if (quantity > 0) {
-                            requestedItems.add(new ProductPair(selectedProduct, quantity));
-                            System.out.println("Added " + quantity + " x " + selectedProduct.name() + ".");
+                BranchManager currentBranch = null;
+                while (currentBranch == null) {
+                    System.out.print("Enter location index: ");
+                    try {
+                        int locIndex = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                        if (locIndex >= 0 && locIndex < storeLocations.size()) {
+                            currentBranch = new BranchManager(storeLocations.get(locIndex));
                         } else {
-                            System.out.println("Quantity must be greater than 0.");
+                            System.out.println("Invalid index. Try again.");
                         }
-                    } else {
-                        System.out.println("Invalid product index. Try again.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please enter a valid number.");
                     }
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input.");
+                }
+
+                // --- Select Products for the chosen Branch ---
+                List<ProductPair> requestedItems = new LinkedList<>();
+                System.out.println("\n--- Select Products for " + currentBranch.getLocation().address() + " ---");
+
+                while (true) {
+                    System.out.println("\nAvailable Products:");
+                    for (int i = 0; i < products.size(); i++) {
+                        System.out.println("[" + (i + 1) + "] " + products.get(i).name());
+                    }
+                    System.out.print("Enter product index to add (or type 'done' to finish this branch): ");
+                    String prodInput = scanner.nextLine().trim();
+
+                    if (prodInput.equalsIgnoreCase("done")) {
+                        break;
+                    }
+
+                    try {
+                        int prodIndex = Integer.parseInt(prodInput) - 1;
+                        if (prodIndex >= 0 && prodIndex < products.size()) {
+                            Product selectedProduct = products.get(prodIndex);
+
+                            System.out.print("Enter quantity for " + selectedProduct.name() + ": ");
+                            int quantity = Integer.parseInt(scanner.nextLine().trim());
+
+                            if (quantity > 0) {
+                                requestedItems.add(new ProductPair(selectedProduct, quantity));
+                                System.out.println("Added " + quantity + " x " + selectedProduct.name() + ".");
+                            } else {
+                                System.out.println("Quantity must be greater than 0.");
+                            }
+                        } else {
+                            System.out.println("Invalid product index.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a number or 'done'.");
+                    }
+                }
+
+                if (!requestedItems.isEmpty()) {
+                    currentBranch.requestShipment(requestedItems);
+                    System.out.println("\n[SUCCESS] Request for " + currentBranch.getLocation().address() + " submitted.");
+                } else {
+                    System.out.println("\nNo products selected. Branch request cancelled.");
                 }
             }
 
-            if (!requestedItems.isEmpty()) {
-                currentBranch.requestShipment(requestedItems);
-                System.out.println("\nRequest for branch " + currentBranch.getLocation().address() + " has been successfully submitted!");
-            } else {
-                System.out.println("\nNo products selected. Request cancelled.");
-            }
-
+            // 3. EXECUTION PHASE: Run the console after all requests are gathered
             System.out.println("\n======================================");
             System.out.println("Starting Main System Console...");
             System.out.println("======================================\n");
-            try{
+
+            try {
 
                 console.run();
+                // If console.run() finishes normally, the code loops back to the start
+            } catch (ConsoleEndException e) {
+                System.out.println("\n[INFO] Console session ended by user. Restarting system...");
+            } catch (Exception e) {
+                System.out.println("\n[ERROR] An unexpected error occurred: " + e.getMessage());
+                e.printStackTrace();
             }
-            catch (ConsoleEndException e){
 
-            }
-
+            // Loop automatically restarts here
         }
-
-
-
     }
 
     public static void fillLists(List<Location> locations, List<Product> products,
-                                 List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers,List<Location> storeLocations) {
+                                 List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers, List<Location> storeLocations) {
 
         locations.add(new Location("Tel Aviv", "03-1234567", "Alice"));     // 0
         locations.add(new Location("Holon", "03-7654321", "Bob"));          // 1
@@ -155,7 +173,6 @@ public class Main {
                 new ProductPair(products.get(7), 150),
                 new ProductPair(products.get(8), 200)
         ))));
-
 
         storeLocations.add(locations.get(6));
         storeLocations.add(locations.get(7));

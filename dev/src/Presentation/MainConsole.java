@@ -68,8 +68,13 @@ public class MainConsole {
             }
 
             truckAndDriverMatch = truck.getMinLicense() <= driver.license();
-            if (!truckAndDriverMatch)
+            if (!truckAndDriverMatch){
                 System.out.println("Error: Driver's license does not match Truck min license. Try again.");
+                availableTrucks.add(truck);
+                availableDrivers.add(driver);
+            }
+
+
         }
 
         Location source = selectSourceLocation(this.allLocations);
@@ -412,7 +417,7 @@ public class MainConsole {
             try {
                 int choice = Integer.parseInt(scanner.nextLine().trim());
                 if (choice >= 1 && choice <= availableTrucks.size()) {
-                    return availableTrucks.get(choice - 1);
+                    return availableTrucks.remove(choice - 1);
                 }
             } catch (NumberFormatException ignored) {}
             System.out.println("Invalid choice, try again.");
@@ -434,7 +439,7 @@ public class MainConsole {
             try {
                 int choice = Integer.parseInt(scanner.nextLine().trim());
                 if (choice >= 1 && choice <= availableDrivers.size()) {
-                    return availableDrivers.get(choice - 1);
+                    return availableDrivers.remove(choice - 1);
                 }
             } catch (NumberFormatException ignored) {}
             System.out.println("Invalid choice, try again.");
