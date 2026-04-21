@@ -1,0 +1,26 @@
+package Domain;
+
+import java.util.List;
+
+public class ProductFile {
+    private final int fileNumber;
+    private List<ProductPair> products;
+
+
+
+    public ProductFile(List<ProductPair> products, int fileNumber){
+        this.products = products;
+        this.fileNumber = fileNumber;
+    }
+
+    public List<ProductPair> getProducts() {
+        return products;
+    }
+    public int getFileNumber() {
+        return fileNumber;
+    }
+
+    public void setProducts(List<ProductPair> products) {
+        this.products = products;
+    }
+}
