@@ -88,31 +88,51 @@ public class Truck {
                 currentWeight += pair.product.weight() * pair.getAmount();
             }
         }
-        if(currentWeight > maxWeight)
-            throw new OverweightException(maxWeight, currentWeight);
+        if (currentWeight > maxWeight)
+            throw new OverweightException(maxWeight, currentWeight, pairs);
+    }
+    public void removeProducts(List<ProductPair> pairs) {
+        removeProducts(pairs, null);
     }
 
-    public void removeProducts(List<ProductPair> pairs) {
-        /// HANDLES WEIGHT
+    public void removeProducts(List<ProductPair> pairs, List<ProductPair> addedProducts) {
+
+        if (addedProducts != null)
+            for (ProductPair pair : addedProducts)
+                loadedProducts.get(pair.product.name()).reduceAmount(pair.getAmount());
+
         if (pairs == null)
             throw new NullPointerException("Null pairs are not allowed");
-         /// this checks that we have enough of every item
-        for (ProductPair pair : pairs) {
-            if (pair == null)
-                throw new NullPointerException("Null product pair");
-            String name = pair.product.name();
-            if (!loadedProducts.containsKey(name))
-                throw new InsufficientTruckStockException(name, pair.getAmount(), 0);
-            if (loadedProducts.get(name).getAmount() < pair.getAmount())
-                throw new InsufficientTruckStockException(pair.product.name(), pair.getAmount(),
-                        loadedProducts.get(name).getAmount());
-        }
 
-        for (ProductPair pair : pairs) {
-            String name = pair.product.name();
-            int currentAmount = loadedProducts.get(name).getAmount();
-            loadedProducts.get(name).setAmount(currentAmount - pair.getAmount());
-            currentWeight -= pair.product.weight() * pair.getAmount();
+        try {
+            for (ProductPair pair : pairs) {
+                if (pair == null)
+                    throw new NullPointerException("Null product pair");
+                String name = pair.product.name();
+                if (!loadedProducts.containsKey(name))
+                    throw new InsufficientTruckStockException(name, pair.getAmount(), 0);
+                if (loadedProducts.get(name).getAmount() < pair.getAmount())
+                    throw new InsufficientTruckStockException(pair.product.name(), pair.getAmount(),
+                            loadedProducts.get(name).getAmount());
+            }
+
+            for (ProductPair pair : pairs) {
+                String name = pair.product.name();
+                int currentAmount = loadedProducts.get(name).getAmount();
+                loadedProducts.get(name).setAmount(currentAmount - pair.getAmount());
+                currentWeight -= pair.product.weight() * pair.getAmount();
+            }
+
+            if (addedProducts != null)
+                for (ProductPair pair : addedProducts)
+                    loadedProducts.get(pair.product.name()).reduceAmount(-pair.getAmount());
+
+        } catch (Exception e) {
+            if (addedProducts != null)
+                for (ProductPair pair : addedProducts)
+                    loadedProducts.get(pair.product.name()).reduceAmount(-pair.getAmount());
+
+            throw e;
         }
     }
 }

@@ -12,9 +12,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // GRAND LOOP: This wraps the entire lifecycle of the application
         while (true) {
-            // 1. Initialize/Reset Data for a fresh cycle
             List<Location> locations = new LinkedList<>();
             List<Product> products = new LinkedList<>();
             List<Supplier> suppliers = new LinkedList<>();
@@ -24,8 +22,6 @@ public class Main {
 
             fillLists(locations, products, suppliers, trucks, drivers, storeLocations);
 
-            // Note: If getInstance always returns the same object,
-            // ensure your Manager class has a way to clear old state.
             CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations);
 
             MainConsole console = new MainConsole(companyManager, trucks, drivers, locations, suppliers);
@@ -34,23 +30,24 @@ public class Main {
             System.out.println("=== NEW SHIPMENT CYCLE INITIATED ===");
             System.out.println("======================================");
 
-            // 2. DATA ENTRY PHASE: Collect as many branches as the user wants
             while (true) {
-                System.out.print("\nWould you like to add a request for a branch? (yes/no): ");
+                System.out.print("\nWould you like to add a request for a branch? (yes/no/exit): ");
                 String ans = scanner.nextLine().trim();
 
-                if (ans.equalsIgnoreCase("no") || ans.equalsIgnoreCase("n")) {
-                    break; // Exit this inner loop to move to the console phase
+                if (ans.equalsIgnoreCase("exit")) {
+                    System.out.println("Exiting the system. Goodbye!");
+                    System.exit(0);
+                } else if (ans.equalsIgnoreCase("no") || ans.equalsIgnoreCase("n")) {
+                    break;
                 } else if (!ans.equalsIgnoreCase("yes") && !ans.equalsIgnoreCase("y")) {
-                    System.out.println("Invalid input. Please type 'yes' or 'no'.");
+                    System.out.println("Invalid input. Please type 'yes', 'no', or 'exit'.");
                     continue;
                 }
 
-                // --- Select Branch Location ---
                 System.out.println("\n--- Select Branch Location ---");
-                for (int i = 0; i < storeLocations.size(); i++) {
+                for (int i = 0; i < storeLocations.size(); i++)
                     System.out.println("[" + (i + 1) + "] " + storeLocations.get(i).address() + " (Contact: " + storeLocations.get(i).contactName() + ")");
-                }
+
 
                 BranchManager currentBranch = null;
                 while (currentBranch == null) {
@@ -67,7 +64,6 @@ public class Main {
                     }
                 }
 
-                // --- Select Products for the chosen Branch ---
                 List<ProductPair> requestedItems = new LinkedList<>();
                 System.out.println("\n--- Select Products for " + currentBranch.getLocation().address() + " ---");
 
@@ -113,15 +109,12 @@ public class Main {
                 }
             }
 
-            // 3. EXECUTION PHASE: Run the console after all requests are gathered
             System.out.println("\n======================================");
             System.out.println("Starting Main System Console...");
             System.out.println("======================================\n");
 
             try {
-
                 console.run();
-                // If console.run() finishes normally, the code loops back to the start
             } catch (ConsoleEndException e) {
                 System.out.println("\n[INFO] Console session ended by user. Restarting system...");
             } catch (Exception e) {
@@ -129,7 +122,6 @@ public class Main {
                 e.printStackTrace();
             }
 
-            // Loop automatically restarts here
         }
     }
 

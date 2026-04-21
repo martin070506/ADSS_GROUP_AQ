@@ -12,11 +12,14 @@ public class Destination   {
         this.productFile = productFile;
     }
 
-
     public void handleShipment(Truck truck) {
+        handleShipment(truck, null);
+    }
+
+    public void handleShipment(Truck truck, List<ProductPair> addedProducts) {
 
         List<ProductPair> requestedProducts = productFile.getProducts();
-        truck.removeProducts(requestedProducts); /// throws Exception if not enough stock
+        truck.removeProducts(requestedProducts, addedProducts);
         wasVisited = true;
     }
 

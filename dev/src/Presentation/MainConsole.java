@@ -73,8 +73,6 @@ public class MainConsole {
                 availableTrucks.add(truck);
                 availableDrivers.add(driver);
             }
-
-
         }
 
         Location source = selectSourceLocation(this.allLocations);
@@ -91,7 +89,7 @@ public class MainConsole {
 
             } catch (Exceptions.OverweightException oe) {
                 Supplier problematicSupplier = transport.getSuppliers().getFirst();
-                handleOverWeight(transport, problematicSupplier);
+                handleOverWeight(transport, problematicSupplier, oe.getAddedProducts());
 
             } catch (Exceptions.InsufficientSupplierStockException ise) {
                 System.out.println("Stock Problem: " + ise.getMessage());
@@ -127,7 +125,7 @@ public class MainConsole {
         return transport;
     }
 
-    private void handleOverWeight(Transport transport, Supplier problematicSupplier) {
+    private void handleOverWeight(Transport transport, Supplier problematicSupplier, List<ProductPair> addedProducts) {
         transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
         System.out.println("Truck is overweight at " + problematicSupplier.supplierLocation().contactName());
 
@@ -146,13 +144,13 @@ public class MainConsole {
                     resolved = true;
                 }
                 case "2" -> {
-                    visitDestinationEarly(transport);
+                    visitDestinationEarly(transport, addedProducts);
                     if (transport.getTruck().getCurrentWeight() <= transport.getTruck().getMaxWeight()) {
                         resolved = true;
                         transport.getTransportFile().leaveSupplier(problematicSupplier.getName(), transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     } else {
-                        System.out.println("After visiting this location early, truck is still overweight");
+                        System.out.println("Truck is still overweight");
                     }
                 }
                 case "3" -> {
@@ -168,6 +166,8 @@ public class MainConsole {
                         transport.getTransportFile().leaveSupplier(problematicSupplier.getName(), transport.getTruck().getCurrentWeight());
                         transport.removeSupplierFromTransportButNotFile(problematicSupplier);
                     }
+                    else
+                        System.out.println("Truck is still overweight");
                 }
                 default -> {
                     System.out.println("Invalid choice. Skipping supplier by default to ensure safety.");
@@ -252,7 +252,7 @@ public class MainConsole {
         }
     }
 
-    private void visitDestinationEarly(Transport transport) {
+    private void visitDestinationEarly(Transport transport, List<ProductPair> addedProducts) {
         List<Destination> destinations = transport.getDestinations();
         if (destinations.isEmpty()) {
             System.out.println("No destinations left to visit!");
@@ -269,11 +269,13 @@ public class MainConsole {
             if (index >= 0 && index < destinations.size()) {
                 Destination target = destinations.get(index);
                 transport.getTransportFile().arriveAtDestination(target.getContactName());
-                target.handleShipment(transport.getTruck());
+                target.handleShipment(transport.getTruck(), addedProducts);
                 transport.getTransportFile().leaveDestination(target.getContactName());
                 transport.removeDestinationFromTransport(target);
                 System.out.println("Emergency drop-off completed at " + target.getContactName());
             }
+            else
+                System.out.println("Destination not found!");
         } catch (Exception e) {
             System.out.println("Invalid selection. No drop-off performed.");
         }
@@ -306,9 +308,13 @@ public class MainConsole {
             int index = Integer.parseInt(input)-1;
             if (index >= 0 && index < candidates.size()) {
                 Truck newTruck = candidates.get(index);
-
+                if (newTruck.getMinLicense() > transport.getDriver().license()) {
+                    System.out.println("Driver isn't eligible for this truck.");
+                    return false;
+                }
                 replacementTrucks.add(transport.getTruck());
                 transport.getTruck().transferHoldingsToOtherTruck(newTruck);
+                newTruck.setCurrentWeight(transport.getTruck().getCurrentWeight());
 
                 this.availableTrucks.add(transport.getTruck());
                 this.availableTrucks.remove(newTruck);
@@ -318,7 +324,7 @@ public class MainConsole {
 
                 System.out.println("Truck swapped! New capacity: " + transport.getTruck().getMaxWeight());
 
-                return true;
+                return transport.getTruck().getMaxWeight() >= transport.getTruck().getCurrentWeight();
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid input.");

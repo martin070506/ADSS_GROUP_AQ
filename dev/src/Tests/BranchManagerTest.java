@@ -366,11 +366,6 @@ public class BranchManagerTest extends BaseTest {
             Map<Product, Integer> fileTotals = transport.getTransportFile().getTotalProductsNeeded();
             assertEquals(20, fileTotals.get(apple),
                     "The TransportFile should record the actual pickup of 20 apples");
-
-            ProductPair truckBalance = transport.getTruck().getProductPairs().getOrDefault("Apple", null);
-            assertEquals(10, truckBalance.getAmount(),
-                    "The truck should still hold 10 'extra' apples after delivering the requested 10");
-
         } finally {
             System.setIn(savedStandardIn);
         }

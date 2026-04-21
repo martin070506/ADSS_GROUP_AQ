@@ -23,6 +23,10 @@ public class ProductPair {
         this.amount = amount;
     }
 
+    public void reduceAmount(int amount) {
+        setAmount(getAmount() - amount);
+    }
+
     public int getWeight() { return product.weight() * amount; }
 
     @Override
