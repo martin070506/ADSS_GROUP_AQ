@@ -195,11 +195,7 @@ public class BranchManagerTest extends BaseTest {
 
         try {
             MainConsole console = new MainConsole(
-                    companyManager,
-                    new ArrayList<>(TestData.allTrucks),
-                    new ArrayList<>(TestData.allDrivers),
-                    new ArrayList<>(TestData.allLocations),
-                    Arrays.asList(goodSupplier, emptySupplier)
+                    companyManager
             );
 
             Transport transport = console.initiateShipment();;
@@ -231,11 +227,7 @@ public class BranchManagerTest extends BaseTest {
 
         try {
             MainConsole console = new MainConsole(
-                    companyManager,
-                    new ArrayList<>(TestData.allTrucks),
-                    new ArrayList<>(TestData.allDrivers),
-                    new ArrayList<>(TestData.allLocations),
-                    Arrays.asList(s)
+                    companyManager
             );
 
             Transport transport = console.initiateShipment();;
@@ -269,11 +261,7 @@ public class BranchManagerTest extends BaseTest {
 
         try {
             MainConsole console = new MainConsole(
-                    companyManager,
-                    new ArrayList<>(TestData.allTrucks),
-                    new ArrayList<>(TestData.allDrivers),
-                    new ArrayList<>(TestData.allLocations),
-                    Arrays.asList(s)
+                    companyManager
             );
 
             Transport transport = console.initiateShipment();;
@@ -350,11 +338,7 @@ public class BranchManagerTest extends BaseTest {
 
         try {
             MainConsole console = new MainConsole(
-                    companyManager,
-                    new ArrayList<>(TestData.allTrucks),
-                    new ArrayList<>(TestData.allDrivers),
-                    new ArrayList<>(TestData.allLocations),
-                    Arrays.asList(s)
+                    companyManager
             );
 
             Transport transport = console.initiateShipment();;

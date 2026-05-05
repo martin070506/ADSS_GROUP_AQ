@@ -36,6 +36,7 @@ public record Supplier(Location supplierLocation, List<ProductPair> productsAvai
         }
     }
 
+
     private void dispatchProducts(List<ProductPair> supplierAllocations) {
 
         for (ProductPair pair : supplierAllocations)
@@ -68,5 +69,21 @@ public record Supplier(Location supplierLocation, List<ProductPair> productsAvai
 
     public Location getSupplierLocation() {
         return supplierLocation;
+    }
+
+    public List<ProductPair> getProductsAvailable() {
+        return productsAvailable;
+    }
+
+    public void addStock(Product product, int amount) {
+
+        for(ProductPair pair : productsAvailable){
+            if(pair.product == product){
+                pair.setAmount(pair.getAmount() + amount);
+                return;
+            }
+        }
+
+        productsAvailable.add(new ProductPair(product, amount));
     }
 }

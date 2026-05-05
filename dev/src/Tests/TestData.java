@@ -1,5 +1,7 @@
 package Tests;
 import Domain.*;
+import Service.BranchManager;
+
 import java.util.*;
 
 public class TestData {
@@ -46,12 +48,21 @@ public class TestData {
         public static Driver Eve;
     }
 
+    public static class BranchManagers{
+        public static BranchManager Martin;
+        public static BranchManager Liav;
+    }
+
     public static List<Location> allLocations = new ArrayList<>();
     public static List<Supplier> allSuppliers = new ArrayList<>();
     public static List<Truck> allTrucks = new ArrayList<>();
     public static List<Driver> allDrivers = new ArrayList<>();
+    public static List<BranchManager> allBranchManagers = new ArrayList<>();
 
     public static void resetAndInit() {
+
+
+
         Locations.TelAviv = new Location("Tel Aviv", "03-1234567", "Alice");
         Locations.Holon = new Location("Holon", "03-7654321", "Bob");
         Locations.Haifa = new Location("Haifa", "04-1112233", "Charlie");
@@ -62,6 +73,10 @@ public class TestData {
         Locations.PetahTikva = new Location("Petah Tikva", "03-9990011", "Henry");
         Locations.RamatGan = new Location("Ramat Gan", "03-4445556", "Isabella");
         Locations.Rehovot = new Location("Rehovot", "08-7778899", "Jack");
+
+        BranchManagers.Martin=new BranchManager(Locations.RamatGan);
+        BranchManagers.Liav=new BranchManager(Locations.Rehovot);
+
 
         Products.Apple = new Product("Apple", 150);
         Products.Banana = new Product("Banana", 120);
@@ -92,6 +107,11 @@ public class TestData {
                 Locations.TelAviv, Locations.Holon, Locations.Haifa, Locations.Netanya,
                 Locations.BeerSheva, Locations.Jerusalem, Locations.Ashdod,
                 Locations.PetahTikva, Locations.RamatGan, Locations.Rehovot
+        ));
+
+        allBranchManagers.clear();
+        allBranchManagers.addAll(Arrays.asList(
+                BranchManagers.Martin,BranchManagers.Liav
         ));
 
         allTrucks.clear();

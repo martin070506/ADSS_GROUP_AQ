@@ -26,6 +26,9 @@ public class Truck {
         loadedProducts = new HashMap<>();
     }
 
+    public boolean doesDriverMatch(Driver driver){
+        return this.getMinLicense()<= driver.license();
+    }
     public int getCurrentWeight() {
         return currentWeight;
     }

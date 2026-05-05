@@ -14,8 +14,8 @@ public class TruckFacade {
     public TruckFacade(List<Truck> trucks, List<Driver> drivers) {
         this.trucks = trucks;
         this.drivers = drivers;
-        this.availableTrucks = new ArrayList<>(this.trucks);
-        this.availableDrivers = new ArrayList<>(this.drivers);
+        this.availableTrucks = trucks;
+        this.availableDrivers = drivers;
     }
 
 
@@ -31,6 +31,7 @@ public class TruckFacade {
         trucks.remove(truck);
         availableTrucks.remove(truck);
     }
+
     public void takeTruck(Truck truck){
         availableTrucks.remove(truck);
     }

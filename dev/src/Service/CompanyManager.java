@@ -13,32 +13,53 @@ public class CompanyManager {
     private final ShipmentFacade shipmentFacade;
     private final List<Destination> dropOffDestinations;
     private final List<Location> locations;
+    private final  List<BranchManager> branchManagers;
 
 
     private static CompanyManager instance = null;
 
     private CompanyManager(List<Truck> trucks, List<Driver> drivers, List<Supplier> suppliers,
-                           List<Location> locations) {
+                           List<Location> locations,List<BranchManager> branchManagers) {
         this.truckFacade = new TruckFacade(trucks, drivers);
         this.shipmentFacade = new ShipmentFacade(suppliers,trucks,drivers);
         this.dropOffDestinations = new LinkedList<>();
         this.locations = locations;
+        this.branchManagers = branchManagers;
     }
 
     public static CompanyManager getInstance(List<Truck> trucks,List<Driver> drivers,
-                                             List<Supplier> suppliers, List<Location> locations) {
+                                             List<Supplier> suppliers, List<Location> locations,List<BranchManager> branchManagers) {
         if (instance == null)
-            instance = new CompanyManager(trucks, drivers, suppliers, locations);
+            instance = new CompanyManager(trucks, drivers, suppliers, locations, branchManagers);
 
         return instance;
     }
 
     public static CompanyManager getInstance() {
-        return getInstance(List.of(), List.of(), List.of(), List.of());
+        return getInstance(List.of(), List.of(), List.of(), List.of(), List.of());
     }
+
     public void addLocation(Location location) {
         if (!locations.contains(location))
             locations.add(location);
+    }
+
+    public void addBranchManager(BranchManager branchManager) {
+        if (!branchManagers.contains(branchManager))
+            branchManagers.add(branchManager);
+    }
+
+    public void addSupplier(Supplier supplier) {
+        if(!shipmentFacade.containsSupplier(supplier))
+            shipmentFacade.addSupplier(supplier);
+    }
+    public void addDriver(Driver driver) {
+        if(!shipmentFacade.containsDriver(driver))
+            shipmentFacade.addDriver(driver);
+    }
+    public void addTruck(Truck truck) {
+        if(!shipmentFacade.containsTruck(truck))
+            shipmentFacade.addTruck(truck);
     }
     public static void resetInstance() {
         instance = null;
@@ -70,5 +91,18 @@ public class CompanyManager {
 
     public void finishShipment(Truck truck, Driver driver) {
         shipmentFacade.finishShipment(truck, driver);
+    }
+
+
+    public ShipmentFacade getShipmentFacade() {
+        return shipmentFacade;
+    }
+
+    public TruckFacade getTruckFacade() {
+        return truckFacade;
+    }
+
+    public List<Location> getLocations() {
+        return locations;
     }
 }

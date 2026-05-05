@@ -15,15 +15,16 @@ public class MainConsole {
     private final List<Supplier> allSuppliers;
     private final GlobalStorage globalStorage;
 
-    public MainConsole(CompanyManager companyManager, List<Truck> availableTrucks,
-                       List<Driver> availableDrivers, List<Location> allLocations,
-                       List<Supplier> allSuppliers) {
+    public MainConsole(CompanyManager companyManager) {
+        System.out.println("Welcome to the main console");
+
         this.companyManager = companyManager;
-        this.availableTrucks = availableTrucks;
-        this.availableDrivers = availableDrivers;
-        this.allLocations = allLocations;
-        this.allSuppliers = allSuppliers;
+        this.availableTrucks = companyManager.getTruckFacade().getAvailableTrucks();
+        this.availableDrivers = companyManager.getTruckFacade().getAvailableDrivers();
+        this.allLocations = companyManager.getLocations();
+        this.allSuppliers = companyManager.getShipmentFacade().getSuppliers();
         this.globalStorage = new GlobalStorage();
+        System.out.println(availableDrivers.size() + " drivers available");
     }
 
     public void run() {
@@ -67,7 +68,8 @@ public class MainConsole {
                 return null;
             }
 
-            truckAndDriverMatch = truck.getMinLicense() <= driver.license();
+            truckAndDriverMatch = truck.doesDriverMatch(driver);
+
             if (!truckAndDriverMatch){
                 System.out.println("Error: Driver's license does not match Truck min license. Try again.");
                 availableTrucks.add(truck);

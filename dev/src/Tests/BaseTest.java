@@ -17,7 +17,8 @@ public abstract class BaseTest {
                 TestData.allTrucks,
                 TestData.allDrivers,
                 TestData.allSuppliers,
-                TestData.allLocations
+                TestData.allLocations,
+                TestData.allBranchManagers
         );
     }
 }
