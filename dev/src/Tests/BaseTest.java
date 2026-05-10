@@ -1,5 +1,4 @@
 package Tests;
-import Service.CompanyManager;
 import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BaseTest {

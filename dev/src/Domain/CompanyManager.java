@@ -1,16 +1,14 @@
-package Service;
-
-import Domain.*;
+package Domain;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 public class CompanyManager {
     private int globalFileNumber = 0;
     private final TruckFacade truckFacade;
-    private final ShipmentFacade shipmentFacade;
+    private final DriverFacade driverFacade;
+    private final TransportManager shipmentManager;
     private final List<Destination> dropOffDestinations;
     private final List<Location> locations;
     private final  List<BranchManager> branchManagers;
@@ -20,8 +18,9 @@ public class CompanyManager {
 
     private CompanyManager(List<Truck> trucks, List<Driver> drivers, List<Supplier> suppliers,
                            List<Location> locations,List<BranchManager> branchManagers) {
-        this.truckFacade = new TruckFacade(trucks, drivers);
-        this.shipmentFacade = new ShipmentFacade(suppliers,trucks,drivers);
+        this.truckFacade = new TruckFacade(trucks);
+        this.driverFacade = new DriverFacade(drivers);
+        this.shipmentManager = new TransportManager(suppliers,trucks,drivers);
         this.dropOffDestinations = new LinkedList<>();
         this.locations = locations;
         this.branchManagers = branchManagers;
@@ -50,16 +49,16 @@ public class CompanyManager {
     }
 
     public void addSupplier(Supplier supplier) {
-        if(!shipmentFacade.containsSupplier(supplier))
-            shipmentFacade.addSupplier(supplier);
+        if(!shipmentManager.containsSupplier(supplier))
+            shipmentManager.addSupplier(supplier);
     }
     public void addDriver(Driver driver) {
-        if(!shipmentFacade.containsDriver(driver))
-            shipmentFacade.addDriver(driver);
+        if(!shipmentManager.containsDriver(driver))
+            shipmentManager.addDriver(driver);
     }
     public void addTruck(Truck truck) {
-        if(!shipmentFacade.containsTruck(truck))
-            shipmentFacade.addTruck(truck);
+        if(!shipmentManager.containsTruck(truck))
+            shipmentManager.addTruck(truck);
     }
     public static void resetInstance() {
         instance = null;
@@ -80,26 +79,30 @@ public class CompanyManager {
 
     public Transport createShipment(Truck truck, Driver driver, Location source, Map<Supplier, List<ProductPair>> supplierAllocations) {
         truckFacade.takeTruck(truck);
-        truckFacade.takeDriver(driver);
+        driverFacade.takeDriver(driver);
 
-        return shipmentFacade.createTransport(truck, driver, source, dropOffDestinations, truckFacade.getTrucks(), supplierAllocations);
+        return shipmentManager.createTransport(truck, driver, source, dropOffDestinations, truckFacade.getTrucks(), supplierAllocations);
     }
 
     public void processTransport(Transport transport) throws Exception {
-        shipmentFacade.processTransport(transport);
+        shipmentManager.processTransport(transport);
     }
 
     public void finishShipment(Truck truck, Driver driver) {
-        shipmentFacade.finishShipment(truck, driver);
+        shipmentManager.finishShipment(truck, driver);
     }
 
 
-    public ShipmentFacade getShipmentFacade() {
-        return shipmentFacade;
+    public TransportManager getShipmentManager() {
+        return shipmentManager;
     }
 
     public TruckFacade getTruckFacade() {
         return truckFacade;
+    }
+
+    public DriverFacade getDriverFacade() {
+        return driverFacade;
     }
 
     public List<Location> getLocations() {

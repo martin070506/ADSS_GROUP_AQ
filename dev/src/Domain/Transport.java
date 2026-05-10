@@ -35,6 +35,7 @@ public class Transport {
         this.suppliers = suppliers;
         this.transportFile = new TransportFile(departureTime,this);
 
+
     }
 
     public void processShipment() {

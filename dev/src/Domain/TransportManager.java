@@ -1,23 +1,17 @@
-package Service;
-
-import Domain.*;
-import Exceptions.DomainException;
-import Exceptions.InsufficientSupplierStockException;
-import Exceptions.InsufficientTruckStockException;
-import Exceptions.OverweightException;
+package Domain;
 
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-public class ShipmentFacade {
+public class TransportManager {
 
-    private int shipmentNumber;
     private final List<Supplier> suppliers;
     private List<Truck> availableTrucks;
     private List<Driver> availableDrivers;
 
-    public ShipmentFacade(List<Supplier> suppliers,List<Truck> availableTrucks,List<Driver> availableDrivers) {
+    public TransportManager(List<Supplier> suppliers, List<Truck> availableTrucks, List<Driver> availableDrivers) {
 
         this.suppliers = suppliers;
         this.availableTrucks = availableTrucks;
@@ -51,6 +45,7 @@ public class ShipmentFacade {
     public void addSupplier(Supplier supplier) {
         suppliers.add(supplier);
     }
+
     public void processTransport(Transport transport) throws Exception {
         transport.processShipment();
     }
@@ -59,6 +54,10 @@ public class ShipmentFacade {
         truck.emptyTruck();
         availableTrucks.add(truck);
         availableDrivers.add(driver);
+    }
+
+    public boolean isDriverAndTruckMatch(Driver driver, Truck truck) {
+        return driver.license()>=truck.getMinLicense();
     }
 
     public List<Supplier> getSuppliers() {

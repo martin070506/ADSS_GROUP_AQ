@@ -1,7 +1,4 @@
-package Service;
-
-import Domain.Location;
-import Domain.ProductPair;
+package Domain;
 
 import java.util.List;
 

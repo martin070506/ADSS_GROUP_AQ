@@ -4,7 +4,6 @@ import Domain.*;
 import Exceptions.InsufficientTruckStockException;
 import Exceptions.OverweightException;
 import Presentation.MainConsole;
-import Service.BranchManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

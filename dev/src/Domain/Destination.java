@@ -7,6 +7,7 @@ public class Destination   {
     private final ProductFile productFile;
     private boolean wasVisited=false;
 
+
     public Destination(Location location, ProductFile productFile){
         this.location = location;
         this.productFile = productFile;
@@ -20,6 +21,7 @@ public class Destination   {
 
         List<ProductPair> requestedProducts = productFile.getProducts();
         truck.removeProducts(requestedProducts, addedProducts);
+
         wasVisited = true;
     }
 

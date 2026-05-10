@@ -2,7 +2,6 @@ package Presentation;
 
 import Domain.*;
 import Exceptions.ConsoleEndException;
-import Service.CompanyManager;
 
 import java.util.*;
 
@@ -20,9 +19,9 @@ public class MainConsole {
 
         this.companyManager = companyManager;
         this.availableTrucks = companyManager.getTruckFacade().getAvailableTrucks();
-        this.availableDrivers = companyManager.getTruckFacade().getAvailableDrivers();
+        this.availableDrivers = companyManager.getDriverFacade().getAvailableDrivers();
         this.allLocations = companyManager.getLocations();
-        this.allSuppliers = companyManager.getShipmentFacade().getSuppliers();
+        this.allSuppliers = companyManager.getShipmentManager().getSuppliers();
         this.globalStorage = new GlobalStorage();
         System.out.println(availableDrivers.size() + " drivers available");
     }
@@ -68,7 +67,7 @@ public class MainConsole {
                 return null;
             }
 
-            truckAndDriverMatch = truck.doesDriverMatch(driver);
+            truckAndDriverMatch = companyManager.getShipmentManager().isDriverAndTruckMatch(driver, truck);
 
             if (!truckAndDriverMatch){
                 System.out.println("Error: Driver's license does not match Truck min license. Try again.");
