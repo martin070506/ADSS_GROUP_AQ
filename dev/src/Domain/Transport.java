@@ -14,6 +14,7 @@ public class Transport {
     private List<Truck> replacementTrucks;
     private TransportFile transportFile;
     private List<Supplier> suppliers;
+    int id;
 
 
 
@@ -23,7 +24,7 @@ public class Transport {
 
     public Transport(LocalDate departureTime, Truck truck, Driver driver, Location source,
                      List<Destination> destinations, Map<Supplier, List<ProductPair>> supplierAllocations,
-                     List<Truck> replacementTrucks, List<Supplier> suppliers) {
+                     List<Truck> replacementTrucks, List<Supplier> suppliers,int id) {
 
         this.departureTime = departureTime;
         this.truck = truck;
@@ -34,8 +35,12 @@ public class Transport {
         this.replacementTrucks = replacementTrucks;
         this.suppliers = suppliers;
         this.transportFile = new TransportFile(departureTime,this);
+        this.id = id;
 
 
+    }
+    public int getId() {
+        return id;
     }
 
     public void processShipment() {
@@ -68,7 +73,7 @@ public class Transport {
     public Truck getTruck() {
         return truck;
     }
-    public void removeItems(List<ProductPair> outgoingItems, int weightToRemove) {
+    public void removeItems(List<ProductPair> outgoingItems, double weightToRemove) {
         if (outgoingItems == null || outgoingItems.isEmpty())
             return;
 

@@ -10,6 +10,7 @@ public class TransportManager {
     private final List<Supplier> suppliers;
     private List<Truck> availableTrucks;
     private List<Driver> availableDrivers;
+    int globalId=0;
 
     public TransportManager(List<Supplier> suppliers, List<Truck> availableTrucks, List<Driver> availableDrivers) {
 
@@ -24,7 +25,7 @@ public class TransportManager {
 
         List<Supplier> suppliersAsList = new ArrayList<>(supplierAllocations.keySet());
         return new Transport(LocalDate.now(), truck, driver, source, destinations,
-                supplierAllocations, replacementTrucks, suppliersAsList);
+                supplierAllocations, replacementTrucks, suppliersAsList,globalId++);
     }
     public boolean containsSupplier(Supplier supplier) {
         return suppliers.contains(supplier);

@@ -230,7 +230,7 @@ public class MainConsole {
                     if (amountToRemove > 0 && amountToRemove <= existing.getAmount()) {
                         List<ProductPair> toRemove = new ArrayList<>();
                         toRemove.add(new ProductPair(existing.product, amountToRemove));
-                        int weightReduction = amountToRemove * existing.product.weight();
+                        double weightReduction = amountToRemove * existing.product.weight();
 
                         try {
                             transport.removeItems(toRemove, weightReduction);

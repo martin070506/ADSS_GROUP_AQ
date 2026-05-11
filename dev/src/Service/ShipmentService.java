@@ -29,4 +29,8 @@ public class ShipmentService {
     public void finalizeShipment(Truck truck, Driver driver) {
         transportManager.finishShipment(truck, driver);
     }
+
+    public void addSupplier(Supplier supplier) {
+        transportManager.addSupplier(supplier);
+    }
 }
