@@ -8,15 +8,15 @@ import java.util.Map;
 public class TransportManager {
 
     private final List<Supplier> suppliers;
-    private List<Truck> availableTrucks;
-    private List<Driver> availableDrivers;
+    private final List<Truck> trucks;
+    private final List<Driver> drivers;
+
     int globalId=0;
 
-    public TransportManager(List<Supplier> suppliers, List<Truck> availableTrucks, List<Driver> availableDrivers) {
-
+    public TransportManager(List<Supplier> suppliers, List<Truck> trucks, List<Driver> drivers) {
+        this.drivers = drivers;
+        this.trucks = trucks;
         this.suppliers = suppliers;
-        this.availableTrucks = availableTrucks;
-        this.availableDrivers = availableDrivers;
     }
 
     public Transport createTransport(Truck truck, Driver driver, Location source,
@@ -27,21 +27,6 @@ public class TransportManager {
         return new Transport(LocalDate.now(), truck, driver, source, destinations,
                 supplierAllocations, replacementTrucks, suppliersAsList,globalId++);
     }
-    public boolean containsSupplier(Supplier supplier) {
-        return suppliers.contains(supplier);
-    }
-    public boolean containsTruck(Truck truck) {
-        return availableTrucks.contains(truck);
-    }
-    public boolean containsDriver(Driver driver) {
-        return availableDrivers.contains(driver);
-    }
-    public void addDriver(Driver driver) {
-        availableDrivers.add(driver);
-    }
-    public void addTruck(Truck truck) {
-        availableTrucks.add(truck);
-    }
 
     public void addSupplier(Supplier supplier) {
         suppliers.add(supplier);
@@ -50,16 +35,16 @@ public class TransportManager {
     public void processTransport(Transport transport) throws Exception {
         transport.processShipment();
     }
-    public void finishShipment(Truck truck, Driver driver) {
-        System.out.println("jahjjafghafghafhyfhfhyafyagfyhgyh");
+    public void finishShipment(Truck truck,Driver driver) {
         truck.emptyTruck();
-        availableTrucks.add(truck);
-        availableDrivers.add(driver);
+        trucks.add(truck);
+        drivers.add(driver);
+    }
+    public void removeSupplier(Supplier supplier) {
+        suppliers.remove(supplier);
     }
 
-    public boolean isDriverAndTruckMatch(Driver driver, Truck truck) {
-        return driver.license()>=truck.getMinLicense();
-    }
+
 
     public List<Supplier> getSuppliers() {
         return suppliers;

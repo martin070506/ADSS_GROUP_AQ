@@ -15,7 +15,7 @@ public class TransportationFacade {
     }
 
     public List<Transport> getActiveTransports() {
-        return new ArrayList<>(activeTransports);
+        return activeTransports;
     }
 
     public Transport findById(int id) {

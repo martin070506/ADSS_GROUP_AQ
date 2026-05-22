@@ -1,5 +1,6 @@
 package Domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TruckFacade {
@@ -10,6 +11,10 @@ public class TruckFacade {
     public TruckFacade(List<Truck> trucks) {
         this.trucks = trucks;
         this.availableTrucks = trucks;
+    }
+    public TruckFacade() {
+        trucks = new ArrayList<Truck>();
+        availableTrucks = new ArrayList<Truck>();
     }
 
 

@@ -14,6 +14,7 @@ import java.util.Map;
 public class ShipmentService {
     private TransportManager transportManager;
 
+
     public ShipmentService(TransportManager transportManager) {
         this.transportManager = transportManager;
     }
@@ -25,12 +26,22 @@ public class ShipmentService {
         return transportManager.createTransport(truck, driver, source, destinations,
                 replacementTrucks, supplierAllocations);
     }
+    public void processTransport(Transport transport) throws Exception {
+        transportManager.processTransport(transport);
+    }
 
-    public void finalizeShipment(Truck truck, Driver driver) {
-        transportManager.finishShipment(truck, driver);
+
+    public void finalizeShipment(Truck truck,Driver driver) {
+        transportManager.finishShipment(truck,driver);
     }
 
     public void addSupplier(Supplier supplier) {
         transportManager.addSupplier(supplier);
+    }
+    public void removeSupplier(Supplier supplier) {
+        transportManager.removeSupplier(supplier);
+    }
+    public List<Supplier> getSuppliers() {
+        return transportManager.getSuppliers();
     }
 }

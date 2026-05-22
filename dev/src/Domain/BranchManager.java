@@ -1,5 +1,7 @@
 package Domain;
 
+import Service.CompanyManager;
+
 import java.util.List;
 
 public class BranchManager {
@@ -13,7 +15,7 @@ public class BranchManager {
     }
 
     public void requestShipment(List<ProductPair> neededItems){
-        CompanyManager.getInstance().addDestination(storeLocation, neededItems);
+        CompanyManager.getInstance().addDestination(storeLocation,neededItems);
     }
 
     public Location getLocation(){

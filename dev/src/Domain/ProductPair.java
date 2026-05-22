@@ -27,7 +27,7 @@ public class ProductPair {
         setAmount(getAmount() - amount);
     }
 
-    public int getWeight() { return product.weight() * amount; }
+    public double getWeight() { return product.weight() * amount; }
 
     @Override
     public String toString() {

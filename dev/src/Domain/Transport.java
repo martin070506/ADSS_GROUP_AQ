@@ -14,7 +14,7 @@ public class Transport {
     private List<Truck> replacementTrucks;
     private TransportFile transportFile;
     private List<Supplier> suppliers;
-    int id;
+    private int id;
 
 
 

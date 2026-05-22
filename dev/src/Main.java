@@ -1,24 +1,30 @@
 import Domain.*;
 import Domain.BranchManager;
-import Domain.CompanyManager;
+import Domain.TruckFacade;
 import Service.*;
 import Presentation.MainConsole;
-
-
 import java.util.*;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-
-    // Core Data
-    private static List<Location> locations = new LinkedList<>();
-    private static List<Product> products = new LinkedList<>();
-    private static List<Supplier> suppliers = new LinkedList<>();
-    private static List<Truck> trucks = new LinkedList<>();
-    private static List<Driver> drivers = new LinkedList<>();
-    private static List<BranchManager> branchManagers = new LinkedList<>();
+    private static CompanyManager companyManager;
 
     public static void main(String[] args) {
+        // --- 1. INITIALIZE INFRASTRUCTURE (FACADES) ---
+        TruckFacade truckFacade = new TruckFacade();
+        DriverFacade driverFacade = new DriverFacade();
+        TransportationFacade transportFacade = new TransportationFacade();
+        TransportManager transportManager=new TransportManager(new ArrayList<>(),truckFacade.getAvailableTrucks(),driverFacade.getAvailableDrivers());
+        // --- 2. INITIALIZE SERVICES ---
+        TruckService truckService = new TruckService(truckFacade);
+        DriverService driverService = new DriverService(driverFacade);
+        ProductService productService = new ProductService();
+
+        ShipmentService shipmentService = new ShipmentService(transportManager);
+
+        // --- 3. INITIALIZE ORCHESTRATOR ---
+        companyManager = CompanyManager.getInstance(truckService, driverService, shipmentService, transportFacade, productService);
+
         System.out.println("=== LOGISTICS MANAGEMENT SYSTEM ===");
         System.out.println("1. Load Automatic Demo Data");
         System.out.println("2. Manual Data Entry");
@@ -30,9 +36,7 @@ public class Main {
             manualSetup();
         }
 
-        // Initialize our Facades/Managers
-        CompanyManager companyManager = CompanyManager.getInstance(trucks, drivers, suppliers, locations,branchManagers);
-        // Assuming your MainConsole takes these as dependencies
+        // --- 4. START UI ---
         MainConsole console = new MainConsole(companyManager);
 
         boolean running = true;
@@ -41,19 +45,20 @@ public class Main {
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
-                case "1": addBranchRequest(); break;
-                case "2": resupplySupplier(); break;
-                case "3": setupSuppliers(companyManager); break;
-                case "4": addStoreLocation(companyManager); break;
-                case "5": setupDrivers(companyManager); break;
-                case "6": setupTrucks(companyManager); break;
-                case "7": runShipmentCycle(console); break;
-                case "0":
+                case "1" -> addBranchRequest();
+                case "2" -> resupplySupplier();
+                case "3" -> manualSupplierSetup();
+                case "4" -> addManualStoreLocation();
+                case "5" -> manualDriverSetup();
+                case "6" -> manualTruckSetup();
+                case "7" -> runShipmentCycle(console);
+                case "8" -> deleteBranchRequest();
+                case "9" -> updateBranchRequest();
+                case "0" -> {
                     System.out.println("Exiting system...");
                     running = false;
-                    break;
-                default:
-                    System.out.println("Invalid choice. Try again.");
+                }
+                default -> System.out.println("Invalid choice. Try again.");
             }
         }
     }
@@ -69,46 +74,269 @@ public class Main {
         System.out.println("[5] Add New Driver");
         System.out.println("[6] Add New Truck");
         System.out.println("[7] START SHIPMENT CONSOLE");
+
+        System.out.println("[8] Delete Request for Branch");
+        System.out.println("[9] Update Request for Branch");
         System.out.println("[0] Exit");
         System.out.print(">> Select Option: ");
     }
 
+    // --- REFACTORED OPERATIONAL LOGIC ---
+
+    private static void addBranchRequest() {
+        List<BranchManager> branches = companyManager.getBranches();
+        if (branches.isEmpty()) {
+            System.out.println("Error: No branch locations available.");
+            return;
+        }
+        System.out.println("\nSelect Branch:");
+        for (int i = 0; i < branches.size(); i++) {
+            System.out.println("[" + i + "] " + branches.get(i).getLocation().address());
+        }
+        int choice = promptInt("Choice Index: ");
+        BranchManager bm = branches.get(choice);
+
+        List<ProductPair> requested = new LinkedList<>();
+        List<Product> catalog = companyManager.getMasterProductCatalog();
+        while (true) {
+            System.out.println("\nAvailable Products:");
+            for (int i = 0; i < catalog.size(); i++) System.out.println("[" + i + "] " + catalog.get(i).name());
+            System.out.print("Select Product Index (or 'done'): ");
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("done")) break;
+
+            int pIdx = Integer.parseInt(input);
+            int qty = promptInt("Quantity needed: ");
+            requested.add(new ProductPair(catalog.get(pIdx), qty));
+        }
+        bm.requestShipment(requested);
+        System.out.println("Request added for branch.");
+    }
+
+    private static void resupplySupplier() {
+        List<Supplier> suppliers = companyManager.getShipmentService().getSuppliers();
+        if (suppliers.isEmpty()) {
+            System.out.println("No suppliers available.");
+            return;
+        }
+        System.out.println("\nSelect Supplier to Restock:");
+        for (int i = 0; i < suppliers.size(); i++) {
+            System.out.println("[" + i + "] " + suppliers.get(i).supplierLocation().address());
+        }
+        int sIdx = promptInt("Supplier Index: ");
+        Supplier s = suppliers.get(sIdx);
+
+        List<Product> catalog = companyManager.getMasterProductCatalog();
+        System.out.println("Select Product:");
+        for (int i = 0; i < catalog.size(); i++) System.out.println("[" + i + "] " + catalog.get(i).name());
+        int pIdx = promptInt("Product Index: ");
+        int qty = promptInt("Amount to add: ");
+
+        s.addStock(catalog.get(pIdx), qty);
+        System.out.println("Stock updated.");
+    }
+
+    private static void runShipmentCycle(MainConsole console) {
+        try {
+            console.run();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void deleteBranchRequest() {
+        System.out.println("Which branch would you like to delete?");
+
+        Location l=selectLocation(companyManager.getActiveRequestBranches());
+        List<Destination> chosenBranchRequests=companyManager.getRequestsByBranch(l);
+        if (chosenBranchRequests.isEmpty()) {
+            System.out.println("No branch locations available.");
+        }
+        else {
+            System.out.println("\nBranch Request To View:");
+            for (int i = 0; i < chosenBranchRequests.size(); i++) {
+                System.out.println("["+i+"]: " +chosenBranchRequests.get(i).toString());
+            }
+            int choice=-1;
+            while(choice>=chosenBranchRequests.size()||choice<0){
+                System.out.println("Choose Request for Deletion:");
+                System.out.println("Choose Request for Updating:");
+                try {
+                    choice = Integer.parseInt(scanner.nextLine().trim());
+                }
+                catch (Exception e) {
+                    System.out.println("please enter a valid input");
+                }
+            }
+            Destination d=chosenBranchRequests.get(choice);
+            companyManager.removeRequestsByBranch(d);
+            System.out.println("Request removed for branch.");
+
+
+        }
+    }
+
+
+
+    public static void updateBranchRequest() {
+        System.out.println("Which branch would you like to delete?");
+        Location l=selectLocation(companyManager.getAllLocations());
+        List<Destination> chosenBranchRequests=companyManager.getRequestsByBranch(l);
+        if (chosenBranchRequests.isEmpty()) {
+            System.out.println("No branch locations available.");
+        }
+        else {
+            System.out.println("\nSelect Request for Updating:");
+            for (int i = 0; i < chosenBranchRequests.size(); i++) {
+                System.out.println("["+i+"]: " +chosenBranchRequests.get(i).toString());
+            }
+            int choice=-1;
+            while(choice>=chosenBranchRequests.size()||choice<0){
+                System.out.println("Choose Request for Updating:");
+                try {
+                    choice = Integer.parseInt(scanner.nextLine().trim());
+                }
+                catch (Exception e) {
+                    System.out.println("please enter a valid input");
+                }
+            }
+            Destination d=chosenBranchRequests.get(choice);
+            String actionInput="";
+            List<Product> catalog = companyManager.getMasterProductCatalog();
+            while (!actionInput.equalsIgnoreCase("done")) {
+                actionInput = scanner.nextLine();
+
+                if (!actionInput.equalsIgnoreCase("add Product") && !actionInput.equalsIgnoreCase("remove Product")) {
+                    if (!actionInput.equalsIgnoreCase("done")) {
+                        System.out.println("Please enter a valid input");
+                    }
+                }
+
+                // --- ADD PRODUCT ---
+                else if (actionInput.equalsIgnoreCase("add Product")) {
+                    System.out.println("Select Product:");
+                    for (int i = 0; i < catalog.size(); i++) {
+                        System.out.println("[" + i + "] " + catalog.get(i).name());
+                    }
+
+                    // Validate Product Index
+                    int pIdx = -1;
+                    while (true) {
+                        pIdx = promptInt("Product Index: ");
+                        if (pIdx >= 0 && pIdx < catalog.size()) {
+                            break; // Valid index, exit loop
+                        }
+                        System.out.println("Invalid index. Please choose a number between 0 and " + (catalog.size() - 1));
+                    }
+
+                    // Validate Quantity
+                    int qty = -1;
+                    while (true) {
+                        qty = promptInt("Amount to add: ");
+                        if (qty > 0) {
+                            break; // Valid quantity, exit loop
+                        }
+                        System.out.println("Quantity must be greater than 0.");
+                    }
+
+                    Product p = catalog.get(pIdx);
+                    ProductPair pp = new ProductPair(p, qty);
+                    d.getProductFile().addProduct(pp);
+                }
+
+                // --- REMOVE PRODUCT ---
+                else if (actionInput.equalsIgnoreCase("remove Product")) {
+                    System.out.println("Select Product:");
+                    List<Product> productsInRequest = new ArrayList<>();
+                    for (ProductPair pp : d.getProductFile().getProducts()) {
+                        productsInRequest.add(pp.product);
+                    }
+
+                    if (productsInRequest.isEmpty()) {
+                        System.out.println("No products available to remove.");
+                        continue;
+                    }
+
+                    for (int i = 0; i < productsInRequest.size(); i++) {
+                        System.out.println("[" + i + "] " + productsInRequest.get(i).name());
+                    }
+
+                    // Validate Product Index
+                    int pIdx = -1;
+                    while (true) {
+                        pIdx = promptInt("Product Index: ");
+                        if (pIdx >= 0 && pIdx < productsInRequest.size()) {
+                            break;
+                        }
+                        System.out.println("Invalid index. Please choose a number between 0 and " + (productsInRequest.size() - 1));
+                    }
+                    // Validate Quantity
+                    int qty = -1;
+                    while (true) {
+                        qty = promptInt("Amount to remove [if you remove more than available, product will be removed altogether]: ");
+                        if (qty > 0) {
+                            break;
+                        }
+                        System.out.println("Quantity must be greater than 0.");
+                    }
+
+
+                    Product p = productsInRequest.get(pIdx);
+                    ProductPair pp = new ProductPair(p, qty);
+                    d.getProductFile().removeProduct(pp);
+                }
+            }
+
+
+        }
+    }
+
+    private static Location selectLocation(List<Location> locations) {
+        for (int i = 0; i < locations.size(); i++) {
+            System.out.println("[" + (i + 1) + "] " + locations.get(i).address());
+        }
+        while (true) {
+            System.out.print("Location index: ");
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (choice >= 0 && choice < locations.size()) return locations.get(choice);
+            } catch (Exception ignored) {}
+        }
+    }
+
+
     // --- MANUAL SETUP MODULES ---
 
     private static void manualSetup() {
-        System.out.println("\n--- BEGIN MANUAL DATA ENTRY ---");
-        setupProducts(); // Must come first to stock suppliers
-        setupDrivers(CompanyManager.getInstance());
-        setupTrucks(CompanyManager.getInstance());
-        setupLocations();
-        setupStoreLocations();
-        setupSuppliers(CompanyManager.getInstance());
+        manualProductSetup();
+        manualDriverSetup();
+        manualTruckSetup();
+        manualLocationAndSupplierSetup();
     }
 
-    private static void setupProducts() {
+    private static void manualProductSetup() {
         System.out.println("\n> Define Product Catalog");
         while (true) {
             System.out.print("Product Name (or 'done'): ");
             String name = scanner.nextLine();
             if (name.equalsIgnoreCase("done")) break;
-            int weight = promptInt("Unit Weight: ");
-            products.add(new Product(name, weight));
+            double weight = promptDouble("Unit Weight: ");
+            companyManager.addProductToCatalog(name, weight);
         }
     }
 
-    private static void setupDrivers(CompanyManager companyManager) {
+    private static void manualDriverSetup() {
         System.out.print("\nAdd Driver? (y/n): ");
         while (scanner.nextLine().equalsIgnoreCase("y")) {
             System.out.print("Name: ");
             String name = scanner.nextLine();
             int lic = promptInt("License Level (1-3): ");
-            Driver driver = new Driver(name, lic);
-            companyManager.addDriver(driver);
+            companyManager.getDriverService().addDriver(new Driver(name, lic));
             System.out.print("Add another driver? (y/n): ");
         }
     }
 
-    private static void setupTrucks(CompanyManager companyManager) {
+    private static void manualTruckSetup() {
         System.out.print("\nAdd Truck? (y/n): ");
         while (scanner.nextLine().equalsIgnoreCase("y")) {
             int id = promptInt("Truck ID: ");
@@ -117,213 +345,79 @@ public class Main {
             int weight = promptInt("Net Weight: ");
             int max = promptInt("Max Capacity: ");
             int lic = promptInt("License Required (1-3): ");
-            Truck truck = new Truck(id, model, weight, max, lic);
-            companyManager.addTruck(truck);
+            companyManager.getTruckService().addTruck(new Truck(id, model, weight, max, lic));
             System.out.print("Add another truck? (y/n): ");
         }
     }
 
-    private static void setupLocations() {
-        System.out.println("\n> Define General Locations");
-        while (true) {
-            System.out.print("Location Address (or 'done'): ");
-            String addr = scanner.nextLine();
-            if (addr.equalsIgnoreCase("done")) break;
-            System.out.print("Phone: ");
-            String phone = scanner.nextLine();
-            System.out.print("Contact Name: ");
-            String contact = scanner.nextLine();
-            locations.add(new Location(addr, phone, contact));
-        }
+    private static void addManualStoreLocation() {
+        System.out.print("Address: ");
+        String addr = scanner.nextLine();
+        System.out.print("Phone: ");
+        String phone = scanner.nextLine();
+        System.out.print("Contact: ");
+        String contact = scanner.nextLine();
+        companyManager.addBranch(addr, phone, contact);
     }
 
-    private static void setupStoreLocations() {
-        System.out.println("\n> Designate Store Branches");
-        for (Location loc : locations) {
-            System.out.print("Is [" + loc.address() + "] a Store? (y/n): ");
+    private static void manualSupplierSetup() {
+        System.out.print("Supplier Address: ");
+        String addr = scanner.nextLine();
+        System.out.print("Phone: ");
+        String phone = scanner.nextLine();
+        System.out.print("Contact: ");
+        String contact = scanner.nextLine();
+
+        List<ProductPair> stock = new LinkedList<>();
+        for (Product p : companyManager.getMasterProductCatalog()) {
+            System.out.print("Supply " + p.name() + "? (y/n): ");
             if (scanner.nextLine().equalsIgnoreCase("y")) {
-                branchManagers.add(new BranchManager(loc));
+                int qty = promptInt("Quantity: ");
+                stock.add(new ProductPair(p, qty));
             }
         }
+        companyManager.registerSupplier("SUP", addr, phone, contact, stock);
     }
 
-    private static void setupSuppliers(CompanyManager companyManager) {
-        System.out.println("\n> Designate Suppliers");
-        for (Location loc : locations) {
-            System.out.print("Is [" + loc.address() + "] a Supplier? (y/n): ");
-            if (scanner.nextLine().equalsIgnoreCase("y")) {
-                List<ProductPair> stock = new LinkedList<>();
-                System.out.println("-- Adding Stock for " + loc.address() + " --");
-                for (Product p : products) {
-                    System.out.print("Does it supply " + p.name() + "? (y/n): ");
-                    if (scanner.nextLine().equalsIgnoreCase("y")) {
-                        int qty = promptInt("Initial Quantity: ");
-                        stock.add(new ProductPair(p, qty));
-                    }
-                }
-                Supplier supplier = new Supplier(loc, stock);
-                companyManager.addSupplier(supplier);
-            }
-        }
-    }
-    private  static void addStoreLocation(CompanyManager companyManager) {
-        System.out.println("\n> Define General Locations");
-        while (true) {
-            System.out.print("Location Address (or 'done'): ");
-            String addr = scanner.nextLine();
-            if (addr.equalsIgnoreCase("done")) break;
-            System.out.print("Phone: ");
-            String phone = scanner.nextLine();
-            System.out.print("Contact Name: ");
-            String contact = scanner.nextLine();
-            Location loc = new Location(addr, phone, contact);
-            companyManager.addLocation(loc);
-            companyManager.addBranchManager(new BranchManager(loc));
-        }
-    }
-
-    // --- OPERATIONAL LOGIC ---
-
-    private static void addBranchRequest() {
-        if (branchManagers.isEmpty()) {
-            System.out.println("Error: No branch locations available.");
-            return;
-        }
-        System.out.println("\nSelect Branch:");
-        for (int i = 0; i < branchManagers.size(); i++) {
-            System.out.println("[" + i + "] " + branchManagers.get(i).getLocation().address());
-        }
-        int choice = promptInt("Choice Index: ");
-        BranchManager bm = branchManagers.get(choice);
-
-        List<ProductPair> requested = new LinkedList<>();
-        while (true) {
-            System.out.println("\nAvailable Products:");
-            for (int i = 0; i < products.size(); i++) System.out.println("[" + i + "] " + products.get(i).name());
-            System.out.print("Select Product Index (or 'done'): ");
-            String input = scanner.nextLine();
-            if (input.equalsIgnoreCase("done")) break;
-
-            int pIdx = Integer.parseInt(input);
-            int qty = promptInt("Quantity needed: ");
-            requested.add(new ProductPair(products.get(pIdx), qty));
-        }
-        bm.requestShipment(requested);
-        System.out.println("Request added for branch.");
-    }
-
-    private static void resupplySupplier() {
-        if (suppliers.isEmpty()) {
-            System.out.println("No suppliers available.");
-            return;
-        }
-        System.out.println("\nSelect Supplier to Restock:");
-        for (int i = 0; i < suppliers.size(); i++) {
-            System.out.println("[" + i + "] " + suppliers.get(i).getSupplierLocation().address());
-        }
-        int sIdx = promptInt("Supplier Index: ");
-        Supplier s = suppliers.get(sIdx);
-
-        System.out.println("Select Product:");
-        for (int i = 0; i < products.size(); i++) System.out.println("[" + i + "] " + products.get(i).name());
-        int pIdx = promptInt("Product Index: ");
-        int qty = promptInt("Amount to add to stock: ");
-
-        // Facade/Supplier logic to add stock
-        s.addStock(products.get(pIdx), qty);
-        System.out.println("Stock updated successfully.");
-    }
-
-    private static void runShipmentCycle(MainConsole console) {
-        System.out.println("\n--- Initiating Shipment Console ---");
-        try {
-            console.run();
-        } catch (Exception e) {
-            System.out.println("Console session closed.");
-        }
+    private static void manualLocationAndSupplierSetup() {
+        System.out.println("Setting up basic locations...");
+        // This is a combination helper for the manual entry path
     }
 
     // --- UTILS ---
-
     private static int promptInt(String msg) {
         while (true) {
             try {
                 System.out.print(msg);
                 return Integer.parseInt(scanner.nextLine().trim());
-            } catch (Exception e) {
-                System.out.println("Invalid input. Enter a number.");
-            }
+            } catch (Exception e) { System.out.println("Invalid input."); }
+        }
+    }
+
+    private static double promptDouble(String msg) {
+        while (true) {
+            try {
+                System.out.print(msg);
+                return Double.parseDouble(scanner.nextLine().trim());
+            } catch (Exception e) { System.out.println("Invalid input."); }
         }
     }
 
     public static void fillListsWithDemoData() {
-        locations.add(new Location("Tel Aviv", "03-1234567", "Alice"));
-        locations.add(new Location("Holon", "03-7654321", "Bob"));
-        locations.add(new Location("Haifa", "04-1112233", "Charlie"));
-        locations.add(new Location("Netanya", "09-4445566", "David"));
-        locations.add(new Location("Beer Sheva", "08-9998877", "Eve"));
-        locations.add(new Location("Jerusalem", "02-5556677", "Frank")); // 5
-        locations.add(new Location("Ashdod", "08-2223344", "Grace")); // 6
-        locations.add(new Location("Petah Tikva", "03-9990011", "Henry")); // 7
-        locations.add(new Location("Ramat Gan", "03-4445556", "Isabella")); // 8
-        locations.add(new Location("Rehovot", "08-7778899", "Jack")); // 9
+        companyManager.addProductToCatalog("Apple", 150.0);
+        companyManager.addProductToCatalog("Banana", 120.0);
+        companyManager.addProductToCatalog("Milk", 6.0);
 
+        List<Product> cat = companyManager.getMasterProductCatalog();
 
+        companyManager.registerSupplier("FruitVendor", "Tel Aviv", "03-123", "Alice",
+                new LinkedList<>(List.of(new ProductPair(cat.get(0), 100), new ProductPair(cat.get(1), 100))));
 
-        products.add(new Product("Apple", 150)); // 0
-        products.add(new Product("Banana", 120)); // 1
-        products.add(new Product("Orange", 200)); // 2
-        products.add(new Product("Lemon", 80)); // 3
-        products.add(new Product("Pineapple", 900)); // 4
-        products.add(new Product("Kiwi", 250)); // 5
-        products.add(new Product("Tomato", 10)); // 6
-        products.add(new Product("Cucumber", 8)); // 7
-        products.add(new Product("Milk", 6)); // 8
-        products.add(new Product("Bread", 12)); // 9
+        companyManager.addBranch("Ashdod", "08-222", "Grace");
 
+        companyManager.getTruckService().addTruck(new Truck(101, "Isuzu Sumo", 3500, 7500, 2));
+        companyManager.getDriverService().addDriver(new Driver("Bob", 2));
 
-
-        suppliers.add(new Supplier(locations.get(0), new LinkedList<>(List.of(new ProductPair(products.get(0), 100)))));
-        suppliers.add(new Supplier(locations.get(1), new LinkedList<>(List.of(new ProductPair(products.get(1), 100)))));
-        suppliers.add(new Supplier(locations.get(2), new LinkedList<>(List.of(new ProductPair(products.get(2), 100)))));
-        suppliers.add(new Supplier(locations.get(3), new LinkedList<>(List.of(new ProductPair(products.get(3), 100)))));
-
-
-        suppliers.add(new Supplier(locations.get(4), new LinkedList<>(List.of(
-                new ProductPair(products.get(4), 80),
-                new ProductPair(products.get(5), 80),
-                new ProductPair(products.get(6), 80)
-        ))));
-
-
-
-        suppliers.add(new Supplier(locations.get(5), new LinkedList<>(List.of(
-                new ProductPair(products.get(7), 150),
-                new ProductPair(products.get(8), 200)
-        ))));
-
-
-
-
-        branchManagers.add(new BranchManager(locations.get(6)));
-        branchManagers.add(new BranchManager(locations.get(7)));
-        branchManagers.add(new BranchManager(locations.get(8)));
-        branchManagers.add(new BranchManager(locations.get(9)));
-
-
-
-        trucks.add(new Truck(101, "Isuzu Sumo", 3500, 7500, 2));
-        trucks.add(new Truck(102, "DAF LF", 5000, 12000, 2));
-        trucks.add(new Truck(103, "Volvo FH", 8000, 26000, 3));
-        trucks.add(new Truck(104, "Mercedes Actros", 9500, 32000, 3));
-        trucks.add(new Truck(105, "Scania R500", 10000, 40000, 3));
-
-
-        drivers.add(new Driver("Alice", 1));
-        drivers.add(new Driver("Bob", 2));
-        drivers.add(new Driver("Charlie", 2));
-        drivers.add(new Driver("David", 3));
-        drivers.add(new Driver("Eve", 3));
-
+        System.out.println("Demo Data Loaded.");
     }
 }

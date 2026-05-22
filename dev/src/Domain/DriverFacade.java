@@ -1,5 +1,6 @@
 package Domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DriverFacade {
@@ -10,6 +11,10 @@ public class DriverFacade {
     public DriverFacade(List<Driver> drivers) {
         this.drivers = drivers;
         this.availableDrivers = drivers;
+    }
+    public DriverFacade() {
+        this.drivers = new ArrayList<>();
+        this.availableDrivers = new ArrayList<>();
     }
 
     public void takeDriver(Driver driver){
