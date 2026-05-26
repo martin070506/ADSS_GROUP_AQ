@@ -22,7 +22,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <build>
         <finalName>adss2025v01</finalName>
         <plugins>

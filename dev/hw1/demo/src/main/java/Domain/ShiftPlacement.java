@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import Presentation.Location;
+
 public class ShiftPlacement{
     private Shift shift;
     private HashMap<Integer,Jobs> placements;
     private int shift_manager;
-    public ShiftPlacement(LocalDate date, boolean is_morning){
-        shift = new Shift(date, is_morning);
+    public ShiftPlacement(LocalDate date, boolean is_morning, Location location){
+        shift = new Shift(date, is_morning, location);
         placements = new HashMap<>();
         shift_manager=-1;
     }

@@ -2,6 +2,7 @@ package Domain;
 
 import java.time.LocalDate;
 import java.util.List;
+import Presentation.Location;
 
 public class ShiftCanidates {
     private Shift shift;
@@ -53,8 +54,8 @@ public class ShiftCanidates {
         return ("succeed, a new candidate with id: "+id+" has been removed.");
     }
 
-    public boolean containAllWorkers(LocalDate date, boolean is_morning, List<Integer> ids) {
-        if(!this.shift.equals(new Shift(date, is_morning)))
+    public boolean containAllWorkers(LocalDate date, boolean is_morning, Location location, List<Integer> ids) {
+        if(!this.shift.equals(new Shift(date, is_morning, location)))
             return false;
         return this.workers_ids.containsAll(ids);
     }

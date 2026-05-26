@@ -3,6 +3,7 @@ package Domain;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import Presentation.Location;
 
 public class ShiftPlacmentFacade {
         private List<ShiftPlacement> shifts;
@@ -15,27 +16,27 @@ public class ShiftPlacmentFacade {
             this.allJobs=allJobs;
             this.canidates=canidates;
         }
-        public String addPlacments(LocalDate date, boolean is_morning, int shift_manager, List<Integer> ids, List<Integer> jobs){
+        public String addPlacments(LocalDate date, boolean is_morning, Location location, int shift_manager, List<Integer> ids, List<Integer> jobs){
             if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to change placement";
             }
-            else if(ids==null||jobs==null){
-                return "faild, some info is missing";
-            }
+            //else if(ids==null||jobs==null){
+              //  return "faild, some info is missing";
+            //}
             else if(ids.size()!=jobs.size()){
                 return "faild, there are mistmatch sizes between the workers and jobs that sent";
             }
             else if(!workers.isShiftManager(shift_manager)){
-                return "faild, placement does not contain shift manager";
+                return "faild, "+shift_manager+" can not be shift manager";
             }
-            else if(!allJobs.containAllJobs(date, is_morning, jobs)){
+            else if(!allJobs.containAllJobs(date, is_morning, location, jobs)){
                 return "faild, all job in placment did not match the shift sets jobs ";
             }
-            else if(!canidates.containAllWorkers(date, is_morning, ids)){
+            else if(!canidates.containAllWorkers(date, is_morning, location, ids)){
               return "faild, all workers in placment did not match the shift sets workers canidates ";
             }
             int length = jobs.size();
-            Shift shift = new Shift(date, is_morning);
+            Shift shift = new Shift(date, is_morning, location);
             for (ShiftPlacement shiftPlacement : shifts) {
                 if(shiftPlacement.getShift().equals(shift)){
                     for( int i=0; i<length; i++){
@@ -48,13 +49,13 @@ public class ShiftPlacmentFacade {
                         shiftPlacement.setShiftManager(shift_manager);
 
                     }
-                    canidates.startPlacement(date, is_morning);
-                    allJobs.startPlacement(date,is_morning);
+                    canidates.startPlacement(date, is_morning, location);
+                    allJobs.startPlacement(date,is_morning, location);
                     return "succeed, added all placment \n"+ shiftPlacement.toString();
                 }
 
             }
-            ShiftPlacement new_Placement = new ShiftPlacement(date, is_morning);
+            ShiftPlacement new_Placement = new ShiftPlacement(date, is_morning, location);
             for( int i=0; i<length; i++){
                 String result = new_Placement.addPlacement(ids.removeFirst(), jobs.removeFirst());
                 if(!result.startsWith("succeed")){
@@ -66,14 +67,14 @@ public class ShiftPlacmentFacade {
 
             }
             shifts.add(new_Placement);
-            canidates.startPlacement(date, is_morning);
-            allJobs.startPlacement(date,is_morning);
+            canidates.startPlacement(date, is_morning, location);
+            allJobs.startPlacement(date,is_morning, location);
 
             return "succeed, added all placment \n"+ new_Placement.toString();
             
         }
-        public String getShiftPlacment(LocalDate date, boolean is_morning){
-            Shift shift = new Shift(date, is_morning);
+        public String getShiftPlacment(LocalDate date, boolean is_morning, Location location){
+            Shift shift = new Shift(date, is_morning, location);
             for (ShiftPlacement shiftPlacement : shifts) {
                 if(shiftPlacement.getShift().equals(shift)){
                     return shiftPlacement.toString();
@@ -82,14 +83,14 @@ public class ShiftPlacmentFacade {
             }
             return "faild, shift placment not found";
         }
-        public String changePlacment(LocalDate date, boolean is_morning, int id_to_out, int id_to_in){
-            if(!canidates.containWorker(date, is_morning, id_to_in)){
+        public String changePlacment(LocalDate date, boolean is_morning, Location location, int id_to_out, int id_to_in){
+            if(!canidates.containWorker(date, is_morning,location, id_to_in)){
                 return "faild, all workers in placment did not match the shift sets workers canidates ";
             }
             if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to change placement";
             }
-            Shift shift = new Shift(date, is_morning);
+            Shift shift = new Shift(date, is_morning, location);
             for (ShiftPlacement shiftPlacement : shifts) {
                 if(shiftPlacement.getShift().equals(shift)){
                     if(shiftPlacement.getShiftManager()==id_to_out){

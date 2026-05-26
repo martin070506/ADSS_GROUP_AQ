@@ -55,7 +55,9 @@ public class Worker {
     public void setId(int id) {
         this.id = id;
     }
-
+    public int getLicance(){
+        return -1;
+    }
     public void setBankInfo(String bank_info) {
         this.bank_info = bank_info;
     }

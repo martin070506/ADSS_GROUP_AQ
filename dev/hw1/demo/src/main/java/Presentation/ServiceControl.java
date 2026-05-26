@@ -90,16 +90,21 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
-            
+                        
+            Location location = getLocation();
+
+                        
             System.out.println("enter the id for the worker");
             worker = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(canidates_service.removeCandidate(date,is_morning,location, worker));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(canidates_service.removeCandidate(date,is_morning,worker));
 
     }
     public static void runCanidatesServiceAdd(){
@@ -115,15 +120,19 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
             
+            Location location = getLocation();
+            
             System.out.println("enter the id for the worker");
             worker = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(canidates_service.addCandidate(date,is_morning,location,worker));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(canidates_service.addCandidate(date,is_morning,worker));
 
     }
     public static void runViewCanidatesShiftService(){
@@ -137,12 +146,17 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
+
+            Location location = getLocation();
+
+
+            System.out.println(canidates_service.getCandidatesForShift(date,is_morning, location));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to placement service menu ");
 
         }
-        System.out.println(canidates_service.getCandidatesForShift(date,is_morning));
 
     }
     public static void runJobsService(){
@@ -181,12 +195,17 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
+                        
+            Location location = getLocation();
+
+
+            System.out.println(jobs_service.getShift(date,is_morning, location));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to placement service menu ");
 
         }
-        System.out.println(jobs_service.getShift(date,is_morning));
 
     }
     public static void runPlacementService(){
@@ -224,6 +243,9 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
 
+            Location location = getLocation();
+
+
             System.out.println("enter the id of the worker to remove from shift: ");
             id_change_from = scanner.nextInt();
             scanner.nextLine();
@@ -231,12 +253,14 @@ public class ServiceControl{
              System.out.println("enter the id of the worker to add from shift: ");
             id_change_to = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(placement_service.changePlacment(date,is_morning,location, id_change_from,id_change_to));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to placement service menu ");
 
         }
-        System.out.println(placement_service.changePlacment(date,is_morning, id_change_from,id_change_to));
 
     }
     public static void runPlacementServiceAdd(){
@@ -246,6 +270,7 @@ public class ServiceControl{
         LocalDate date= null;
         boolean is_morning=false;
         int shift_manager = 0;
+        Location location = null;
         try{
             System.out.println("enter shift date in this format ('yyyy-mm-dd'): ");
             String text_date = scanner.nextLine();
@@ -254,6 +279,9 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
+
+            location = getLocation();
+
 
             System.out.println("enter shift manager id: ");
             shift_manager = scanner.nextInt();
@@ -296,7 +324,7 @@ public class ServiceControl{
                  System.out.println("the system did not understand your input, tryng again:");
             }
         }
-        System.out.println(placement_service.addPlacement(date, is_morning,shift_manager, ids, jobs));
+        System.out.println(placement_service.addPlacement(date, is_morning, location, shift_manager, ids, jobs));
     }
     public static void runViewPlacementService(){
         LocalDate date= null;
@@ -309,12 +337,16 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
+
+            Location location = getLocation();
+
+            System.out.println(placement_service.getShift(date,is_morning, location));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to placement service menu ");
 
         }
-        System.out.println(placement_service.getShift(date,is_morning));
 
     }
     public static void runJobsServiceEdit(){
@@ -329,6 +361,9 @@ public class ServiceControl{
             System.out.println("enter 'true' if this is morning shift else enter 'false': ");
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
+
+            Location location = getLocation();
+
             
             System.out.println("enter '0' for changing from casheer job, '1' from shop keeper");
             job_to_be_changed = scanner.nextInt();
@@ -337,12 +372,14 @@ public class ServiceControl{
             System.out.println("enter '0' for changing to casheer job, '1' to shop keeper");
             job_to_change_to = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(jobs_service.changeJob(date,is_morning,location,job_to_be_changed,job_to_change_to));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(jobs_service.changeJob(date,is_morning,job_to_be_changed,job_to_change_to));
 
     }
     public static void runJobsServiceRemove(){
@@ -358,15 +395,20 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
             
+            Location location = getLocation();
+
+
             System.out.println("enter '0' for removing casheer job, '1' for shop keeper");
             job = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(jobs_service.removeJob(date,is_morning,location,job));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(jobs_service.removeJob(date,is_morning,job));
 
     }
     public static void runJobsServiceAdd(){
@@ -382,15 +424,19 @@ public class ServiceControl{
             is_morning = scanner.nextBoolean();
             scanner.nextLine();
             
+            Location location = getLocation();
+            
             System.out.println("enter '0' for adding casheer job, '1' for shop keeper");
             job = scanner.nextInt();
             scanner.nextLine();
+
+            System.out.println(jobs_service.addJob(date,is_morning,location,job));
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(jobs_service.addJob(date,is_morning,job));
 
     }
     public static void runWorkersService(){
@@ -465,13 +511,13 @@ public class ServiceControl{
             System.out.println("enter worker new info if he can be shift manager: ");
             new_is_shift_manager = scanner.nextBoolean();
             
+            System.out.println(workers_service.editWorkerIsShiftManager(id,new_is_shift_manager));
 
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerIsShiftManager(id,new_is_shift_manager));
 
     }  
     public static void runWorkersServiceEditStartDate(){
@@ -486,12 +532,14 @@ public class ServiceControl{
             String dateInput = scanner.nextLine();
             new_date = LocalDate.parse(dateInput);
 
+            System.out.println(workers_service.editWorkerStartDate(id,new_date));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerStartDate(id,new_date));
 
     }  
     public static void runWorkersServiceEditSalaryCondision(){
@@ -505,12 +553,14 @@ public class ServiceControl{
             System.out.println("enter worker new salary condisions: ");
             new_salary_condisions = scanner.nextLine();
 
+            System.out.println(workers_service.editWorkerSalaryCondision(id,new_salary_condisions));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerSalaryCondision(id,new_salary_condisions));
 
     }  
     public static void runWorkersServiceEditSalary(){
@@ -525,12 +575,14 @@ public class ServiceControl{
             new_salary = scanner.nextFloat();
             scanner.nextLine();
 
+            System.out.println(workers_service.editWorkerSalary(id,new_salary));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerSalary(id,new_salary));
 
     }  
     public static void runWorkersServiceEditBankAccount(){
@@ -544,12 +596,14 @@ public class ServiceControl{
             System.out.println("enter worker new bank account info: ");
             new_bank_account = scanner.nextLine();
 
+            System.out.println(workers_service.editWorkerBankAccount(id,new_bank_account));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerBankAccount(id,new_bank_account));
 
     }  
     public static void runWorkersServiceEditId(){
@@ -564,12 +618,14 @@ public class ServiceControl{
             new_id = scanner.nextInt();
             scanner.nextLine();
 
+            System.out.println(workers_service.editWorkerId(id,new_id));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerId(id,new_id));
 
     }   
     public static void runWorkersServiceEditName(){
@@ -582,13 +638,15 @@ public class ServiceControl{
 
             System.out.println("enter worker new name: ");
             new_name = scanner.nextLine();
+            
+            System.out.println(workers_service.editWorkerName(id, new_name));
+
 
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.editWorkerName(id, new_name));
 
         runWorkersService();
     }
@@ -600,12 +658,14 @@ public class ServiceControl{
             id = scanner.nextInt();
             scanner.nextLine();
 
+            System.out.println(workers_service.removeWorker(id));
+
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        System.out.println(workers_service.removeWorker(id));
 
     }
     public static void runWorkersServiceAdd(){
@@ -643,17 +703,20 @@ public class ServiceControl{
             is_shift_manager = scanner.nextBoolean();
             scanner.nextLine();
 
+            String result =workers_service.addWorker(name, id, bank_account, salary, salary_condision, start_date, is_shift_manager);
+            System.out.println(result);
+
         }
         catch(Exception e){
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        String result =workers_service.addWorker(name, id, bank_account, salary, salary_condision, start_date, is_shift_manager);
-        System.out.println(result);
+        
 
         runWorkersService();
         
     }
-
-
+    private static Location getLocation(){
+        return new Location();
+    }
 }

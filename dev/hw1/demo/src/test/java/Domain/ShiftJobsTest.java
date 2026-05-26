@@ -1,6 +1,9 @@
 package Domain;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
+import Presentation.Location;
+
 import org.junit.jupiter.api.BeforeEach;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -9,11 +12,13 @@ import java.util.List;
 public class ShiftJobsTest{
     private ShiftJobs shiftJobs;
     private LocalDate testDate;
+    private Location testLocation;
 
     @BeforeEach
     public void setUp() {
+        testLocation = new Location();
         testDate = LocalDate.of(2026, 4, 7);
-        shiftJobs = new ShiftJobs(testDate, true); 
+        shiftJobs = new ShiftJobs(testDate, true, testLocation); 
     }
 
     @Test

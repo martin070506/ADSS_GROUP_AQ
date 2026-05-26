@@ -3,6 +3,7 @@ package Domain;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import Presentation.Location;
 
 public class ShiftCanidatesWorkersFacade {
     private List<ShiftCanidates> canidates_list;
@@ -10,26 +11,26 @@ public class ShiftCanidatesWorkersFacade {
     public ShiftCanidatesWorkersFacade() {
         this.canidates_list = new ArrayList<>();
     }
-    public boolean containWorker(LocalDate date, boolean is_morning, int id){
-        Shift shift = new Shift(date, is_morning);
+    public boolean containWorker(LocalDate date, boolean is_morning, Location location, int id){
+        Shift shift = new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))
                 return shiftCanidates.containWorker(id);
         }
         return false;
     }
-    public void startPlacement(LocalDate date,boolean is_morning){
-        Shift shift = new Shift(date, is_morning);
+    public void startPlacement(LocalDate date,boolean is_morning, Location location){
+        Shift shift = new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))
                  shiftCanidates.placementStarted();
         }
     }
-    public String addCandidate(LocalDate date, boolean is_morning, int id){
+    public String addCandidate(LocalDate date, boolean is_morning,  Location location, int id){
         if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to change placement";
         }
-        Shift shift = new Shift(date, is_morning);
+        Shift shift = new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))
                 return shiftCanidates.addCandidate(id);;
@@ -40,11 +41,11 @@ public class ShiftCanidatesWorkersFacade {
         canidates_list.add(canidates_of_new_shift);
         return result;
     }
-    public String removeCandidate(LocalDate date, boolean is_morning, int id){
+    public String removeCandidate(LocalDate date, boolean is_morning, Location location, int id){
        if(!LocalDate.now().isBefore(date)){
                 return "failed, now is too late to change placement";
         }
-        Shift shift = new Shift(date, is_morning);
+        Shift shift = new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))
                 return shiftCanidates.removeCandidate(id);
@@ -53,17 +54,17 @@ public class ShiftCanidatesWorkersFacade {
         return "Failed, there is no shift: "+shift.toString();
     }
 
-    public boolean containAllWorkers(LocalDate date,boolean is_morning,List<Integer> ids){
-        Shift shift=new Shift(date, is_morning);
+    public boolean containAllWorkers(LocalDate date,boolean is_morning,Location location,List<Integer> ids){
+        Shift shift=new Shift(date, is_morning, location);
         for (ShiftCanidates canidates : canidates_list) {
             if(shift.equals(canidates.getShift()))
-                return canidates.containAllWorkers(date,is_morning,ids);
+                return canidates.containAllWorkers(date,is_morning,location,ids);
         }
         return false;
     }
 
-    public String getCandidatesForShift(LocalDate date, boolean is_morning) {
-        Shift shift=new Shift(date, is_morning);
+    public String getCandidatesForShift(LocalDate date, boolean is_morning, Location location) {
+        Shift shift=new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))
                 return ("The candidates for the shift: "+shiftCanidates.getShift().toString()

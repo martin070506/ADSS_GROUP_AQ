@@ -10,14 +10,14 @@ public class ShiftWorkersCanidatesService {
         this.canidates=canidates;
     }
 
-    public String addCandidate(LocalDate date, boolean is_morning, int id){
-        return canidates.addCandidate(date,is_morning,id);
+    public String addCandidate(LocalDate date, boolean is_morning, Location location,  int id){
+        return canidates.addCandidate(date,is_morning,location, id);
     }
-    public String removeCandidate(LocalDate date, boolean is_morning, int id){
-        return canidates.removeCandidate(date, is_morning, id);
+    public String removeCandidate(LocalDate date, boolean is_morning, Location location,  int id){
+        return canidates.removeCandidate(date, is_morning, location, id);
     }
-    public String getCandidatesForShift(LocalDate date, boolean is_morning){
-        return canidates.getCandidatesForShift(date,is_morning);
+    public String getCandidatesForShift(LocalDate date, boolean is_morning, Location location){
+        return canidates.getCandidatesForShift(date,is_morning, location);
     }
     
 

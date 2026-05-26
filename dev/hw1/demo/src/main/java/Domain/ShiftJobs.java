@@ -3,20 +3,24 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import Presentation.Location;
 
 public class ShiftJobs{
     private Shift shift;
     private HashMap<Jobs, Integer> jobs;
     private boolean placement_started;
 
-    public ShiftJobs(LocalDate date, boolean is_morning){
-        shift = new Shift(date, is_morning);
+    public ShiftJobs(LocalDate date, boolean is_morning, Location location){
+        shift = new Shift(date, is_morning, location);
         jobs = new HashMap<>();
         placement_started=false;
     }
     public void placementStarted(){
         placement_started=true;
 
+    }
+    public boolean hashShopKeeper(){
+        return jobs.containsKey(1)&& jobs.get(1)>0;
     }
     public String addJob(int job){
         if(placement_started){
@@ -62,7 +66,7 @@ public class ShiftJobs{
     }
 
     public boolean containAllJobs( List<Integer> jobs){
-        ShiftJobs new_shift = new ShiftJobs(this.shift.getDate(), this.shift.getIsMorning());
+        ShiftJobs new_shift = new ShiftJobs(this.shift.getDate(), this.shift.getIsMorning(), this.shift.geLocation());
         for (int id : jobs) {
             new_shift.addJob(id);
         }
