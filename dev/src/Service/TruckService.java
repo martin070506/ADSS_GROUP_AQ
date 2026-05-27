@@ -2,33 +2,58 @@ package Service;
 
 import Domain.Driver;
 import Domain.Truck;
-import Domain.TruckFacade;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TruckService {
-    private TruckFacade truckFacade;
+    private final List<Truck> trucks;
 
-    public TruckService(TruckFacade TruckFacade) {
-        this.truckFacade = TruckFacade;
+    public TruckService() {
+        this.trucks = new ArrayList<>();
     }
 
-    public List<Truck> getAvailableTrucks() {
-        return truckFacade.getAvailableTrucks();
+    public TruckService(List<Truck> trucks) {
+        this.trucks = new ArrayList<>(trucks);
     }
 
-    public Truck reserveTruck(int index) {
-        Truck truck = truckFacade.getAvailableTrucks().get(index);
-        truckFacade.takeTruck(truck);
-        return truck;
-
+    public List<Truck> getTrucks() {
+        return trucks;
     }
+
+    public List<String> getAvailableTrucksDisplay() {
+        return getAvailableTrucksDisplay(Integer.MAX_VALUE);
+    }
+
+    public List<String> getAvailableTrucksDisplay(int minLicense) {
+        List<String> availableTrucks = new ArrayList<>();
+        for (Truck truck : trucks)
+            if (truck.isAvailable() && truck.getMinLicense() <= minLicense)
+                availableTrucks.add(truck.toString());
+
+        return availableTrucks;
+    }
+
+    public Truck getAvailableTruck(String truckName) {
+        for (Truck truck : trucks)
+            if (truck.toString().equals(truckName) && truck.isAvailable())
+                return truck;
+        return null;
+    }
+
     public void addTruck(Truck truck) {
-        truckFacade.addTruck(truck);
+        if (truck == null)
+            return;
+        trucks.add(truck);
     }
+
     public void removeTruck(Truck truck) {
-        truckFacade.removeTruck(truck);
+        if (truck == null) return;
+        trucks.remove(truck);
     }
+
     public boolean canTruckTakeDriver(Truck truck, Driver driver) {
-        return driver.license()>=truck.getMinLicense();
+        if (truck == null || driver == null) return false;
+        return driver.getLicense() >= truck.getMinLicense();
     }
 }

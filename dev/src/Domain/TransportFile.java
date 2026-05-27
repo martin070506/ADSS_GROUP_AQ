@@ -5,191 +5,98 @@ import java.util.*;
 
 public class TransportFile {
 
-    private String text;
-    private List<Supplier> suppliers;
-    private List<Destination> destinations;
-    private Map<Product,Integer> totalProductsNeeded;
-    private Truck truck;
-    private Driver driver;
-    private Location source;
+    private String transportLog;
+    private String trucksLog;
+    private String driversLog;
+    private String suppliersLog;
+    private String requestsLog;
 
-    public TransportFile(LocalDate departureTime, Transport transport) {
-        source=transport.getSource();
-        text = "Source: " + source.address()+ '\n'+
+    public TransportFile(LocalDate departureTime, Truck truck, Driver driver, Location source) {
+        transportLog = "Source: " + source.toString() + '\n'+
                 "Departure Time: " + departureTime + '\n';
-
-        /// we need copy constructors
-        suppliers = new ArrayList<>(transport.getSuppliers());
-        destinations = new ArrayList<>(transport.getDestinations());
-        totalProductsNeeded = aggregateProductsToInteger(transport.getSupplierAllocations());
-
-        truck = transport.getTruck();
-        driver = transport.getDriver();
-        source = transport.getSource();
+        trucksLog = truck.toString();
+        driversLog = driver.toString();
+        requestsLog = "";
+        suppliersLog = "";
     }
 
-    public void leaveSupplier(String productName, int weight) {
-        text += "Left Supplier " + productName + ", Truck Weight : " + weight + '\n';
+    public void leaveSupplier(Supplier supplier, int weight) {
+        transportLog += "Left Supplier " + supplier.getName() + ", Truck Weight : " + weight + '\n';
+        suppliersLog += supplier.supplierLocation().toString() + '\n';
     }
 
-    public void arriveAtSupplier(String supplierName) {
-        text += "Arrived at Supplier " + supplierName + '\n';
+    public void arriveAtSupplier(Supplier supplier) {
+        transportLog += "Arrived at Supplier " + supplier.getName() + '\n';
     }
 
-    public void skipSupplier(String name) {
-        text += "Skipped Supplier " + name + '\n';
+    public void skipSupplier(Supplier supplier) {
+
+        transportLog += "Skipped Supplier " + supplier.getName() + '\n';
     }
 
     public void overWeightAlert(int weight) {
-        text += "Over Weight Alert, Truck Weight : " + weight + '\n';
+
+        transportLog += "Over Weight Alert, Truck Weight : " + weight + '\n';
     }
 
-    public void removeLocation(Supplier supplier){
-        suppliers.remove(supplier);
+    public void changeTruck(Truck truck){
+        transportLog += "Truck swapped, New capacity: " + truck.getMaxWeight() + '\n';
+        trucksLog = " (Swapped)\n" + truck.toString();
     }
 
-    public Map<Product,Integer> getTotalProductsNeeded() {
-        return totalProductsNeeded;
+    public void changeDriver(Driver driver) {
+        transportLog += "Driver swapped, Name: " + driver.getDriverName();
+        trucksLog = " (Swapped)\n" + driver.toString();
     }
 
-    public List<Supplier> getSuppliers(){
-        return suppliers;
+    public void skipRequest(Request request) {
+        transportLog += "Skipped Request " + request.getContactName() + '\n';
     }
 
-    public List<Destination> getDestinations(){
-        return destinations;
+    public void arriveAtRequest(Request request) {
+        transportLog += "Arrived at Request " + request.getContactName() + '\n';
     }
 
-    public void removeDestination(Destination destination){
-        destinations.remove(destination);
+    public void leaveRequest(Request request) {
+        transportLog += "Left Request " + request.getContactName() + '\n';
+        requestsLog += request.toString();
     }
 
-    public void changeTruck(Truck toAdd){
-        this.truck = toAdd;
-        text += "Truck swapped, New capacity: " + truck.getMaxWeight() + '\n';
-    }
+    public String toString(Map<Product, Integer> itemsLeft) {
 
-    private Map<Product, Integer> aggregateProductsToInteger(Map<Supplier, List<ProductPair>> supplierAllocations) {
-        Map<Product, Integer> totalProductCounts = new HashMap<>();
-
-        for (List<ProductPair> productList : supplierAllocations.values()) {
-            if (productList == null) continue;
-
-            for (ProductPair pair : productList) {
-                Product product = pair.product;
-                int amount = pair.getAmount();
-
-                totalProductCounts.put(product, totalProductCounts.getOrDefault(product, 0) + amount);
-            }
-        }
-
-        return totalProductCounts;
-    }
-
-    public void removeProductsFromAggregate(List<ProductPair> products){
-        if (products == null) return;
-        for (ProductPair p: products){
-            int currentAmount = totalProductsNeeded.getOrDefault(p.product, 0);
-            int newAmount = currentAmount - p.getAmount();
-
-            if (newAmount <= 0) {
-                totalProductsNeeded.remove(p.product);
-            } else {
-                totalProductsNeeded.put(p.product, newAmount);
-            }
-        }
-    }
-
-    @Override
-    public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        appendSectionHeader(sb, "TRANSPORT LOG");
-        sb.append(text).append("\n");
+        sb.append("Transport File :\n\n");
 
-        appendTruckDetails(sb);
-        appendSupplierDetails(sb);
-        appendDestinationDetails(sb);
-        appendCombinedInventory(sb);
+        sb.append("--- TRANSPORT LOG ---\n");
+        sb.append(transportLog != null ? transportLog : "").append("\n");
+
+        sb.append("--- TRUCK DETAILS ---\n");
+        sb.append(trucksLog != null ? trucksLog : "").append("\n\n");
+
+        sb.append("--- DRIVER DETAILS ---\n");
+        sb.append(driversLog != null ? driversLog : "").append("\n\n");
+
+        sb.append("--- SUPPLIERS THAT WERE VISITED ---\n");
+        sb.append(suppliersLog != null ? suppliersLog : "").append("\n\n");
+
+        sb.append("--- SCHEDULED REQUESTS ---\n");
+        sb.append(requestsLog != null ? requestsLog : "").append("\n\n");
+
+        sb.append("--- ITEM LEFT ON TRUCK ---\n");
+        if (itemsLeft != null && !itemsLeft.isEmpty()) {
+            for (Map.Entry<Product, Integer> entry : itemsLeft.entrySet()) {
+                sb.append("- ").append(entry.getKey().name()).append(": ").append(entry.getValue()).append(" units\n");
+            }
+        } else {
+            sb.append("No items currently held.\n");
+        }
 
         return sb.toString();
     }
 
-
-    private void appendSectionHeader(StringBuilder sb, String title) {
-        sb.append("--- ").append(title).append(" ---\n");
-    }
-
-    private void appendTruckDetails(StringBuilder sb) {
-        appendSectionHeader(sb, "TRUCK DETAILS");
-        if (truck != null) {
-            sb.append("ID: ").append(truck.getTruckNumber())
-                    .append(" | Max Capacity: ").append(truck.getMaxWeight()).append("\n");
-        } else {
-            sb.append("No truck assigned.\n");
-        }
-        sb.append("\n");
-    }
-
-    private void appendSupplierDetails(StringBuilder sb) {
-        appendSectionHeader(sb, "SUPPLIERS THAT WERE VISITED");
-        for (Supplier s : suppliers) {
-            Location loc = s.getSupplierLocation();
-            sb.append("- ").append(loc.contactName())
-                    .append(" | Address: ").append(loc.address()).append("\n");
-        }
-        sb.append("\n");
-    }
-
-    private void appendDestinationDetails(StringBuilder sb) {
-        appendSectionHeader(sb, "SCHEDULED DESTINATIONS");
-        for (Destination d : destinations) {
-            Location loc = d.getLocation();
-            sb.append("- ").append(loc.contactName())
-                    .append(" | Address: ").append(loc.address()).append("\n");
-        }
-        sb.append("\n");
-    }
-
-    private void appendCombinedInventory(StringBuilder sb) {
-        appendSectionHeader(sb, "TOTAL ITEMS HELD");
-        Map<String, Integer> totals = getAggregatedInventory();
-
-        boolean hasItems = false;
-        for (Map.Entry<String, Integer> entry : totals.entrySet()) {
-            if (entry.getValue() > 0) {
-                sb.append("- ").append(entry.getKey()).append(": ").append(entry.getValue()).append(" units\n");
-                hasItems = true;
-            }
-        }
-
-        if (!hasItems) {
-            sb.append("No items currently held.\n");
-        }
-    }
-
-    private Map<String, Integer> getAggregatedInventory() {
-        Map<String, Integer> totals = new HashMap<>();
-        for (Product p : totalProductsNeeded.keySet()) {
-            totals.put(p.name(),totalProductsNeeded.get(p));
-        }
-        return totals;
-    }
-
-
-    public void removeItemFromTruck(int amountToRemove, String productName) {
-        text += "Removed " + amountToRemove + " units of " + productName + '\n';
-    }
-
-    public void skipDestination(String contactName) {
-        text += "Skipped Destination " + contactName + '\n';
-    }
-
-    public void arriveAtDestination(String contactName) {
-        text += "Arrived at Destination " + contactName + '\n';
-    }
-
-    public void leaveDestination(String contactName) {
-        text += "Left Destination " + contactName + '\n';
+    @Override
+    public String toString() {
+        return toString(null);
     }
 }

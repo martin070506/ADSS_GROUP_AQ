@@ -1,19 +1,20 @@
 package Exceptions;
 
-import Domain.ProductPair;
+import Domain.Product;
 
-import java.util.List;
+import java.util.Map;
 
 public class OverweightException extends DomainException {
 
-    private final List<ProductPair> addedProducts;
-    public OverweightException(int current, int max, List<ProductPair> addedProducts) {
+    private final Map<Product, Integer> addedProducts;
+    public OverweightException(int current, int max, Map<Product, Integer> addedProducts) {
         super("Truck is overweight! Current: " + current + ", Max: " + max);
         this.addedProducts = addedProducts;
     }
 
-    public List<ProductPair> getAddedProducts() {
+    public Map<Product, Integer> getAddedProducts() {
         return addedProducts;
     }
+
 }
 

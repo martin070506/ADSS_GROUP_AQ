@@ -2,128 +2,86 @@ package Domain;
 
 import java.time.LocalDate;
 import java.util.*;
+import Exceptions.ProductNotFoundOnTruckException;
 
 public class Transport {
 
+    private final int id;
     private final LocalDate departureTime;
     private Truck truck;
     private Driver driver;
     private final Location source;
-    private List<Destination> destinations;
-    private Map<Supplier, List<ProductPair>> supplierAllocations;
-    private List<Truck> replacementTrucks;
-    private TransportFile transportFile;
-    private List<Supplier> suppliers;
-    private int id;
+    private final List<Request> requests;
+    private final Map<Supplier, Map<Product, Integer>> supplierAllocations;
+    private final TransportFile transportFile;
 
+    public Transport(int id, LocalDate departureTime, Truck truck, Driver driver, Location source,
+                     List<Request> requests,
+                     Map<Supplier, Map<Product, Integer>> supplierAllocations) {
+        this.id = id;
+        this.departureTime = departureTime;
+        this.truck = truck;
+        this.driver = driver;
+        this.source = source;
+        this.requests = requests;
+        this.supplierAllocations = new HashMap<>(supplierAllocations);
+        this.transportFile = new TransportFile(departureTime, truck, driver, source);
+    }
 
+    public int getId() {
+        return id;
+    }
+
+    public LocalDate getDepartureTime() {
+        return departureTime;
+    }
+
+    public Truck getTruck() {
+        return truck;
+    }
+
+    public Driver getDriver() {
+        return driver;
+    }
+
+    public Location getSource() {
+        return source;
+    }
+
+    public Map<Supplier, Map<Product, Integer>> getSupplierAllocations() {
+        return supplierAllocations;
+    }
 
     public TransportFile getTransportFile() {
         return transportFile;
     }
 
-    public Transport(LocalDate departureTime, Truck truck, Driver driver, Location source,
-                     List<Destination> destinations, Map<Supplier, List<ProductPair>> supplierAllocations,
-                     List<Truck> replacementTrucks, List<Supplier> suppliers,int id) {
-
-        this.departureTime = departureTime;
-        this.truck = truck;
-        this.driver = driver;
-        this.source = source;
-        this.destinations = destinations;
-        this.supplierAllocations = supplierAllocations;
-        this.replacementTrucks = replacementTrucks;
-        this.suppliers = suppliers;
-        this.transportFile = new TransportFile(departureTime,this);
-        this.id = id;
-
-
-    }
-    public int getId() {
-        return id;
+    public void replaceTruck(Truck newTruck) {
+        this.truck = newTruck;
+        this.transportFile.changeTruck(newTruck);
     }
 
-    public void processShipment() {
+    public void removeSupplier(Supplier supplier) {
+        this.supplierAllocations.remove(supplier);
+    }
 
-        while (!suppliers.isEmpty()) {
-            Supplier supplier = suppliers.getFirst();
-            transportFile.arriveAtSupplier(supplier.getName());
-            supplier.handleShipment(supplierAllocations.get(supplier),truck);
-            transportFile.leaveSupplier(supplier.getName(), truck.getCurrentWeight());
-            suppliers.remove(supplier);
-            supplierAllocations.remove(supplier);
-        }
+    public void removeRequest(Request request) {
+        this.requests.remove(request);
+    }
 
-        while (!destinations.isEmpty()) {
-            transportFile.arriveAtDestination(destinations.getFirst().getContactName());
-            destinations.getFirst().handleShipment(truck);
-            transportFile.leaveDestination(destinations.getFirst().getContactName());
-            destinations.removeFirst();
-        }
-    }
-    public List<Supplier> getSuppliers() {
-        return suppliers;
-    }
-    public Map<Supplier, List<ProductPair>> getSupplierAllocations() {
-        return supplierAllocations;
-    }
-    public Location getSource() {
-        return source;
-    }
-    public Truck getTruck() {
-        return truck;
-    }
-    public void removeItems(List<ProductPair> outgoingItems, double weightToRemove) {
-        if (outgoingItems == null || outgoingItems.isEmpty())
+    public void removeItems(Map<Product, Integer> outgoingItems) throws ProductNotFoundOnTruckException {
+        if (outgoingItems == null || outgoingItems.isEmpty()) {
             return;
-
-        canRemoveAll(outgoingItems);
-
-        this.truck.removeProducts(outgoingItems);
-    }
-    public void removeSupplierFromTransportAndFile(Supplier supplier) {
-        suppliers.remove(supplier);
-        transportFile.removeLocation(supplier);
-        transportFile.removeProductsFromAggregate(supplierAllocations.get(supplier));
-        supplierAllocations.remove(supplier);
-    }
-    public void removeSupplierFromTransportButNotFile(Supplier supplier) {
-        supplierAllocations.remove(supplier);
-        suppliers.remove(supplier);
-    }
-    public void removeDestinationFromTransport(Destination destination) {
-        destinations.remove(destination);
-        transportFile.removeDestination(destination);
-    }
-    public List<Destination> getDestinations() {
-        return destinations;
-    }
-    public Driver getDriver() {
-        return driver;
-    }
-    public Map<String,ProductPair> getProductPairs() {
-        return truck.getProductPairs();
-    }
-    public List<Truck> getReplacementTrucks() {
-        return replacementTrucks;
-    }
-    public void replaceTruck(Truck truck) {
-        this.truck = truck;
-        transportFile.changeTruck(truck);
-    }
-
-    private void canRemoveAll(List<ProductPair> outgoingItems) throws Exceptions.ProductNotFoundOnTruckException {
-        for (ProductPair outgoing : outgoingItems) {
-            String name = outgoing.product.name();
-
-            if (!truck.getProductPairs().containsKey(name))
-                throw new Exceptions.ProductNotFoundOnTruckException(name);
-
-            int availableAmount = truck.getProductPairs().get(name).getAmount();
-            int requestedAmount = outgoing.getAmount();
-
-            if (availableAmount < requestedAmount)
-                throw new Exceptions.ProductNotFoundOnTruckException(name, requestedAmount, availableAmount);
         }
+
+        truck.removeProducts(outgoingItems);
+    }
+
+    public Supplier getFirstSupplier() {
+        return supplierAllocations.keySet().iterator().next();
+    }
+
+    public List<Request> getRequests() {
+        return requests;
     }
 }

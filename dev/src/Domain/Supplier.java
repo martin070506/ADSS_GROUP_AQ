@@ -1,89 +1,96 @@
 package Domain;
 
+import Exceptions.DomainException;
 import Exceptions.InsufficientSupplierStockException;
 
-import java.util.List;
+import java.util.*;
 
-public record Supplier(Location supplierLocation, List<ProductPair> productsAvailable) {
+public record Supplier(Location supplierLocation, Map<Product, Integer> productsAvailable) {
 
     public String getName() {
         return supplierLocation.contactName();
     }
 
-    public void handleShipment(List<ProductPair> supplierAllocations, Truck truck) {
-
+    public void handleShipment(Map<Product, Integer> supplierAllocations, Truck truck) {
         checkAvailability(supplierAllocations);
         truck.addProducts(supplierAllocations);
         dispatchProducts(supplierAllocations);
     }
 
-    private void checkAvailability(List<ProductPair> supplierAllocations) {
+    private void checkAvailability(Map<Product, Integer> supplierAllocations) {
+        for (Map.Entry<Product, Integer> entry : supplierAllocations.entrySet()) {
+            Product product = entry.getKey();
+            int requiredAmount = entry.getValue();
+            int availableAmount = productsAvailable.getOrDefault(product, 0);
 
-        for (ProductPair pair : supplierAllocations) {
-            boolean productFound = false;
-
-            for (ProductPair pair2 : productsAvailable)
-                if (pair2.product == pair.product) {
-                    if (pair2.getAmount() < pair.getAmount())
-                        throw new InsufficientSupplierStockException(pair.product.name(), pair.getAmount(),
-                                pair2.getAmount());
-
-                    productFound = true;
-                }
-
-            if (!productFound)
-                throw new InsufficientSupplierStockException(pair.product.name(), pair.getAmount(), 0);
+            if (availableAmount < requiredAmount) {
+                throw new InsufficientSupplierStockException(product.name(), requiredAmount, availableAmount);
+            }
         }
     }
 
-
-    private void dispatchProducts(List<ProductPair> supplierAllocations) {
-
-        for (ProductPair pair : supplierAllocations)
-            for (ProductPair pair2 : productsAvailable)
-                if (pair2.product == pair.product) {
-                    /// WE CHECKED FOR AVAILABILITY SO NO NEED TO  CHECK FOR NEGATIVE AMOUNT HERE
-                    pair2.setAmount(pair2.getAmount() - pair.getAmount());
-                    break;
-                }
+    private void dispatchProducts(Map<Product, Integer> supplierAllocations) {
+        for (Map.Entry<Product, Integer> entry : supplierAllocations.entrySet()) {
+            Product product = entry.getKey();
+            int amountToTake = entry.getValue();
+            productsAvailable.put(product, productsAvailable.get(product) - amountToTake);
+        }
     }
 
     public Product getProductByIndex(int index) {
-        return productsAvailable.get(index).product;
+        List<Product> products = new ArrayList<>(productsAvailable.keySet());
+        return products.get(index);
     }
 
     @Override
     public String toString() {
-        String result = supplierLocation.toString();
+        StringBuilder result = new StringBuilder(supplierLocation.toString());
+        result.append(".    Available Products:\n");
 
-        result += ".    Available Products:\n";
+        if (productsAvailable.isEmpty()) {
+            result.append("  (Empty Inventory)");
+        } else {
+            int i = 1;
+            for (Map.Entry<Product, Integer> entry : productsAvailable.entrySet()) {
+                result.append("  ").append(i).append(". Product: ").append(entry.getKey().name())
+                        .append(" - Amount: ").append(entry.getValue()).append("\n");
+                i++;
+            }
+        }
 
-        if (productsAvailable.isEmpty())
-            result += "  (Empty Inventory)";
-        else
-            for (int i = 0; i < productsAvailable.size(); i++)
-                result += "  " + (i + 1) + ". " + productsAvailable.get(i).toString() + "\n";
-
-        return result;
+        return result.toString();
     }
 
     public Location getSupplierLocation() {
         return supplierLocation;
     }
 
-    public List<ProductPair> getProductsAvailable() {
+    public Map<Product, Integer> getProductsAvailable() {
         return productsAvailable;
     }
 
     public void addStock(Product product, int amount) {
+        productsAvailable.put(product, productsAvailable.getOrDefault(product, 0) + amount);
+    }
 
-        for(ProductPair pair : productsAvailable){
-            if(pair.product == product){
-                pair.setAmount(pair.getAmount() + amount);
-                return;
+    public static Map<Supplier, Map<String, Integer>> mapIndexesToSuppliers(
+            List<Supplier> suppliers,
+            Map<Integer, Map<String, Integer>> rawAllocations) {
+
+        Map<Supplier, Map<String, Integer>> supplierMap = new HashMap<>();
+
+        for (Map.Entry<Integer, Map<String, Integer>> entry : rawAllocations.entrySet()) {
+            int supplierIndex = entry.getKey();
+            Map<String , Integer> productAllocations = entry.getValue();
+
+            if (supplierIndex < 0 || supplierIndex >= suppliers.size()) {
+                throw new DomainException("Supplier index out of bounds: " + supplierIndex);
             }
+
+            Supplier supplier = suppliers.get(supplierIndex);
+            supplierMap.put(supplier, productAllocations);
         }
 
-        productsAvailable.add(new ProductPair(product, amount));
+        return supplierMap;
     }
 }

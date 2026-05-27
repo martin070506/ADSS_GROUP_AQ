@@ -1,7 +1,5 @@
 package Domain;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public record Location(String address, String phoneNumber, String contactName) {
 
