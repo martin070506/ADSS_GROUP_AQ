@@ -43,12 +43,11 @@ public record Product(String name, int weight) {
         return currentProducts;
     }
 
-    static Map<Product, Integer> combineProducts(Map<Product, Integer> newProducts, Map<Product, Integer> products) {
-        for (Map.Entry<Product, Integer> entry : newProducts.entrySet()) {
-            Product product = entry.getKey();
-            int amountToAdd = entry.getValue();
-            products.put(product, products.getOrDefault(product, 0) + amountToAdd);
+    static Map<Product, Integer> combineProducts(Map<Product, Integer> baseMap, Map<Product, Integer> itemsToAdd) {
+        Map<Product, Integer> combined = new HashMap<>(baseMap);
+        for (Map.Entry<Product, Integer> entry : itemsToAdd.entrySet()) {
+            combined.put(entry.getKey(), combined.getOrDefault(entry.getKey(), 0) + entry.getValue());
         }
-        return products;
+        return combined;
     }
 }

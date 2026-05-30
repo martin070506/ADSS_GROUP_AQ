@@ -1,57 +1,39 @@
 package Service;
 
 import Domain.Driver;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class DriverService {
-
     private final List<Driver> drivers;
 
-    public DriverService() {
-        this.drivers = new ArrayList<>();
+    public DriverService() { this.drivers = new ArrayList<>(); }
+    public DriverService(List<Driver> drivers) { this.drivers = new ArrayList<>(drivers); }
+
+    public void addDriver(String driverName,int license) {
+        if(driverName == null || driverName.isEmpty()) throw new IllegalArgumentException("Driver name cannot be empty");
+        if(license < 0) throw new IllegalArgumentException("License must be greater than 0");
+        drivers.add(new Driver(driverName,license));
     }
 
-    public DriverService(List<Driver> drivers) {
-        this.drivers = new ArrayList<>(drivers);
-    }
-
-    public void addDriver(Driver driver) {
-        if (driver == null) return;
-        drivers.add(driver);
-    }
-
-    public void removeDriver(Driver driver) {
-        if (driver == null) return;
-        drivers.remove(driver);
-    }
-
-    public void returnDriver(Driver driver) {
-        if (driver != null && drivers.contains(driver))
-            driver.setAvailable(true);
+    // FIXED: Direct lookup using choice indices mapping
+    public Driver getAvailableDriverByIndex(int index) {
+        List<Driver> available = getAvailableDrivers();
+        if (index >= 0 && index < available.size()) {
+            return available.get(index);
+        }
+        throw new IllegalArgumentException("Driver choice out of bounds.");
     }
 
     private List<Driver> getAvailableDrivers() {
-        List<Driver> availableDrivers = new ArrayList<>();
-        for (Driver driver : drivers)
-            if (driver.isAvailable())
-                availableDrivers.add(driver);
-
-        return availableDrivers;
-    }
-
-    public Driver getAvailableDriver(String driverName) {
-        for (Driver driver : drivers)
-            if (driver.toString().equals(driverName) && driver.isAvailable())
-                return driver;
-        return null;
+        List<Driver> available = new ArrayList<>();
+        for (Driver d : drivers) if (d.isAvailable()) available.add(d);
+        return available;
     }
 
     public List<String> getAvailableDriversDisplay() {
-        List<String> availableDriversDisplay = new ArrayList<>();
-        for (Driver driver : getAvailableDrivers())
-            availableDriversDisplay.add(driver.toString());
-        return availableDriversDisplay;
+        List<String> display = new ArrayList<>();
+        for (Driver d : getAvailableDrivers()) display.add(d.toString());
+        return display;
     }
 }

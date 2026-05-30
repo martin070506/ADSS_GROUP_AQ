@@ -12,9 +12,25 @@ public class Request {
         this.productFile = new ProductFile(neededItems, i);
     }
 
+    // Inside Request.java
+    // Inside Request.java
     public void handleShipment(Truck truck) {
-
         Map<Product, Integer> requestedProducts = productFile.getProducts();
+        Map<Product, Integer> truckInventory = truck.getLoadedProducts();
+        // 1. Pre-Validate: Ensure the truck has enough of EVERYTHING requested
+        for (Map.Entry<Product, Integer> entry : requestedProducts.entrySet()) {
+            Product product = entry.getKey();
+            int requestedAmount = entry.getValue();
+            int availableAmount = truckInventory.getOrDefault(product, 0);
+
+            if (availableAmount < requestedAmount) {
+                // Throw the exception BEFORE calling truck.removeProducts()
+                throw new Exceptions.ProductNotFoundOnTruckException(
+                        product.name(), requestedAmount, availableAmount
+                );
+            }
+        }
+        // 2. Execution: Only execute if every single item pass validation safely
         truck.removeProducts(requestedProducts);
     }
 

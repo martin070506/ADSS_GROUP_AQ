@@ -1,7 +1,6 @@
 package Service;
 
 import Domain.Location;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,17 +10,22 @@ public class LocationService {
     public void addLocation(Location location) {
         locations.add(location);
     }
+    public Location addLocation(String addr, String phone, String contact) {
+        Location l = new Location(addr, phone, contact);
+        addLocation(l);
+        return l;
+    }
 
     public List<Location> getLocations() {
         return locations;
     }
 
-    public Location getLocation(String locationName) {
-        for (Location location : locations)
-            if (location.toString().equals(locationName))
-                return location;
-
-        throw new IllegalArgumentException("Location not found");
+    // FIXED: Direct index lookup
+    public Location getLocationByIndex(int index) {
+        if (index >= 0 && index < locations.size()) {
+            return locations.get(index);
+        }
+        throw new IllegalArgumentException("Location index out of bounds: " + index);
     }
 
     public List<String> getLocationsDisplay() {

@@ -7,13 +7,14 @@ public class Main {
         DriverService driverService = new DriverService();
         LocationService locationService = new LocationService();
         RequestService requestService = new RequestService();
-        ProductService productService = new ProductService();
+        ProductCatalogService productService = new ProductCatalogService();
         SupplierService supplierService = new SupplierService();
-        TransportService transportService = new TransportService();
+        TransportManagerService transportService = new TransportManagerService();
         TruckService truckService = new TruckService();
+        BranchService branchService = new BranchService();
 
         CompanyManager companyManager = CompanyManager.getInstance(driverService, locationService, requestService,
-                productService, supplierService, transportService, truckService);
+                productService, supplierService, transportService, truckService,branchService);
 
         AdminConsole appUI = new AdminConsole(companyManager);
         appUI.start();

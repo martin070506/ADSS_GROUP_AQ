@@ -68,7 +68,7 @@ public class Truck {
     }
 
     public void addProducts(Map<Product, Integer> newProducts) {
-        loadedProducts = Product.combineProducts(new HashMap<>(loadedProducts), newProducts);
+        this.loadedProducts = Product.combineProducts(this.loadedProducts, newProducts);
         if (getCurrentWeight() > maxWeight)
             throw new OverweightException(getCurrentWeight(), maxWeight, newProducts);
     }

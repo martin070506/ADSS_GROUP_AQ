@@ -11,11 +11,14 @@ public class BranchManager {
         this.storeLocation = storeLocation;
     }
 
-    public void requestShipment(Map<Product, Integer> neededItems){
-        CompanyManager.getInstance().addRequest(storeLocation, neededItems);
-    }
+
 
     public Location getLocation(){
         return storeLocation;
+    }
+
+    @Override
+    public String toString() {
+        return storeLocation.toString();
     }
 }

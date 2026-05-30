@@ -1,59 +1,50 @@
 package Service;
 
-import Domain.Driver;
 import Domain.Truck;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class TruckService {
     private final List<Truck> trucks;
 
-    public TruckService() {
-        this.trucks = new ArrayList<>();
+    public TruckService() { this.trucks = new ArrayList<>(); }
+    public TruckService(List<Truck> trucks) { this.trucks = new ArrayList<>(trucks); }
+
+    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense)
+    {
+        if (MaxWeight < truckWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
+        if(requiredLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
+        if(truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
+        trucks.add(new Truck(truckNumber,model,truckWeight,MaxWeight,requiredLicense));
     }
 
-    public TruckService(List<Truck> trucks) {
-        this.trucks = new ArrayList<>(trucks);
+    // FIXED: Direct choice indexing selection
+    public Truck getAvailableTruckByIndex(int index) {
+        List<Truck> available = getAvailableTrucksList(Integer.MAX_VALUE);
+        if (index >= 0 && index < available.size()) {
+            return available.get(index);
+        }
+        throw new IllegalArgumentException("Truck choice out of bounds.");
     }
 
-    public List<Truck> getTrucks() {
-        return trucks;
+    public Truck getAvailableTruckByLicenseIndex(int index, int minLicense) {
+        List<Truck> available = getAvailableTrucksList(minLicense);
+        if (index >= 0 && index < available.size()) {
+            return available.get(index);
+        }
+        throw new IllegalArgumentException("Truck choice out of bounds for license scope.");
     }
 
-    public List<String> getAvailableTrucksDisplay() {
-        return getAvailableTrucksDisplay(Integer.MAX_VALUE);
+    private List<Truck> getAvailableTrucksList(int minLicense) {
+        List<Truck> available = new ArrayList<>();
+        for (Truck t : trucks) if (t.isAvailable() && t.getMinLicense() <= minLicense) available.add(t);
+        return available;
     }
 
+    public List<String> getAvailableTrucksDisplay() { return getAvailableTrucksDisplay(Integer.MAX_VALUE); }
     public List<String> getAvailableTrucksDisplay(int minLicense) {
-        List<String> availableTrucks = new ArrayList<>();
-        for (Truck truck : trucks)
-            if (truck.isAvailable() && truck.getMinLicense() <= minLicense)
-                availableTrucks.add(truck.toString());
-
-        return availableTrucks;
-    }
-
-    public Truck getAvailableTruck(String truckName) {
-        for (Truck truck : trucks)
-            if (truck.toString().equals(truckName) && truck.isAvailable())
-                return truck;
-        return null;
-    }
-
-    public void addTruck(Truck truck) {
-        if (truck == null)
-            return;
-        trucks.add(truck);
-    }
-
-    public void removeTruck(Truck truck) {
-        if (truck == null) return;
-        trucks.remove(truck);
-    }
-
-    public boolean canTruckTakeDriver(Truck truck, Driver driver) {
-        if (truck == null || driver == null) return false;
-        return driver.getLicense() >= truck.getMinLicense();
+        List<String> display = new ArrayList<>();
+        for (Truck t : getAvailableTrucksList(minLicense)) display.add(t.toString());
+        return display;
     }
 }

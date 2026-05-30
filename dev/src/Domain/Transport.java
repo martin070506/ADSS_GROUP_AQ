@@ -28,6 +28,8 @@ public class Transport {
         this.transportFile = new TransportFile(departureTime, truck, driver, source);
     }
 
+
+
     public int getId() {
         return id;
     }

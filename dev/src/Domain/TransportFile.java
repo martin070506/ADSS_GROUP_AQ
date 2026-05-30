@@ -22,7 +22,7 @@ public class TransportFile {
 
     public void leaveSupplier(Supplier supplier, int weight) {
         transportLog += "Left Supplier " + supplier.getName() + ", Truck Weight : " + weight + '\n';
-        suppliersLog += supplier.supplierLocation().toString() + '\n';
+        suppliersLog += supplier.getSupplierLocation().toString() + '\n';
     }
 
     public void arriveAtSupplier(Supplier supplier) {

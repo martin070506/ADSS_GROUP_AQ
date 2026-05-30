@@ -5,7 +5,18 @@ import Exceptions.InsufficientSupplierStockException;
 
 import java.util.*;
 
-public record Supplier(Location supplierLocation, Map<Product, Integer> productsAvailable) {
+public class Supplier {
+
+    private Location supplierLocation;
+    private Map<Product,Integer> productsAvailable;
+    public Supplier(Location supplierLocation) {
+        this.supplierLocation = supplierLocation;
+        productsAvailable = new HashMap<>();
+    }
+    public Supplier(Location supplierLocation, Map<Product, Integer> productsAvailable) {
+        this.supplierLocation = supplierLocation;
+        this.productsAvailable = productsAvailable;
+    }
 
     public String getName() {
         return supplierLocation.contactName();

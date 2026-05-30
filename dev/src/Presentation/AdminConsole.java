@@ -1,5 +1,7 @@
 package Presentation;
 
+import Domain.BranchManager;
+import Domain.Product;
 import Service.CompanyManager;
 import java.util.*;
 
@@ -7,9 +9,7 @@ public class AdminConsole {
     private final Scanner scanner = new Scanner(System.in);
     private final CompanyManager companyManager;
 
-    public AdminConsole(CompanyManager companyManager) {
-        this.companyManager = companyManager;
-    }
+    public AdminConsole(CompanyManager companyManager) { this.companyManager = companyManager; }
 
     public void start() {
         System.out.println("=== LOGISTICS MANAGEMENT SYSTEM ===");
@@ -20,15 +20,12 @@ public class AdminConsole {
         if (scanner.nextLine().trim().equals("1")) {
             companyManager.loadDemoData();
             System.out.println("Demo Data Loaded Successfully.");
-        } else {
-            manualSetup();
-        }
+        } else { manualSetup(); }
 
         boolean running = true;
         while (running) {
             displayMenu();
             String choice = scanner.nextLine().trim();
-
             switch (choice) {
                 case "1" -> addBranchRequest();
                 case "2" -> resupplySupplier();
@@ -67,35 +64,38 @@ public class AdminConsole {
 
     private void runShipmentCycle() {
         MainConsole shipmentConsole = new MainConsole(companyManager);
-        try {
-            shipmentConsole.run();
-        } catch (Exceptions.ConsoleEndException e) {
-            System.out.println("Returned to Admin Menu.");
-        } catch (Exception e) {
-            System.out.println("Shipment Console Error: " + e.getMessage());
-        }
+        try { shipmentConsole.run(); }
+        catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
+        catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
     }
 
     private void addBranchRequest() {
-        List<String> branches = companyManager.getAllLocationsDisplay();
+        List<String> branches = companyManager.getBranchesDisplay();
         if (branches.isEmpty()) {
             System.out.println("Error: No branch locations available.");
             return;
         }
 
         System.out.println("\nSelect Branch:");
-        for (int i = 0; i < branches.size(); i++)
+        for (int i = 0; i < branches.size(); i++) {
             System.out.println("[" + i + "] " + branches.get(i));
+        }
         int locationId = promptInt("Enter Location ID: ");
-        String locationName = branches.get(locationId);
 
-        Map<String, Integer> requestedProductsIds = new HashMap<>();
-        List<String> catalog = companyManager.getProductCatalogDisplay();
+        if (!companyManager.isValidBranchIndex(locationId)) {
+            System.out.println("Error: Invalid Branch Location ID.");
+            return;
+        }
+
+        // FIX: Keep the map matching primitive IDs/Indices in the UI layer
+        Map<Integer, Integer> requestedProductQuantities = new HashMap<>();
+        List<String> productCatalog = companyManager.getProductCatalogDisplay();
 
         while (true) {
             System.out.println("\nAvailable Products:");
-            for (int i = 0; i < catalog.size(); i++)
-                System.out.println("[" + i + "] " + catalog.get(i));
+            for (int i = 0; i < productCatalog.size(); i++) {
+                System.out.println("[" + i + "] " + productCatalog.get(i));
+            }
 
             System.out.print("Select Product ID (or 'done'): ");
             String input = scanner.nextLine().trim();
@@ -103,24 +103,28 @@ public class AdminConsole {
 
             try {
                 int productId = Integer.parseInt(input);
-                if (productId >= 0 && productId < catalog.size()) {
+                if (productId >= 0 && productId < productCatalog.size()) {
                     int qty = promptInt("Quantity needed: ");
-                    String productName = catalog.get(productId);
-                    requestedProductsIds.put(productName, requestedProductsIds.getOrDefault(productName, 0) + qty);
+                    if (qty > 0) {
+                        requestedProductQuantities.put(productId, requestedProductQuantities.getOrDefault(productId, 0) + qty);
+                    } else {
+                        System.out.println("Quantity must be greater than 0.");
+                    }
                 } else {
                     System.out.println("Invalid Product ID.");
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid input.");
             }
         }
 
-        if (!requestedProductsIds.isEmpty()) {
+        if (!requestedProductQuantities.isEmpty()) {
             try {
-                companyManager.addRequest(locationName, requestedProductsIds);
-                System.out.println("Request added for branch.");
+                // FIX: Pass raw index values down. Service layer maps these to real objects.
+                companyManager.addRequest(locationId, requestedProductQuantities);
+                System.out.println("Request successfully executed.");
             } catch (Exception e) {
-                System.out.println("Failed to add request: " + e.getMessage());
+                System.out.println("Failed to execute request: " + e.getMessage());
             }
         }
     }
@@ -144,11 +148,9 @@ public class AdminConsole {
         int qty = promptInt("Amount to add: ");
 
         try {
-            companyManager.resupplySupplier(sId, catalog.get(pId), qty);
+            companyManager.resupplySupplier(sId, pId, qty);
             System.out.println("Stock updated.");
-        } catch (Exception e) {
-            System.out.println("Failed to update stock: " + e.getMessage());
-        }
+        } catch (Exception e) { System.out.println("Failed to update stock: " + e.getMessage()); }
     }
 
     private void deleteBranchRequest() {
@@ -163,20 +165,11 @@ public class AdminConsole {
             System.out.println("[" + i + "] " + activeBranches.get(i));
         int locationId = promptInt("Enter Location ID: ");
 
-        String request = activeBranches.get(locationId);
-        if (request == null) {
-            System.out.println("No request found for this branch.");
-            return;
-        }
-
-        System.out.println("\nBranch Request:" + request);
-
+        System.out.println("\nBranch Request:" + activeBranches.get(locationId));
         try {
-            companyManager.removeRequest(request);
+            companyManager.removeRequestByIndex(locationId);
             System.out.println("Request removed.");
-        } catch (Exception e) {
-            System.out.println("Failed to remove request: " + e.getMessage());
-        }
+        } catch (Exception e) { System.out.println("Failed to remove request: " + e.getMessage()); }
     }
 
     private void updateBranchRequest() {
@@ -191,14 +184,11 @@ public class AdminConsole {
             System.out.println("[" + i + "] " + activeBranches.get(i));
         int locationId = promptInt("Enter Location ID: ");
 
-        String request = activeBranches.get(locationId);
-
         List<String> catalog = companyManager.getProductCatalogDisplay();
 
         while (true) {
             System.out.print("\nType 'add', 'remove', or 'done': ");
             String action = scanner.nextLine().trim();
-
             if (action.equalsIgnoreCase("done")) break;
 
             if (action.equalsIgnoreCase("add")) {
@@ -209,14 +199,12 @@ public class AdminConsole {
                 int qty = promptInt("Amount to add: ");
 
                 try {
-                    companyManager.updateRequestAddProduct(request, catalog.get(pId), qty);
+                    companyManager.updateRequestAddProduct(locationId, pId, qty);
                     System.out.println("Added.");
-                } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
-                }
+                } catch (Exception e) { System.out.println("Error: " + e.getMessage()); }
 
             } else if (action.equalsIgnoreCase("remove")) {
-                Map<String, Integer> productsInRequest = companyManager.getProductsInRequestDisplay(request);
+                Map<String, Integer> productsInRequest = companyManager.getProductsInRequestDisplay(locationId);
                 if (productsInRequest.isEmpty()) {
                     System.out.println("No products available to remove.");
                     continue;
@@ -231,18 +219,12 @@ public class AdminConsole {
                 int qty = promptInt("Amount to remove: ");
 
                 try {
-                    companyManager.updateRequestRemoveProduct(request, products.get(pId), qty);
+                    companyManager.updateRequestRemoveProduct(locationId, pId, qty);
                     System.out.println("Removed.");
-                } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
-                }
-            } else {
-                System.out.println("Invalid command.");
-            }
+                } catch (Exception e) { System.out.println("Error: " + e.getMessage()); }
+            } else { System.out.println("Invalid command."); }
         }
     }
-
-    // --- MANUAL SETUP MODULES ---
 
     private void manualSetup() {
         manualProductSetup();
@@ -267,7 +249,7 @@ public class AdminConsole {
             System.out.print("Name: ");
             String name = scanner.nextLine().trim();
             int lic = promptInt("License Level (1-3): ");
-            companyManager.addDriver(name, lic); // פניה ל-Manager בלבד
+            companyManager.addDriver(name, lic);
             System.out.print("Add another driver? (y/n): ");
         }
     }
@@ -281,7 +263,7 @@ public class AdminConsole {
             int weight = promptInt("Net Weight: ");
             int max = promptInt("Max Capacity: ");
             int lic = promptInt("License Required (1-3): ");
-            companyManager.addTruck(id, model, weight, max, lic); // פניה ל-Manager בלבד
+            companyManager.addTruck(id, model, weight, max, lic);
             System.out.print("Add another truck? (y/n): ");
         }
     }
@@ -305,34 +287,29 @@ public class AdminConsole {
         System.out.print("Contact: ");
         String contact = scanner.nextLine().trim();
 
-        Map<String, Integer> stockIds = new HashMap<>();
+        Map<Integer, Integer> stockIds = new HashMap<>();
         List<String> catalog = companyManager.getProductCatalogDisplay();
 
-        catalog.forEach((pName) -> {
-            System.out.print("Supply " + pName + "? (y/n): ");
+        for (int i = 0; i < catalog.size(); i++) {
+            System.out.print("Supply " + catalog.get(i) + "? (y/n): ");
             if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
                 int qty = promptInt("Quantity: ");
-                stockIds.put(pName, qty);
+                stockIds.put(i, qty);
             }
-        });
+        }
 
         try {
-            companyManager.registerSupplier(addr, phone, contact, stockIds);
+            companyManager.registerSupplierByIndices(addr, phone, contact, stockIds);
             System.out.println("Supplier registered.");
-        } catch (Exception e) {
-            System.out.println("Failed to register supplier: " + e.getMessage());
-        }
+        } catch (Exception e) { System.out.println("Failed to register supplier: " + e.getMessage()); }
     }
 
-    // --- UTILS ---
     private int promptInt(String msg) {
         while (true) {
             try {
                 System.out.print(msg);
                 return Integer.parseInt(scanner.nextLine().trim());
-            } catch (Exception e) {
-                System.out.println("Invalid input. Please enter an integer.");
-            }
+            } catch (Exception e) { System.out.println("Invalid input. Please enter an integer."); }
         }
     }
 }

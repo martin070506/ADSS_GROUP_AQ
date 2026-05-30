@@ -3,7 +3,6 @@ package Service;
 import Domain.Product;
 import Domain.Request;
 import Domain.Location;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ public class RequestService {
                 request.addProducts(neededItems);
                 return;
             }
-
         requests.add(new Request(storeLocation, fileNumberCounter++, neededItems));
     }
 
@@ -30,16 +28,21 @@ public class RequestService {
         return activeLocations;
     }
 
-    public Request getRequest(String requestName) {
-        for (Request request : requests)
-            if (request.toString().equals(requestName))
-                return request;
-
-        throw new IllegalArgumentException("Request not found");
+    // FIXED: Retrieve request object by internal array location tracking
+    public Request getRequestByIndex(int index) {
+        if (index >= 0 && index < requests.size()) {
+            return requests.get(index);
+        }
+        throw new IllegalArgumentException("Request index out of bounds: " + index);
     }
 
-    public void removeRequest(String request) {
-        requests.removeIf(req -> req.toString().equals(request));
+    // FIXED: Drops elements by positional lookup index matching
+    public void removeRequestByIndex(int index) {
+        if (index >= 0 && index < requests.size()) {
+            requests.remove(index);
+        } else {
+            throw new IllegalArgumentException("Invalid request index removal request: " + index);
+        }
     }
 
     public List<Request> getAllRequests() {
