@@ -47,6 +47,7 @@ public class ShiftJobsFacade {
         Shift shift = new Shift(date, is_morning, location);
             for (ShiftJobs shift_job : shifts) {
                 if(shift_job.getShift().equals(shift)){
+
                     return shift_job.containAllJobs(jobs);
                 }
 

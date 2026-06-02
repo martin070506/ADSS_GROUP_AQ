@@ -70,6 +70,7 @@ public class ShiftJobs{
         for (int id : jobs) {
             new_shift.addJob(id);
         }
+
         return new_shift.mapEquals(this.jobs);
     }
 
@@ -78,6 +79,7 @@ public class ShiftJobs{
             if(!others.containsKey(entry.getKey())){
                 return false;
             }
+            
             if(others.get(entry.getKey())!=entry.getValue()){
                 return false;
             }
