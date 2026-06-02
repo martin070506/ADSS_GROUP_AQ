@@ -50,4 +50,8 @@ public class RequestService {
         requests.clear();
         return allRequests;
     }
+
+    public boolean isValidActiveRequestIndex(int requestIndex) {
+        return requestIndex >= 0 && requestIndex < requests.size();
+    }
 }

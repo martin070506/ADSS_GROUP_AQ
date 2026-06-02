@@ -7,8 +7,8 @@ import java.util.*;
 
 public class Supplier {
 
-    private Location supplierLocation;
-    private Map<Product,Integer> productsAvailable;
+    private final Location supplierLocation;
+    private final Map<Product,Integer> productsAvailable;
     public Supplier(Location supplierLocation) {
         this.supplierLocation = supplierLocation;
         productsAvailable = new HashMap<>();
@@ -55,21 +55,7 @@ public class Supplier {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder(supplierLocation.toString());
-        result.append(".    Available Products:\n");
-
-        if (productsAvailable.isEmpty()) {
-            result.append("  (Empty Inventory)");
-        } else {
-            int i = 1;
-            for (Map.Entry<Product, Integer> entry : productsAvailable.entrySet()) {
-                result.append("  ").append(i).append(". Product: ").append(entry.getKey().name())
-                        .append(" - Amount: ").append(entry.getValue()).append("\n");
-                i++;
-            }
-        }
-
-        return result.toString();
+        return supplierLocation.toString();
     }
 
     public Location getSupplierLocation() {
@@ -84,24 +70,7 @@ public class Supplier {
         productsAvailable.put(product, productsAvailable.getOrDefault(product, 0) + amount);
     }
 
-    public static Map<Supplier, Map<String, Integer>> mapIndexesToSuppliers(
-            List<Supplier> suppliers,
-            Map<Integer, Map<String, Integer>> rawAllocations) {
-
-        Map<Supplier, Map<String, Integer>> supplierMap = new HashMap<>();
-
-        for (Map.Entry<Integer, Map<String, Integer>> entry : rawAllocations.entrySet()) {
-            int supplierIndex = entry.getKey();
-            Map<String , Integer> productAllocations = entry.getValue();
-
-            if (supplierIndex < 0 || supplierIndex >= suppliers.size()) {
-                throw new DomainException("Supplier index out of bounds: " + supplierIndex);
-            }
-
-            Supplier supplier = suppliers.get(supplierIndex);
-            supplierMap.put(supplier, productAllocations);
-        }
-
-        return supplierMap;
+    public int getProductStock(int i) {
+        return productsAvailable.get(getProductByIndex(i));
     }
 }

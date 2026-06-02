@@ -16,7 +16,8 @@ public class Main {
         CompanyManager companyManager = CompanyManager.getInstance(driverService, locationService, requestService,
                 productService, supplierService, transportService, truckService,branchService);
 
-        AdminConsole appUI = new AdminConsole(companyManager);
+        AdminConsole appUI = new AdminConsole(companyManager, productService, transportService, supplierService,
+                requestService, truckService, driverService, branchService, locationService);
         appUI.start();
     }
 }

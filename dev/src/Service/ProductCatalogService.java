@@ -38,12 +38,20 @@ public class ProductCatalogService {
         return display;
     }
 
-    // FIXED: Maps UI selection index positions to Product domain components
     public Map<Product, Integer> mapIndicesToProducts(Map<Integer, Integer> selectedIndices) {
         Map<Product, Integer> productMap = new HashMap<>();
-        for (Map.Entry<Integer, Integer> entry : selectedIndices.entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : selectedIndices.entrySet())
             productMap.put(getProductByIndex(entry.getKey()), entry.getValue());
-        }
+
         return productMap;
+    }
+
+    public int getIndexByName(String s) {
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).name().equals(s)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

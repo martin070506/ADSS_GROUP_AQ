@@ -35,18 +35,11 @@ public class TransportManagerService {
     }
 
     public Transport getTransportById (int id) {
-        boolean found=false;
-        for (Transport t : transports) {
-            System.out.println(t.getId());
-            if (t.getId()==id){
-                found=true;
-                return t;
-            }
-        }
-        if(!found){
-            throw new DomainException("Transport not found");
-        }
-        return null;
+         for (Transport transport : transports)
+            if (transport.getId() == id)
+                return transport;
+
+         throw new DomainException("Transport not found");
     }
 
     public void removeTransport(Transport transport) {
@@ -155,5 +148,10 @@ public class TransportManagerService {
 
     public int getDriverLicense(int transportIndex) {
         return getTransportById(transportIndex).getDriver().getLicense();
+    }
+
+    public void removeTransportById(int transportById) {
+        Transport transport = getTransportById(transportById);
+        transports.remove(transport);
     }
 }
