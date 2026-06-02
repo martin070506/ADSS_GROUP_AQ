@@ -2,8 +2,8 @@ package Service;
 
 import Domain.*;
 import Exceptions.*;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,16 +11,20 @@ public class TransportManagerService {
 
     private final List<Transport> transports;
     private int transportIdCounter;
+    private TruckService truckService;
 
     public TransportManagerService() {
         this.transports = new ArrayList<>();
         this.transportIdCounter = 1;
     }
 
+    public void setTruckService(TruckService truckService) {
+        this.truckService = truckService;
+    }
+
     public int createTransport(Truck truck, Driver driver, Location source,
                                List<Request> requests,
                                Map<Supplier, Map<Product, Integer>> supplierAllocations) {
-
         Transport transport = new Transport(
                 transportIdCounter++,
                 java.time.LocalDate.now(),
@@ -34,48 +38,150 @@ public class TransportManagerService {
         return transport.getId();
     }
 
-    public Transport getTransportById (int id) {
-         for (Transport transport : transports)
+    public Transport getTransportById(int id) {
+        for (Transport transport : transports)
             if (transport.getId() == id)
                 return transport;
 
-         throw new DomainException("Transport not found");
+        throw new DomainException("Transport not found");
     }
 
-    public void removeTransport(Transport transport) {
-        if (transport != null) {
-            transports.remove(transport);
+    public void removeTransportById(int transportById) {
+        Transport transport = getTransportById(transportById);
+        transports.remove(transport);
+    }
+
+    // === NEW CLEAN INITIALIZATION STEP ===
+    public void prepareTruckForDeparture(int transportId) {
+        Transport transport = getTransportById(transportId);
+        transport.getTruck().emptyTruck(); // Clears it safely BEFORE the lifecycle retries ever start
+    }
+
+    // === FINISH CLEANUP STEP ===
+    public void finishShipment(int transportId) {
+        Transport transport = getTransportById(transportId);
+        transport.getTruck().emptyTruck(); // Guarantees a fresh truck at the end
+    }
+
+    // === LIVE STATE ENGINE OPERATIONS ===
+    public void processTransportLifecycle(int transportId) {
+        Transport transport = getTransportById(transportId);
+
+        // 1. Process Suppliers Ingestion Loop
+        while (!transport.getSupplierAllocations().isEmpty()) {
+            Supplier currentSupplier = transport.getFirstSupplier();
+            Map<Product, Integer> itemsToLoad = transport.getSupplierAllocations().get(currentSupplier);
+
+            // Keep the supplier in the map until it successfully loads without throwing an OverweightException
+            currentSupplier.handleShipment(itemsToLoad, transport.getTruck());
+
+            // Finalize state records only on successful ingestion completion
+            transport.getTransportFile().arriveAtSupplier(currentSupplier);
+            transport.getTransportFile().leaveSupplier(currentSupplier, transport.getTruck().getCurrentWeight());
+            transport.getSupplierAllocations().remove(currentSupplier);
+        }
+
+        // 2. Process Branch Delivery Drops Loop
+        while (!transport.getRequests().isEmpty()) {
+            Request currentRequest = transport.getRequests().getFirst();
+            try {
+                transport.getTransportFile().arriveAtRequest(currentRequest);
+                currentRequest.handleShipment(transport.getTruck());
+                transport.getTransportFile().leaveRequest(currentRequest);
+                transport.removeRequest(currentRequest);
+            } catch (Exceptions.ProductNotFoundOnTruckException itse) {
+                System.out.println("Skipped Destination: " + itse.getMessage());
+                skipRequest(transportId);
+            }
         }
     }
 
+    public void handleStockException(int transportId, DomainException ise) {
+        if (ise instanceof InsufficientSupplierStockException) {
+            skipSupplier(transportId);
+        } else if (ise instanceof InsufficientTruckStockException) {
+            skipRequest(transportId);
+        }
+    }
 
+    public void resolveOverweightIssue(int transportId, String choice) {
+        switch (choice) {
+            case "2" -> {
+                performEmergencyDropOff(transportId);
+                finalizeCurrentSupplierLoading(transportId);
+            }
+            case "4" -> {
+                int maxWeight = getTruckWeightByTransportId(transportId);
+                int currentDriverLicense = getDriverLicense(transportId);
 
+                for (int i = 0; i < truckService.getAvailableTrucksDisplay().size(); i++) {
+                    Truck newTruck = truckService.getAvailableTruckByIndex(i);
+
+                    if (newTruck.getMaxWeight() > maxWeight && newTruck.getMinLicense() <= currentDriverLicense) {
+                        replaceTruck(transportId, newTruck);
+                        System.out.println("Dynamic truck replacement execution complete.");
+                        finalizeCurrentSupplierLoading(transportId);
+                        return;
+                    }
+                }
+                System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
+                skipSupplier(transportId);
+            }
+            default -> skipSupplier(transportId);
+        }
+    }
+
+    public void resolveOverweightWithFineTuning(int transportId, int UIProductIndex, int amountToRemove) {
+        Transport transport = getTransportById(transportId);
+        List<Product> loadedProducts = new ArrayList<>(transport.getTruck().getLoadedProducts().keySet());
+
+        if (UIProductIndex >= 0 && UIProductIndex < loadedProducts.size()) {
+            Product targetProduct = loadedProducts.get(UIProductIndex);
+
+            Map<Product, Integer> itemsToRemove = new HashMap<>();
+            itemsToRemove.put(targetProduct, amountToRemove);
+
+            manualRemoveItems(transport, itemsToRemove);
+        }
+    }
+
+    public void finalizeCurrentSupplierWithFineTune(int transportId) {
+        finalizeCurrentSupplierLoading(transportId);
+    }
+
+    private void finalizeCurrentSupplierLoading(int transportId) {
+        Transport transport = getTransportById(transportId);
+        if (!transport.getSupplierAllocations().isEmpty()) {
+            Supplier supplier = transport.getFirstSupplier();
+            transport.getTransportFile().arriveAtSupplier(supplier);
+            transport.getTransportFile().leaveSupplier(supplier, transport.getTruck().getCurrentWeight());
+            transport.getSupplierAllocations().remove(supplier);
+        }
+    }
+
+    // === CORE LOGISTICS MUTATORS ===
     public void skipSupplier(int transportIndex) {
         Transport transport = getTransportById(transportIndex);
+        if (transport.getSupplierAllocations().isEmpty()) return;
+
         Supplier supplier = transport.getFirstSupplier();
         transport.getTransportFile().skipSupplier(supplier);
         Map<Product, Integer> thingsToRemove = transport.getSupplierAllocations().get(supplier);
 
         try {
             transport.removeItems(thingsToRemove);
+            for (Map.Entry<Product, Integer> entry : thingsToRemove.entrySet()) {
+                supplier.addStock(entry.getKey(), entry.getValue());
+            }
         } catch (ProductNotFoundOnTruckException e) {
             System.out.println(e.getMessage());
         }
-
-        transport.removeSupplier(supplier);
-    }
-
-    public void logOverweightAlert(Transport transport) {
-        transport.getTransportFile().overWeightAlert(transport.getTruck().getCurrentWeight());
-    }
-
-    public void leaveSupplier(Transport transport, Supplier supplier) {
-        transport.getTransportFile().leaveSupplier(supplier, transport.getTruck().getCurrentWeight());
         transport.getSupplierAllocations().remove(supplier);
     }
 
     public void skipRequest(int transportIndex) {
         Transport transport = getTransportById(transportIndex);
+        if (transport.getRequests().isEmpty()) return;
         Request request = transport.getRequests().getFirst();
         transport.getTransportFile().skipRequest(request);
         transport.removeRequest(request);
@@ -85,10 +191,7 @@ public class TransportManagerService {
         if (itemsToRemove == null || itemsToRemove.isEmpty()) return;
 
         try {
-            // 1. Deduct the items from the physical truck weight
             transport.removeItems(itemsToRemove);
-
-            // 2. Identify who the current supplier is
             Supplier currentSupplier = transport.getFirstSupplier();
             Map<Product, Integer> pendingAllocation = transport.getSupplierAllocations().get(currentSupplier);
 
@@ -97,7 +200,6 @@ public class TransportManagerService {
                     Product product = entry.getKey();
                     int qtyToRemove = entry.getValue();
 
-                    // 3. Deduct the fine-tuned amount from the upcoming transport plan
                     if (pendingAllocation.containsKey(product)) {
                         int updatedQty = pendingAllocation.get(product) - qtyToRemove;
                         if (updatedQty <= 0) {
@@ -106,12 +208,9 @@ public class TransportManagerService {
                             pendingAllocation.put(product, updatedQty);
                         }
                     }
-
-                    // 4. Return the items to the supplier's inventory stock
                     currentSupplier.addStock(product, qtyToRemove);
                 }
             }
-
         } catch (ProductNotFoundOnTruckException e) {
             System.out.println("Fine-tune failed: " + e.getMessage());
         }
@@ -119,9 +218,10 @@ public class TransportManagerService {
 
     public void performEmergencyDropOff(int transportIndex) {
         Transport transport = getTransportById(transportIndex);
-        Request request = transport.getRequests().getFirst();
-        if (request == null)
+        if (transport.getRequests().isEmpty()) {
             throw new NoDestinationForEmergencyDropOffException();
+        }
+        Request request = transport.getRequests().getFirst();
         transport.getTransportFile().arriveAtRequest(request);
         request.handleShipment(transport.getTruck());
         transport.getTransportFile().leaveRequest(request);
@@ -134,24 +234,11 @@ public class TransportManagerService {
         transport.replaceTruck(newTruck);
     }
 
-    public void processTransport(Transport transport) {
-
-    }
-
-    public int gotIndexOf(Transport transport) {
-        return transports.indexOf(transport);
-    }
-
     public int getTruckWeightByTransportId(int transportIndex) {
         return getTransportById(transportIndex).getTruck().getCurrentWeight();
     }
 
     public int getDriverLicense(int transportIndex) {
         return getTransportById(transportIndex).getDriver().getLicense();
-    }
-
-    public void removeTransportById(int transportById) {
-        Transport transport = getTransportById(transportById);
-        transports.remove(transport);
     }
 }

@@ -50,16 +50,20 @@ public class MainConsole {
     }
 
     private void processShipmentFlow(int transportId) {
+        // Step 1: Ensure the truck starts completely empty before running the shipment loop
+        transportService.prepareTruckForDeparture(transportId);
+
         boolean shipmentFinish = false;
         while (!shipmentFinish) {
             try {
-                companyManager.processTransport(transportId);
+                // Step 2: Running this no longer resets current cargo if it loops back on a retry!
+                transportService.processTransportLifecycle(transportId);
                 shipmentFinish = true;
             } catch (OverweightException oe) {
                 handleOverweightUI(transportId);
             } catch (InsufficientSupplierStockException | InsufficientTruckStockException ise) {
                 System.out.println("Stock Problem: " + ise.getMessage());
-                try { companyManager.handleStockException(transportId, ise); }
+                try { transportService.handleStockException(transportId, ise); }
                 catch (Exception e) { System.out.println("Error handling stock: " + e.getMessage()); }
             } catch (DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
@@ -69,7 +73,10 @@ public class MainConsole {
                 break;
             }
         }
+
         if (shipmentFinish) {
+            // Step 3: Safely clear out the truck's contents for future shipments
+            transportService.finishShipment(transportId);
             System.out.println(companyManager.getTransportFileDisplayById(transportId));
             transportService.removeTransportById(transportId);
             System.out.println("Shipment finished successfully!");
@@ -90,7 +97,7 @@ public class MainConsole {
             if (choice.equals("3")) {
                 getItemsToRemoveUI(transportId);
             } else {
-                companyManager.resolveOverweightIssue(transportId, choice);
+                transportService.resolveOverweightIssue(transportId, choice);
             }
         } catch (NoDestinationForEmergencyDropOffException e) {
             System.out.println("No destination available for emergency drop-off.");
@@ -122,7 +129,7 @@ public class MainConsole {
                 if (productId >= 0 && productId < productNames.size()) {
                     int amt = promptInt("Amount to remove: ");
                     if (amt > 0) {
-                        companyManager.resolveOverweightWithFineTuning(transportId, productId, amt);
+                        transportService.resolveOverweightWithFineTuning(transportId, productId, amt);
                         System.out.println("Items removed.");
                     } else { System.out.println("Invalid amount."); }
                 } else { System.out.println("Product ID not found on truck."); }

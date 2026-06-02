@@ -26,6 +26,7 @@ public class BranchService {
         addBranch(new BranchManager(l));
     }
 
+
     // FIXED: Lookup by integer position instead of string matching
     public BranchManager getBranchByIndex(int index) {
         if (index >= 0 && index < branches.size()) {

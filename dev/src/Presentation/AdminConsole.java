@@ -1,5 +1,6 @@
 package Presentation;
 
+
 import Service.*;
 
 import java.util.*;
@@ -35,7 +36,7 @@ public class AdminConsole {
         System.out.print("Choice: ");
 
         if (scanner.nextLine().trim().equals("1")) {
-            companyManager.loadDemoData();
+            DemoDataLoader.load(companyManager,productService,truckService,driverService,branchService);
             System.out.println("Demo Data Loaded Successfully.");
         } else { manualSetup(); }
 
@@ -326,7 +327,8 @@ public class AdminConsole {
         System.out.print("Contact: ");
         String contact = scanner.nextLine().trim();
         try {
-            companyManager.addBranch(addr, phone, contact);
+            //WE ADD A BRANCH (LOCATION) to BOTH SERVICES IT'S OUR RESPONSIBILITY THAT EACH SERVICE DOES IT ON ITS OWN BUT WE CALL THEM TOGETHER ALWAYS
+            companyManager.addBranchLocation(addr, phone, contact);
             System.out.println("Store added.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
