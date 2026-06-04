@@ -15,6 +15,10 @@ public class Truck {
     private Map<Product, Integer> loadedProducts;
 
     public Truck(int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
+        if (maxWeight < startWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
+        if (minLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
+        if (truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
+
         this.startWeight = startWeight;
         this.maxWeight = maxWeight;
         this.model = model;

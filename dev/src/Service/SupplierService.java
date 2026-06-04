@@ -16,11 +16,6 @@ public class SupplierService {
         this.suppliers = new ArrayList<>();
     }
 
-    public void registerSupplier(String addr, String ph, String contact, Map<Product, Integer> stock) {
-        Location loc = new Location(addr, ph, contact);
-        addSupplier(loc, stock);
-    }
-
     public void addSupplier(Location location, Map<Product, Integer> productMap) {
         Supplier supplier = new Supplier(location, productMap);
         suppliers.add(supplier);

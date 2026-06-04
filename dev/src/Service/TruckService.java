@@ -12,9 +12,6 @@ public class TruckService {
 
     public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense)
     {
-        if (MaxWeight < truckWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
-        if(requiredLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
-        if(truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
         trucks.add(new Truck(truckNumber,model,truckWeight,MaxWeight,requiredLicense));
     }
 
