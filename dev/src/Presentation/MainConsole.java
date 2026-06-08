@@ -125,7 +125,7 @@ public class MainConsole {
             if (input.equalsIgnoreCase("done")) break;
 
             try {
-                int productId = Integer.parseInt(input)-1;
+                int productId = Integer.parseInt(input);
                 if (productId >= 0 && productId < productNames.size()) {
                     int amt = promptInt("Amount to remove: ");
                     if (amt > 0) {
@@ -146,9 +146,9 @@ public class MainConsole {
 
         System.out.println("\n--- Available Trucks ---");
         for (int i = 0; i < trucks.size(); i++)
-            System.out.println("[" + (i+1) + "] " + trucks.get(i));
+            System.out.println( trucks.get(i));
         while (true) {
-            int choice = promptInt("Enter Truck: ")-1;
+            int choice = promptInt("Enter Truck: ");
             if (choice >= 0 && choice < trucks.size()) return choice;
             System.out.println("Invalid Truck Index.");
         }
@@ -163,9 +163,9 @@ public class MainConsole {
 
         System.out.println("\n--- Available Drivers ---");
         for (int i = 0; i < drivers.size(); i++)
-            System.out.println("[" + (i+1) + "] " + drivers.get(i));
+            System.out.println( drivers.get(i));
         while (true) {
-            int driverIndex = promptInt("Enter Driver: ")-1;
+            int driverIndex = promptInt("Enter Driver: ");
             if (driverIndex == -1)
                 return -1;
             if (driverIndex >= 0 && driverIndex < drivers.size()){
@@ -188,9 +188,9 @@ public class MainConsole {
 
         System.out.println("\n--- Select Source Location ---");
         for (int i = 0; i < locations.size(); i++)
-            System.out.println("[" + (i+1) + "] " + locations.get(i));
+            System.out.println( locations.get(i));
         while (true) {
-            int choice = promptInt("Enter Location ID: ")-1;
+            int choice = promptInt("Enter Location ID: ");
             if (choice >= 0 && choice < locations.size()) return choice;
             System.out.println("Invalid Location ID.");
         }
@@ -209,7 +209,7 @@ public class MainConsole {
 
         System.out.println("\n--- Available Suppliers ---");
         for (int i = 0; i < supplierNames.size(); i++) {
-            System.out.println("[" + (i+1) + "] " + supplierNames.get(i));
+            System.out.println(supplierNames.get(i));
         }
 
         System.out.print("\nSelect Supplier Indices (comma separated, e.g., '0, 2' or 'all'): ");
@@ -223,8 +223,8 @@ public class MainConsole {
         } else {
             for (String part : input.split(",\\s*")) {
                 try {
-                    int idx = Integer.parseInt(part)-1;
-                    if (idx >= 0 && idx < supplierNames.size()) {
+                    int idx = Integer.parseInt(part);
+                    if (idx >= 0) {
                         selectedSupplierIndices.add(idx);
                     }
                 } catch (NumberFormatException ignored) {}
@@ -232,10 +232,10 @@ public class MainConsole {
         }
 
         for (int supplierIdx : selectedSupplierIndices) {
-            String supplierName = supplierNames.get(supplierIdx);
+            String supplierName = supplierService.getSupplierById(supplierIdx).getName();
             System.out.println("\n>>> " + supplierName);
 
-            List<String> productNames = supplierService.getProductNamesForSupplier(supplierIdx);
+            List<String> productNames = supplierService.getProductNamesForSupplier(supplierIdx);//this includes the product id
             if (productNames == null || productNames.isEmpty()) {
                 System.out.println("This supplier has no products in stock.");
                 continue;
@@ -245,9 +245,10 @@ public class MainConsole {
 
             while (true) {
                 System.out.println("\nAvailable Products at " + supplierName);
-                for (int i = 0; i < productNames.size(); i++) {
+                List<Integer> availableProductIds=supplierService.getProductIdsForSupplier(supplierIdx);
+                for (Integer i: availableProductIds) {
                     int stockLeft = supplierService.getProductStock(supplierIdx, i);
-                    System.out.println("[" + (i+1) + "] " + productNames.get(i) +  " (In Stock: " + stockLeft + ")");
+                    System.out.println(productService.getProductById(i).toString() +  " (In Stock: " + stockLeft + ")");
                 }
 
                 System.out.print("Enter Product Index to add (or type 'done'): ");
@@ -255,13 +256,13 @@ public class MainConsole {
                 if (prodInput.equalsIgnoreCase("done")) break;
 
                 try {
-                    int pIdx = Integer.parseInt(prodInput)-1;
-                    if (pIdx >= 0 && pIdx < productNames.size()) {
+                    int pIdx = Integer.parseInt(prodInput);
+                    if (pIdx >= 0) {
 
                         int qty = promptInt("Quantity to take: ");
                         if (qty > 0) {
-                            int productIndex = productService.getIndexByName(productNames.get(pIdx));
-                            productsToBuy.put(productIndex, productsToBuy.getOrDefault(productIndex, 0) + qty);
+
+                            productsToBuy.put(pIdx, productsToBuy.getOrDefault(pIdx, 0) + qty);
                         }   else
                             System.out.println("Quantity must be greater than 0.");
 

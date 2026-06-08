@@ -48,9 +48,14 @@ public class Supplier {
         }
     }
 
-    public Product getProductByIndex(int index) {
+    public Product getProductById(int id) {
         List<Product> products = new ArrayList<>(productsAvailable.keySet());
-        return products.get(index);
+        for(Product product : products) {
+            if (product.id() == id) {
+                return product;
+            }
+        }
+        throw new DomainException("Product with id " + id + " not found");
     }
 
     @Override
@@ -71,6 +76,6 @@ public class Supplier {
     }
 
     public int getProductStock(int i) {
-        return productsAvailable.get(getProductByIndex(i));
+        return productsAvailable.get(getProductById(i));
     }
 }

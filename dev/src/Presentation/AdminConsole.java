@@ -98,13 +98,13 @@ public class AdminConsole {
 
         int branchIndex;
         while (true) {
-            System.out.println("\nSelect Branch:");
+            System.out.println("\nSelect Branch Id:");
             for (int i = 0; i < branches.size(); i++) {
-                System.out.println("[" + (i + 1) + "] " + branches.get(i));
+                System.out.println(branches.get(i));
             }
-            branchIndex = promptInt("Enter Branch: ") - 1;
+            branchIndex = promptInt("Enter Branch Id: ") ;
 
-            if (branchIndex > -1 && branchIndex < branches.size()) {
+            if (branchIndex > -1) {
                 break;
             }
             System.out.println("Invalid Branch Index. Please try again.");
@@ -117,7 +117,7 @@ public class AdminConsole {
         while (true) {
             System.out.println("\nAvailable Products:");
             for (int i = 0; i < productCatalog.size(); i++) {
-                System.out.println("[" + (i+1) + "] " + productCatalog.get(i));
+                System.out.println( productCatalog.get(i));
             }
 
             System.out.print("Select Products (or 'done'): ");
@@ -125,7 +125,7 @@ public class AdminConsole {
             if (input.equalsIgnoreCase("done")) break;
 
             try {
-                int productId = Integer.parseInt(input)-1;
+                int productId = Integer.parseInt(input);
                 if (productId >= 0 && productId < productCatalog.size()) {
                     int qty = promptInt("Quantity needed: ");
                     if (qty > 0) {
@@ -161,14 +161,14 @@ public class AdminConsole {
 
         System.out.println("\nSelect Supplier to Restock:");
         for (int i = 0; i < suppliers.size(); i++)
-            System.out.println("[" + (i+1) + "] " + suppliers.get(i));
-        int sId = promptInt("Enter Supplier: ")-1;
+            System.out.println( suppliers.get(i));
+        int sId = promptInt("Enter Supplier: ");
 
         List<String> catalog = productService.getProductsDisplay();
         System.out.println("Select Product:");
         for (int i = 0; i < catalog.size(); i++)
-            System.out.println("[" + (i+1) + "] " + catalog.get(i));
-        int pId = promptInt("Enter Product: ")-1;
+            System.out.println(catalog.get(i));
+        int pId = promptInt("Enter Product: ");
 
         int qty;
         while (true) {
@@ -194,8 +194,8 @@ public class AdminConsole {
         while (true) {
             System.out.println("Which request would you like to remove?");
             for (int i = 0; i < activeBranches.size(); i++)
-                System.out.println("[" + (i + 1) + "] " + activeBranches.get(i));
-            branchIndex = promptInt("Enter Branch: ") - 1;
+                System.out.println( activeBranches.get(i));
+            branchIndex = promptInt("Enter Branch: ") ;
             if (branchIndex >= 0 && branchIndex < activeBranches.size()) break;
             System.out.println("Invalid Branch Index. Please try again.");
         }
@@ -217,8 +217,8 @@ public class AdminConsole {
         do {
             System.out.println("Which request would you like to update?");
             for (int i = 0; i < activeRequestsLocation.size(); i++)
-                System.out.println("[" + (i + 1) + "] " + activeRequestsLocation.get(i));
-            branchIndex = promptInt("Enter Branch: ") - 1;
+                System.out.println(activeRequestsLocation.get(i));
+            branchIndex = promptInt("Enter Branch: ");
         } while (!requestService.isValidActiveRequestIndex(branchIndex));
 
         List<String> catalog = productService.getProductsDisplay();
@@ -231,8 +231,8 @@ public class AdminConsole {
             if (action.equalsIgnoreCase("add")) {
                 System.out.println("Select Product:");
                 for (int i = 0; i < catalog.size(); i++)
-                    System.out.println("[" + (i+1) + "] " + catalog.get(i));
-                int pId = promptInt("Product: ")-1;
+                    System.out.println(catalog.get(i));
+                int pId = promptInt("Product: ");
                 int qty = promptInt("Amount to add: ");
 
                 try {
@@ -252,7 +252,7 @@ public class AdminConsole {
                 int i = 1;
                 for (String product : products)
                     System.out.println("[" + i++ + "] " + product + " (" + productsInRequest.get(product) + " units left)");
-                int pId = promptInt("Product: ")-1;
+                int pId = promptInt("Product: ");
                 int qty = promptInt("Amount to remove: ");
 
                 try {

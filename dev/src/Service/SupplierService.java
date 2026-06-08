@@ -50,15 +50,24 @@ public class SupplierService {
 
     public List<String> getProductNamesForSupplier(int supplierIdx) {
         List<String> productNames = new ArrayList<>();
-        Supplier supplier = suppliers.get(supplierIdx);
+        Supplier supplier = getSupplierById(supplierIdx);
         for (Product product : supplier.getProductsAvailable().keySet()) {
-            productNames.add(product.name());
+            productNames.add(product.toString());
         }
         return productNames;
     }
 
-    public int getProductStock(int supplierIdx, int i) {
-        Supplier supplier = suppliers.get(supplierIdx);
-        return supplier.getProductStock(i);
+    public int getProductStock(int supplierIdx, int productId) {
+        Supplier supplier = getSupplierById(supplierIdx);
+        return supplier.getProductStock(productId);
+    }
+
+    public List<Integer> getProductIdsForSupplier(int supplierIdx) {
+        List<Integer> productIds = new ArrayList<>();
+        Supplier supplier = getSupplierById(supplierIdx);
+        for (Product product : supplier.getProductsAvailable().keySet()) {
+            productIds.add(product.id());
+        }
+        return productIds;
     }
 }

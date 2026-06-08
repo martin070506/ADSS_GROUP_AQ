@@ -17,7 +17,7 @@ public class TruckService {
     }
 
     // FIXED: Direct choice indexing selection
-    public Truck getAvailableTruckByIndex(int index) {
+    public Truck getAvailableTruckById(int index) {
         List<Truck> available = getAvailableTrucksList(Integer.MAX_VALUE);
         if (index >= 0 && index < available.size()) {
             return available.get(index);
@@ -25,13 +25,7 @@ public class TruckService {
         throw new IllegalArgumentException("Truck choice out of bounds.");
     }
 
-    public Truck getAvailableTruckByLicenseIndex(int index, int minLicense) {
-        List<Truck> available = getAvailableTrucksList(minLicense);
-        if (index >= 0 && index < available.size()) {
-            return available.get(index);
-        }
-        throw new IllegalArgumentException("Truck choice out of bounds for license scope.");
-    }
+
 
     private List<Truck> getAvailableTrucksList(int minLicense) {
         List<Truck> available = new ArrayList<>();
