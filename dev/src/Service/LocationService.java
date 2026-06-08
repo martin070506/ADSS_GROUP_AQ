@@ -16,10 +16,6 @@ public class LocationService {
         return l;
     }
 
-    public List<Location> getLocations() {
-        return locations;
-    }
-
     // FIXED: Direct index lookup
     public Location getLocationById(int id) {
         for (Location location : locations) {

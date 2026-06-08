@@ -12,17 +12,15 @@ public class TruckService {
 
     public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense)
     {
-        if (MaxWeight < truckWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
-        if(requiredLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
-        if(truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
         trucks.add(new Truck(counter++,truckNumber,model,truckWeight,MaxWeight,requiredLicense));
+
     }
 
     // FIXED: Direct choice indexing selection
-    public Truck getAvailableTruckById(int id) {
+    public Truck getAvailableTruckByIndex(int index) {
         List<Truck> available = getAvailableTrucksList(Integer.MAX_VALUE);
-        for(Truck truck : available){
-            if(truck.getId() == id) return truck;
+        if (index >= 0 && index < available.size()) {
+            return available.get(index);
         }
         throw new IllegalArgumentException("Truck choice out of bounds.");
     }

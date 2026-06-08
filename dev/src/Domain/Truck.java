@@ -12,10 +12,14 @@ public class Truck {
     private final String model;
     private final int minLicense;
     private boolean isAvailable;
-    private int id;
+    private  int id;
     private Map<Product, Integer> loadedProducts;
 
-    public Truck(int id,int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
+
+    public Truck(int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
+        if (maxWeight < startWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
+        if (minLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
+        if (truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
         this.startWeight = startWeight;
         this.maxWeight = maxWeight;
         this.model = model;
@@ -29,6 +33,9 @@ public class Truck {
     public int getId() {
         return id;
     }
+
+
+
     public int getCurrentWeight() {
         int currentWeight = startWeight;
         for (Map.Entry<Product, Integer> entry : loadedProducts.entrySet())
@@ -83,7 +90,7 @@ public class Truck {
 
     @Override
     public String toString() {
-        return "ID: "+id +" Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
+        return "ID: "+id +"Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
                 maxWeight + "kg | Min License: " + minLicense;
     }
 }

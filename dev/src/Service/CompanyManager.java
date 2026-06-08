@@ -24,7 +24,6 @@ public class CompanyManager {
         this.requestService = requestService;
         this.productService = productService;
         this.supplierService = supplierService;
-        // Connect TruckService to TransportService so it can handle replacement mechanics internally
         this.transportService = transportService;
         this.transportService.setTruckService(truckService);
         this.truckService = truckService;
