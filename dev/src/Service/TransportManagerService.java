@@ -115,7 +115,7 @@ public class TransportManagerService {
                 int currentDriverLicense = getDriverLicense(transportId);
 
                 for (int i = 0; i < truckService.getAvailableTrucksDisplay().size(); i++) {
-                    Truck newTruck = truckService.getAvailableTruckByIndex(i);
+                    Truck newTruck = truckService.getAvailableTruckById(i);
 
                     if (newTruck.getMaxWeight() > maxWeight && newTruck.getMinLicense() <= currentDriverLicense) {
                         replaceTruck(transportId, newTruck);

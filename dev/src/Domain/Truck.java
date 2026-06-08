@@ -12,9 +12,10 @@ public class Truck {
     private final String model;
     private final int minLicense;
     private boolean isAvailable;
+    private int id;
     private Map<Product, Integer> loadedProducts;
 
-    public Truck(int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
+    public Truck(int id,int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
         this.startWeight = startWeight;
         this.maxWeight = maxWeight;
         this.model = model;
@@ -22,9 +23,12 @@ public class Truck {
         this.minLicense = minLicense;
         isAvailable = true;
         loadedProducts = new HashMap<>();
+        this.id=id;
     }
 
-
+    public int getId() {
+        return id;
+    }
     public int getCurrentWeight() {
         int currentWeight = startWeight;
         for (Map.Entry<Product, Integer> entry : loadedProducts.entrySet())
@@ -79,7 +83,7 @@ public class Truck {
 
     @Override
     public String toString() {
-        return "Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
+        return "ID: "+id +" Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
                 maxWeight + "kg | Min License: " + minLicense;
     }
 }

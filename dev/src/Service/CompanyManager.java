@@ -52,7 +52,7 @@ public class CompanyManager {
         Location loc = locationService.addLocation(addr, ph, contact);
         Map<Product, Integer> productMap = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : stockIndices.entrySet()) {
-            productMap.put(productService.getProductByIndex(entry.getKey()), entry.getValue());
+            productMap.put(productService.getProductById(entry.getKey()), entry.getValue());
         }
         supplierService.addSupplier(loc, productMap);
     }
@@ -65,17 +65,17 @@ public class CompanyManager {
     public void addRequest(int storeLocationId, Map<Integer, Integer> selectedItems) {
         Map<Product, Integer> newMap = new HashMap<>();
         for(Map.Entry<Integer, Integer> entry : selectedItems.entrySet()) {
-            newMap.put(productService.getProductByIndex(entry.getKey()), entry.getValue());
+            newMap.put(productService.getProductById(entry.getKey()), entry.getValue());
         }
-        requestService.addRequest(branchService.getBranchByIndex(storeLocationId).getLocation(), newMap);
+        requestService.addRequest(branchService.getBranchById(storeLocationId).getLocation(), newMap);
     }
 
     public void resupplySupplier(int sIndex, int catalogProductIndex, int qty) {
-        supplierService.getSupplierByIndex(sIndex).addStock(productService.getProductByIndex(catalogProductIndex), qty);
+        supplierService.getSupplierById(sIndex).addStock(productService.getProductById(catalogProductIndex), qty);
     }
 
     public void updateRequestAddProduct(int requestUiIdx, int catalogProductUiIdx, int qty) {
-        requestService.getRequestByIndex(requestUiIdx).addProduct(productService.getProductByIndex(catalogProductUiIdx), qty);
+        requestService.getRequestByIndex(requestUiIdx).addProduct(productService.getProductById(catalogProductUiIdx), qty);
     }
 
     public void updateRequestRemoveProduct(int requestUiIdx, int requestProductUiIdx, int qty) {
@@ -90,9 +90,9 @@ public class CompanyManager {
 
     public int createTransportAndGetId(int truckUiIdx, int driverUiIdx, int sourceUiIdx,
                                        Map<Integer, Map<Integer, Integer>> supplierAllocations) {
-        Truck truck = truckService.getAvailableTruckByIndex(truckUiIdx);
+        Truck truck = truckService.getAvailableTruckById(truckUiIdx);
         Driver driver = driverService.getAvailableDriverByIndex(driverUiIdx);
-        Location source = locationService.getLocationByIndex(sourceUiIdx);
+        Location source = locationService.getLocationById(sourceUiIdx);
         List<Request> requests = requestService.getAllRequests();
 
         Map<Supplier, Map<Product, Integer>> supplierAllocationsMap = new HashMap<>();
@@ -131,7 +131,7 @@ public class CompanyManager {
         return transportService.getTransportById(transportId).getTransportFile().toString();
     }
 
-    public boolean checkDriverTruck(int driverIndex, int truckIndex) {
-        return driverService.getAvailableDriverByIndex(driverIndex).getLicense() >= truckService.getAvailableTruckByIndex(truckIndex).getMinLicense();
+    public boolean checkDriverTruck(int driverIndex, int truckId) {
+        return driverService.getAvailableDriverByIndex(driverIndex).getLicense() >= truckService.getAvailableTruckById(truckId).getMinLicense();
     }
 }

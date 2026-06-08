@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class ProductCatalogService {
     private final List<Product> products;
+    private int productCounter=0;
 
     public ProductCatalogService(List<Product> products) {
         this.products = products;
@@ -16,18 +17,18 @@ public class ProductCatalogService {
         this.products = new ArrayList<>();
     }
     public void addProduct(String name, int weight) {
-        products.add(new Product(name, weight));
+        products.add(new Product(productCounter++,name, weight));
     }
     public void removeProduct(Product product) {
         products.remove(product);
     }
 
     // FIXED: Safely retrieves by catalog index
-    public Product getProductByIndex(int index) {
-        if (index >= 0 && index < products.size()) {
-            return products.get(index);
+    public Product getProductById(int id) {
+        for (Product product : products) {
+            if(product.id() == id) return product;
         }
-        throw new IllegalArgumentException("Product index out of bounds: " + index);
+        throw new IllegalArgumentException("Product index out of bounds: " + id);
     }
 
     public List<String> getProductsDisplay() {
@@ -41,7 +42,7 @@ public class ProductCatalogService {
     public Map<Product, Integer> mapIndicesToProducts(Map<Integer, Integer> selectedIndices) {
         Map<Product, Integer> productMap = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : selectedIndices.entrySet())
-            productMap.put(getProductByIndex(entry.getKey()), entry.getValue());
+            productMap.put(getProductById(entry.getKey()), entry.getValue());
 
         return productMap;
     }

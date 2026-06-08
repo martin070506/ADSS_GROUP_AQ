@@ -6,7 +6,7 @@ import java.util.List;
 
 public class TruckService {
     private final List<Truck> trucks;
-
+    private int counter=0;
     public TruckService() { this.trucks = new ArrayList<>(); }
     public TruckService(List<Truck> trucks) { this.trucks = new ArrayList<>(trucks); }
 
@@ -15,14 +15,14 @@ public class TruckService {
         if (MaxWeight < truckWeight) throw new IllegalArgumentException("Max Weight must be greater than truck Weight");
         if(requiredLicense < 0) throw new IllegalArgumentException("Required License must be greater than 0");
         if(truckNumber < 0) throw new IllegalArgumentException("Truck Number must be greater than 0");
-        trucks.add(new Truck(truckNumber,model,truckWeight,MaxWeight,requiredLicense));
+        trucks.add(new Truck(counter++,truckNumber,model,truckWeight,MaxWeight,requiredLicense));
     }
 
     // FIXED: Direct choice indexing selection
-    public Truck getAvailableTruckByIndex(int index) {
+    public Truck getAvailableTruckById(int id) {
         List<Truck> available = getAvailableTrucksList(Integer.MAX_VALUE);
-        if (index >= 0 && index < available.size()) {
-            return available.get(index);
+        for(Truck truck : available){
+            if(truck.getId() == id) return truck;
         }
         throw new IllegalArgumentException("Truck choice out of bounds.");
     }

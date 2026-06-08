@@ -12,11 +12,11 @@ import java.util.Map;
  * @param weight The weight in Kilograms (Kg). Must be a positive value.
  * */
 
-public record Product(String name, int weight) {
+public record Product(int id,String name, int weight) {
 
     @Override
     public String toString() {
-        return name + " (" + weight + " Kg)";
+        return "ID: "+  id + " ==> " +name + " (" + weight + " Kg)";
     }
 
     static Map<Product, Integer> reduceProducts(Map<Product, Integer> currentProducts, Map<Product, Integer> productsToRemove) {

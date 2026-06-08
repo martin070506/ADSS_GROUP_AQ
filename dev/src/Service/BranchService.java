@@ -28,11 +28,13 @@ public class BranchService {
 
 
     // FIXED: Lookup by integer position instead of string matching
-    public BranchManager getBranchByIndex(int index) {
-        if (index >= 0 && index < branches.size()) {
-            return branches.get(index);
+    public BranchManager getBranchById(int id) {
+        for  (BranchManager branch : branches) {
+            if(branch.getLocation().id() == id) {
+                return branch;
+            }
         }
-        throw new IllegalArgumentException("Branch index out of bounds: " + index);
+        throw new IllegalArgumentException("Branch index out of bounds: " + id);
     }
 
     public void removeBranch(BranchManager branch) {

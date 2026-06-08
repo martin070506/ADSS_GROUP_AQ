@@ -16,10 +16,7 @@ public class SupplierService {
         this.suppliers = new ArrayList<>();
     }
 
-    public void registerSupplier(String addr, String ph, String contact, Map<Product, Integer> stock) {
-        Location loc = new Location(addr, ph, contact);
-        addSupplier(loc, stock);
-    }
+
 
     public void addSupplier(Location location, Map<Product, Integer> productMap) {
         Supplier supplier = new Supplier(location, productMap);
@@ -34,14 +31,19 @@ public class SupplierService {
         return display;
     }
 
-    public Supplier getSupplierByIndex(int supplierIndex) {
-        return suppliers.get(supplierIndex);
+    public Supplier getSupplierById(int supplierId) {
+        for(Supplier supplier : suppliers) {
+            if(supplier.getSupplierLocation().id() == supplierId) {
+                return supplier;
+            }
+        }
+        throw new IllegalArgumentException("Supplier not found: " + supplierId);
     }
 
     public Map<Supplier, Map<Integer, Integer>> mapIndicesToSuppliers(Map<Integer, Map<Integer, Integer>> supplierIndices) {
         Map<Supplier, Map<Integer, Integer>> supplierMap = new HashMap<>();
         for (Map.Entry<Integer, Map<Integer, Integer>> entry : supplierIndices.entrySet()) {
-            supplierMap.put(getSupplierByIndex(entry.getKey()), entry.getValue());
+            supplierMap.put(getSupplierById(entry.getKey()), entry.getValue());
         }
         return supplierMap;
     }

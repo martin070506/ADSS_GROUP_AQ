@@ -1,11 +1,12 @@
 package Domain;
 
 
-public record Location(String address, String phoneNumber, String contactName) {
+public record Location(int id,String address, String phoneNumber, String contactName) {
 
     @Override
     public String toString() {
-        return "Name: " + contactName() +
+        return "ID: " +id()+
+                "Name: " + contactName() +
                 " | Address: " + address() +
                 " | Phone: " + phoneNumber();
     }

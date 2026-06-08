@@ -6,6 +6,7 @@ import java.util.List;
 
 public class DriverService {
     private final List<Driver> drivers;
+    private int counter=0;
 
     public DriverService() { this.drivers = new ArrayList<>(); }
     public DriverService(List<Driver> drivers) { this.drivers = new ArrayList<>(drivers); }
@@ -13,7 +14,7 @@ public class DriverService {
     public void addDriver(String driverName,int license) {
         if(driverName == null || driverName.isEmpty()) throw new IllegalArgumentException("Driver name cannot be empty");
         if(license < 0) throw new IllegalArgumentException("License must be greater than 0");
-        drivers.add(new Driver(driverName,license));
+        drivers.add(new Driver(counter++,driverName,license));
     }
 
     // FIXED: Direct lookup using choice indices mapping

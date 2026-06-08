@@ -4,13 +4,17 @@ public class Driver {
     private final String driverName;
     private final int license;
     private boolean isAvailable;
+    private int id;
 
-    public Driver(String driverName, int license) {
+    public Driver(int id,String driverName, int license) {
         this.driverName = driverName;
         this.license = license;
+        this.id=id;
         isAvailable = true;
     }
-
+    public int getId() {
+        return id;
+    }
     public boolean isAvailable() {
         return isAvailable;
     }
@@ -29,6 +33,6 @@ public class Driver {
 
     @Override
     public String toString() {
-        return String.format("Driver: %s (License: %d)", driverName, license);
+        return String.format("ID: %d Driver: %s (License: %d)", id,driverName, license);
     }
 }
