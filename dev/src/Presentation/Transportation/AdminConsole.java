@@ -2,7 +2,12 @@ package Presentation.Transportation;
 
 
 import Service.Transportation.*;
+import Service.Workers.ShiftJobsService;
+import Service.Workers.ShiftPlacementService;
+import Service.Workers.ShiftWorkersCanidatesService;
+import Service.Workers.WorkersService;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class AdminConsole {
@@ -13,20 +18,30 @@ public class AdminConsole {
     private final SupplierService supplierService;
     private final RequestService requestService;
     private final TruckService truckService;
-    private final DriverService driverService;
     private final BranchService branchService;
     private final LocationService locationService;
+    private final WorkersService workers_service;
+    private final ShiftWorkersCanidatesService candidates_service;
+    private final ShiftPlacementService placement_service;
+    private final ShiftJobsService jobs_service;
 
-    public AdminConsole(CompanyManager companyManager, ProductCatalogService productService, TransportManagerService transportService, SupplierService supplierService, RequestService requestService, TruckService truckService, DriverService driverService, BranchService branchService, LocationService locationService) {
+    public AdminConsole(CompanyManager companyManager, ProductCatalogService productService, TransportManagerService transportService,
+                        SupplierService supplierService, RequestService requestService, TruckService truckService,
+                        BranchService branchService, LocationService locationService, WorkersService workers_service,
+                        ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service,
+                        ShiftJobsService jobs_service) {
         this.companyManager = companyManager;
         this.productService = productService;
         this.transportService = transportService;
         this.supplierService = supplierService;
         this.requestService = requestService;
         this.truckService = truckService;
-        this.driverService = driverService;
         this.branchService = branchService;
         this.locationService = locationService;
+        this.workers_service = workers_service;
+        this.candidates_service = candidates_service;
+        this.placement_service = placement_service;
+        this.jobs_service = jobs_service;
     }
 
     public void start() {
@@ -36,7 +51,7 @@ public class AdminConsole {
         System.out.print("Choice: ");
 
         if (scanner.nextLine().trim().equals("1")) {
-            DemoDataLoader.load(companyManager,productService,truckService,driverService,branchService);
+            DemoDataLoader.load(companyManager,productService,truckService,branchService);
             System.out.println("Demo Data Loaded Successfully.");
         } else { manualSetup(); }
 
@@ -82,8 +97,13 @@ public class AdminConsole {
     }
 
     private void runShipmentCycle() {
+
+        if (requestService.getActiveRequestLocations().isEmpty()) {
+            System.out.println("No active requests available.");
+            return;
+        }
         MainConsole shipmentConsole = new MainConsole(companyManager, transportService, supplierService, productService,
-                truckService, driverService, locationService);
+                truckService, locationService, workers_service, candidates_service, placement_service);
         try { shipmentConsole.initiateShipment(); }
         catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
         catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
@@ -294,11 +314,37 @@ public class AdminConsole {
     }
 
     private void manualDriverSetup() {
-        System.out.print("Name: ");
-        String name = scanner.nextLine().trim();
-        int lic = promptInt("License Level: ");
         try {
-            driverService.addDriver(name, lic);
+            System.out.println("enter new worker name: ");
+            String name = scanner.nextLine();
+
+            System.out.println("enter new worker id: ");
+            int id = scanner.nextInt();
+            scanner.nextLine();
+
+            System.out.println("enter new worker bank account info: ");
+            String bank_account = scanner.nextLine();
+
+            System.out.println("enter new worker salary: ");
+            float salary = scanner.nextFloat();
+            scanner.nextLine();
+
+            System.out.println("enter new worker salary condisions: ");
+            String salary_condision = scanner.nextLine();
+
+            System.out.print("Enter new worker start date in this format (YYYY-MM-DD): ");
+            String dateInput = scanner.nextLine();
+            LocalDate start_date = LocalDate.parse(dateInput);
+
+            System.out.println("enter if new worker can be shift manager: (false/true) ");
+            boolean is_shift_manager = scanner.nextBoolean();
+            scanner.nextLine();
+
+            System.out.println("enter driver license number: ");
+            int license = scanner.nextInt();
+            scanner.nextLine();
+
+            workers_service.addDriver(name, id, bank_account, salary, salary_condision, start_date, is_shift_manager, license);
         } catch (IllegalArgumentException e) {
             System.out.println("Failed to add driver: " + e.getMessage());
         }

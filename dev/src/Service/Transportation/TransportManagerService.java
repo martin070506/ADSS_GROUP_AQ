@@ -2,6 +2,8 @@ package Service.Transportation;
 
 import Domain.Transportation.*;
 import Exceptions.*;
+import Service.Workers.WorkersService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,28 +14,32 @@ public class TransportManagerService {
     private final List<Transport> transports;
     private int transportIdCounter;
     private TruckService truckService;
+    private WorkersService workers_service;
+
 
     public TransportManagerService() {
         this.transports = new ArrayList<>();
         this.transportIdCounter = 1;
     }
 
-    public void setTruckService(TruckService truckService) {
+    public void setService(TruckService truckService, WorkersService workers_service) {
         this.truckService = truckService;
+        this.workers_service = workers_service;
     }
 
-    public int createTransport(Truck truck, Driver driver, Location source,
-                               List<Request> requests,
+    public int createTransport(Truck truck, int driverId, Location source, List<Request> requests,
                                Map<Supplier, Map<Product, Integer>> supplierAllocations) {
         Transport transport = new Transport(
                 transportIdCounter++,
                 java.time.LocalDate.now(),
                 truck,
-                driver,
+                driverId,
+                "Driver: " + workers_service.getName(driverId) + ", License: " + workers_service.getLicense(driverId),
                 source,
                 requests,
                 supplierAllocations
         );
+
         transports.add(transport);
         return transport.getId();
     }
@@ -112,7 +118,7 @@ public class TransportManagerService {
             }
             case "4" -> {
                 int maxWeight = getTruckWeightByTransportId(transportId);
-                int currentDriverLicense = getDriverLicense(transportId);
+                int currentDriverLicense = workers_service.getLicense(getDriverLicense(transportId));
 
                 for (int i = 0; i < truckService.getAvailableTrucksDisplay().size(); i++) {
                     Truck newTruck = truckService.getAvailableTruckById(i);
@@ -239,6 +245,6 @@ public class TransportManagerService {
     }
 
     public int getDriverLicense(int transportIndex) {
-        return getTransportById(transportIndex).getDriver().getLicense();
+        return workers_service.getLicense(getTransportById(transportIndex).getDriverId());
     }
 }

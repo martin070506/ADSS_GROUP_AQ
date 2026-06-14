@@ -15,6 +15,38 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+
+        WorkersFacade workers_facade = new WorkersFacade();
+        ShiftJobsFacade jobs_facade = new ShiftJobsFacade();
+        ShiftCanidatesWorkersFacade candidates_facade = new ShiftCanidatesWorkersFacade(workers_facade);
+        ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, candidates_facade);
+
+        WorkersService workers_service = new WorkersService(workers_facade);
+        ShiftJobsService jobs_service = new ShiftJobsService(jobs_facade);
+        ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(candidates_facade);
+        ShiftPlacementService placement_service = new ShiftPlacementService(placement_facade);
+
+        RequestService requestService = new RequestService();
+        ProductCatalogService productService = new ProductCatalogService();
+        SupplierService supplierService = new SupplierService();
+        TransportManagerService transportService = new TransportManagerService();
+        TruckService truckService = new TruckService();
+        BranchService branchService = new BranchService();
+        LocationService locationService = new LocationService();
+
+
+        CompanyManager companyManager = CompanyManager.getInstance(locationService, requestService, productService, supplierService,
+                transportService, truckService, branchService, workers_service);
+
+        AdminConsole appUI = new AdminConsole(companyManager, productService, transportService, supplierService,
+                requestService, truckService, branchService, locationService, workers_service, candidates_service,
+                placement_service, jobs_service);
+
+        ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
+
+
+
+
         boolean exit = false;
         while(!exit){
             System.out.println("Which system would you like to enter?");
@@ -24,39 +56,12 @@ public class Main {
             System.out.print("Please enter your choice (1 or 2 or 3): ");
 
             String choice = scanner.nextLine();
-            LocationService locationService = new LocationService();
 
             switch (choice) {
                 case "1" -> {
-                    DriverService driverService = new DriverService();
-                    RequestService requestService = new RequestService();
-                    ProductCatalogService productService = new ProductCatalogService();
-                    SupplierService supplierService = new SupplierService();
-                    TransportManagerService transportService = new TransportManagerService();
-                    TruckService truckService = new TruckService();
-                    BranchService branchService = new BranchService();
-
-                    CompanyManager companyManager = CompanyManager.getInstance(driverService, locationService, requestService,
-                            productService, supplierService, transportService, truckService, branchService);
-
-                    AdminConsole appUI = new AdminConsole(companyManager, productService, transportService, supplierService,
-                            requestService, truckService, driverService, branchService, locationService);
                     appUI.start();
                 }
                 case "2" -> {
-                    WorkersFacade workers_facade = new WorkersFacade();
-                    WorkersService workers_service = new WorkersService(workers_facade);
-
-                    ShiftJobsFacade jobs_facade = new ShiftJobsFacade();
-                    ShiftJobsService jobs_service = new ShiftJobsService(jobs_facade);
-
-                    ShiftCanidatesWorkersFacade candidates_facade = new ShiftCanidatesWorkersFacade();
-                    ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(candidates_facade);
-
-                    ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, candidates_facade);
-                    ShiftPlacementService placement_service = new ShiftPlacementService(placement_facade);
-                    ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
-
                     service.run();
                 }
                 case "3" -> exit = true;

@@ -6,7 +6,7 @@ import java.util.Map;
 public class DemoDataLoader {
 
     public static void load(CompanyManager manager, ProductCatalogService productService,
-                            TruckService truckService, DriverService driverService,BranchService branchService) {
+                            TruckService truckService,BranchService branchService) {
 
         // 1. Seed Core Catalog Products
         productService.addProduct("Apple", 150);
@@ -24,10 +24,10 @@ public class DemoDataLoader {
         truckService.addTruck(104, "Renault Master", 2200, 4500, 1);
 
         // 3. Seed Registered Operators Workforce
-        driverService.addDriver("Bob", 2);
-        driverService.addDriver("Charlie", 1);
-        driverService.addDriver("David", 3);
-        driverService.addDriver("Eve", 2);
+//        driverService.addDriver("Bob", 2);
+//        driverService.addDriver("Charlie", 1);
+//        driverService.addDriver("David", 3);
+//        driverService.addDriver("Eve", 2);
 
         // 4. Seed Corporate Physical Facilities Boundaries
         manager.addBranchLocation("Ashdod", "08-222-9900", "Grace");

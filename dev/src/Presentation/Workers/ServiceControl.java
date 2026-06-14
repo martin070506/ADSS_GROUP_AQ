@@ -472,7 +472,7 @@ public class ServiceControl{
         }
 
     }
-    public   void runWorkersService(){
+    public void runWorkersService(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to workers service \n 1) for adding new worker enter 'add' \n 2) for removing worker enter 'remove' \n 3) for editing worker info enter 'edit' \n 4) for viewing all workers 'view' \n 5) for returning to main menu enter 'return' \n");
@@ -498,7 +498,7 @@ public class ServiceControl{
             }
         }
     }
-    public   void runWorkersServiceEdit(){
+    public void runWorkersServiceEdit(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to workers edit service \n 1) for editing worker name 'name' \n 2) for editing worker id 'id' \n 3) for editing worker bank account info enter 'bank account' \n 4) for editing worker salary enter 'salary' \n 5) for editing worker salary condision enter 'salary condision' \n 6) for editing worker start date enter 'date' \n 7) for editing if worker can be shift manager enter 'shift manager' \n 8) for returning to workers service menu enter 'return' \n");
@@ -744,7 +744,6 @@ public class ServiceControl{
            System.out.println("entered wrong data type, returning to workers service menu ");
 
         }
-        
 
         runWorkersService();
         

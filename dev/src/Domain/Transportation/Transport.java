@@ -2,6 +2,8 @@ package Domain.Transportation;
 
 import java.time.LocalDate;
 import java.util.*;
+
+import Domain.Workers.Driver;
 import Exceptions.ProductNotFoundOnTruckException;
 
 public class Transport {
@@ -9,26 +11,29 @@ public class Transport {
     private final int id;
     private final LocalDate departureTime;
     private Truck truck;
-    private Driver driver;
+    private final int driverId;
     private final Location source;
     private final List<Request> requests;
     private final Map<Supplier, Map<Product, Integer>> supplierAllocations;
     private final TransportFile transportFile;
 
-    public Transport(int id, LocalDate departureTime, Truck truck, Driver driver, Location source,
+    public Transport(int id, LocalDate departureTime, Truck truck, int driverId, String driverInfo, Location source,
                      List<Request> requests,
                      Map<Supplier, Map<Product, Integer>> supplierAllocations) {
         this.id = id;
         this.departureTime = departureTime;
         this.truck = truck;
-        this.driver = driver;
+        this.driverId = driverId;
         this.source = source;
         this.requests = requests;
         this.supplierAllocations = new HashMap<>(supplierAllocations);
-        this.transportFile = new TransportFile(departureTime, truck, driver, source);
+        this.transportFile = new TransportFile(departureTime, truck, driverInfo, source);
     }
 
 
+    public int getDriverId() {
+        return driverId;
+    }
 
     public int getId() {
         return id;
@@ -40,10 +45,6 @@ public class Transport {
 
     public Truck getTruck() {
         return truck;
-    }
-
-    public Driver getDriver() {
-        return driver;
     }
 
     public Location getSource() {

@@ -1,12 +1,12 @@
 package Service.Transportation;
 
 import Domain.Transportation.*;
+import Service.Workers.WorkersService;
 
 import java.util.*;
 
 public class CompanyManager {
     private static CompanyManager instance;
-    private final DriverService driverService;
     private final LocationService locationService;
     private final RequestService requestService;
     private final ProductCatalogService productService;
@@ -14,27 +14,27 @@ public class CompanyManager {
     private final TransportManagerService transportService;
     private final TruckService truckService;
     private final BranchService branchService;
+    private final WorkersService workers_service;
 
-    private CompanyManager(DriverService driverService, LocationService locationService,
+    private CompanyManager(LocationService locationService,
                            RequestService requestService, ProductCatalogService productService,
                            SupplierService supplierService, TransportManagerService transportService,
-                           TruckService truckService, BranchService branchService) {
-        this.driverService = driverService;
+                           TruckService truckService, BranchService branchService, WorkersService workers_service) {
         this.locationService = locationService;
         this.requestService = requestService;
         this.productService = productService;
         this.supplierService = supplierService;
         this.transportService = transportService;
-        this.transportService.setTruckService(truckService);
+        this.transportService.setService(truckService, workers_service);
         this.truckService = truckService;
         this.branchService = branchService;
+        this.workers_service = workers_service;
     }
 
-    public static CompanyManager getInstance(DriverService ds, LocationService ls, RequestService rs,
-                                             ProductCatalogService pcs, SupplierService ss,
-                                             TransportManagerService tms, TruckService ts, BranchService bs) {
+    public static CompanyManager getInstance(LocationService ls, RequestService rs, ProductCatalogService pcs, SupplierService ss,
+                                             TransportManagerService tms, TruckService ts, BranchService bs, WorkersService ws) {
         if (instance == null) {
-            instance = new CompanyManager(ds, ls, rs, pcs, ss, tms, ts, bs);
+            instance = new CompanyManager(ls, rs, pcs, ss, tms, ts, bs, ws);
         }
         return instance;
     }
@@ -87,10 +87,10 @@ public class CompanyManager {
 
     // === LIVE SHIPMENT WORKFLOW DELEGATIONS ===
 
-    public int createTransportAndGetId(int truckUiIdx, int driverUiIdx, int sourceUiIdx,
+    public int createTransportAndGetId(int truckUiIdx, int driverId, int sourceUiIdx,
                                        Map<Integer, Map<Integer, Integer>> supplierAllocations) {
         Truck truck = truckService.getAvailableTruckById(truckUiIdx);
-        Driver driver = driverService.getAvailableDriverByIndex(driverUiIdx);
+        // Driver driver = workers_service.getAvailableDriverByIndex(driverUiIdx);
         Location source = locationService.getLocationById(sourceUiIdx);
         List<Request> requests = requestService.getAllRequests();
 
@@ -98,7 +98,7 @@ public class CompanyManager {
         for (Map.Entry<Supplier, Map<Integer, Integer>> entry : supplierService.mapIndicesToSuppliers(supplierAllocations).entrySet()){
             supplierAllocationsMap.put(entry.getKey(), productService.mapIndicesToProducts(entry.getValue()));
         }
-        return transportService.createTransport(truck, driver, source, requests, supplierAllocationsMap);
+        return transportService.createTransport(truck, driverId, source, requests, supplierAllocationsMap);
     }
 
 
@@ -130,7 +130,7 @@ public class CompanyManager {
         return transportService.getTransportById(transportId).getTransportFile().toString();
     }
 
-    public boolean checkDriverTruck(int driverIndex, int truckId) {
-        return driverService.getAvailableDriverByIndex(driverIndex).getLicense() >= truckService.getAvailableTruckById(truckId).getMinLicense();
+    public boolean checkDriverTruck(int driverId, int truckId) {
+        return workers_service.getLicense(driverId) >= truckService.getAvailableTruckById(truckId).getMinLicense();
     }
 }

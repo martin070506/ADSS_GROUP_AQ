@@ -2,7 +2,12 @@ package Presentation.Transportation;
 
 import Exceptions.*;
 import Service.Transportation.*;
+import Service.Workers.ShiftJobsService;
+import Service.Workers.ShiftPlacementService;
+import Service.Workers.ShiftWorkersCanidatesService;
+import Service.Workers.WorkersService;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class MainConsole {
@@ -12,35 +17,43 @@ public class MainConsole {
     private final SupplierService supplierService;
     private final ProductCatalogService productService;
     private final TruckService truckService;
-    private final DriverService driverService;
     private final LocationService locationService;
+    private final WorkersService workers_service;
+    private final ShiftWorkersCanidatesService candidates_service;
+    private final ShiftPlacementService placement_service;
 
-    public MainConsole(CompanyManager companyManager, TransportManagerService transportService, SupplierService supplierService, ProductCatalogService productService, TruckService truckService, DriverService driverService, LocationService locationService) {
+    public MainConsole(CompanyManager companyManager, TransportManagerService transportService, SupplierService supplierService,
+                       ProductCatalogService productService, TruckService truckService, LocationService locationService,
+                       WorkersService workers_service, ShiftWorkersCanidatesService candidates_service,
+                       ShiftPlacementService placement_service) {
         this.companyManager = companyManager;
         this.transportService = transportService;
         this.supplierService = supplierService;
         this.productService = productService;
         this.truckService = truckService;
-        this.driverService = driverService;
         this.locationService = locationService;
+        this.workers_service = workers_service;
+        this.candidates_service = candidates_service;
+        this.placement_service = placement_service;
     }
 
     public void initiateShipment() {
-        int truckIndex = chooseTruck();
-        if (truckIndex == -1) return;
-
-        int driverIndex = chooseDriver(truckIndex);
-        if (driverIndex == -1) return;
 
         int sourceIndex = selectSourceLocation();
         if (sourceIndex == -1) return;
+
+        int truckIndex = chooseTruck();
+        if (truckIndex == -1) return;
+
+        int driverId = chooseDriver(sourceIndex, truckIndex);
+        if (driverId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
 
         if (supplierAllocationsIds.isEmpty()) return;
 
         try {
-            int transportId = companyManager.createTransportAndGetId(truckIndex, driverIndex, sourceIndex, supplierAllocationsIds);
+            int transportId = companyManager.createTransportAndGetId(truckIndex, driverId, sourceIndex, supplierAllocationsIds);
             processShipmentFlow(transportId);
         } catch (DomainException e) {
             System.out.println("Validation Error: " + e.getMessage());
@@ -154,28 +167,44 @@ public class MainConsole {
         }
     }
 
-    private int chooseDriver(int truckIndex) {
-        List<String> drivers = driverService.getAvailableDriversDisplay();
+    private int chooseDriver(int sourceIndex, int truckIndex) {
+        LocalDate today = LocalDate.now();
+        Boolean isMorning = Math.random() > 0.5; // TODO: notice
+        List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocationById(sourceIndex)); // TODO: notice break of Domain
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");
             return -1;
         }
 
+        int i = 1;
         System.out.println("\n--- Available Drivers ---");
-        for (int i = 0; i < drivers.size(); i++)
-            System.out.println( drivers.get(i));
+        for (int index : drivers)
+            System.out.println(i++ + ". Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
+
         while (true) {
-            int driverIndex = promptInt("Enter Driver: ");
+            int driverIndex = promptInt("Enter Driver: ")-1;
             if (driverIndex == -1)
                 return -1;
-            if (driverIndex >= 0 && driverIndex < drivers.size()){
-                if (companyManager.checkDriverTruck(driverIndex, truckIndex))
-                    return driverIndex;
-                else
-                    System.out.println("Driver is not eligible to this truck.");
-            }
-            else
+
+            if (driverIndex < 0 || driverIndex >= drivers.size()) {
                 System.out.println("Invalid Driver Index.");
+                continue;
+            }
+
+            if (!companyManager.checkDriverTruck(driverIndex, truckIndex)) {
+                System.out.println("Driver is not eligible to this truck.");
+                continue;
+            }
+
+            String massage = placement_service.PlaceDriver(today, isMorning,
+                    locationService.getLocationById(sourceIndex), drivers.get(driverIndex));
+
+            if (massage.startsWith("failed")) {
+                System.out.println(massage);
+                continue;
+            }
+
+            return driverIndex;
         }
     }
 

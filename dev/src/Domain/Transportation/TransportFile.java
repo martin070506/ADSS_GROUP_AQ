@@ -1,5 +1,7 @@
 package Domain.Transportation;
 
+import Domain.Workers.Driver;
+
 import java.time.LocalDate;
 import java.util.*;
 
@@ -7,15 +9,15 @@ public class TransportFile {
 
     private String transportLog;
     private String trucksLog;
-    private String driversLog;
+    private final String driversLog;
     private String suppliersLog;
     private String requestsLog;
 
-    public TransportFile(LocalDate departureTime, Truck truck, Driver driver, Location source) {
+    public TransportFile(LocalDate departureTime, Truck truck, String driverInfo, Location source) {
         transportLog = "Source: " + source.toString() + '\n'+
                 "Departure Time: " + departureTime + '\n';
         trucksLog = truck.toString();
-        driversLog = driver.toString();
+        driversLog = driverInfo;
         requestsLog = "";
         suppliersLog = "";
     }
@@ -44,9 +46,9 @@ public class TransportFile {
         trucksLog = " (Swapped)\n" + truck.toString();
     }
 
-    public void changeDriver(Driver driver) {
-        transportLog += "Driver swapped, Name: " + driver.getDriverName();
-        trucksLog = " (Swapped)\n" + driver.toString();
+    public void changeDriver(String driverName) {
+        transportLog += "Driver swapped, Name: " + driverName;
+        trucksLog = " (Swapped)\n" + driverName;
     }
 
     public void skipRequest(Request request) {
