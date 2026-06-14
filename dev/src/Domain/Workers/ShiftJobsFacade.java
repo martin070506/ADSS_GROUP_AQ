@@ -5,7 +5,7 @@ import java.util.List;
 
 import Domain.Workers.Shift;
 import Domain.Workers.ShiftJobs;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
 
 public class ShiftJobsFacade {
     private List<ShiftJobs> shifts;

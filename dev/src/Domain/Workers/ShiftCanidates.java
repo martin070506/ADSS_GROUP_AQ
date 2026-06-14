@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import Domain.Workers.Shift;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
 
 public class ShiftCanidates {
     private Shift shift;

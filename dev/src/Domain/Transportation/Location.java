@@ -1,7 +1,7 @@
 package Domain.Transportation;
 
 
-public record Location(int id,String address, String phoneNumber, String contactName) {
+public record Location(int id, String address, String phoneNumber, String contactName) {
 
     @Override
     public String toString() {

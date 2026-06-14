@@ -1,6 +1,6 @@
 package Domain.Workers;
-import java.time.LocalDate; 
-import Presentation.Workers.Location;
+import java.time.LocalDate;
+import Domain.Transportation.Location;
 
 
 public class Shift {

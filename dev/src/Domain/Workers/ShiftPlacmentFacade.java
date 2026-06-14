@@ -8,7 +8,7 @@ import Domain.Workers.Shift;
 import Domain.Workers.ShiftCanidatesWorkersFacade;
 import Domain.Workers.ShiftJobsFacade;
 import Domain.Workers.ShiftPlacement;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
 
 public class ShiftPlacmentFacade {
         private List<ShiftPlacement> shifts;

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import Domain.Workers.Jobs;
 import Domain.Workers.Shift;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
 
 public class ShiftPlacement{
     private Shift shift;

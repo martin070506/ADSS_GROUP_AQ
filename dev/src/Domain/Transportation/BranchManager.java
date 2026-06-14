@@ -7,8 +7,6 @@ public class BranchManager {
         this.storeLocation = storeLocation;
     }
 
-
-
     public Location getLocation(){
         return storeLocation;
     }

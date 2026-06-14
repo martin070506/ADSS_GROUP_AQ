@@ -4,41 +4,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import Domain.Workers.ShiftCanidatesWorkersFacade;
-import Domain.Workers.ShiftJobsFacade;
-import Domain.Workers.ShiftPlacmentFacade;
-import Domain.Workers.WorkersFacade;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
+import Service.Transportation.LocationService;
+import Service.Workers.ShiftJobsService;
+import Service.Workers.ShiftPlacementService;
+import Service.Workers.ShiftWorkersCanidatesService;
+import Service.Workers.WorkersService;
 
 public class ServiceControl{
-    private static Scanner scanner = new Scanner(System.in);
-    private static WorkersService workers_service;
-    private static ShiftJobsService jobs_service;
-    private static ShiftPlacementService placement_service;
-    private static ShiftWorkersCanidatesService canidates_service;
-    public ServiceControl(){
-        WorkersFacade workers_facade = new WorkersFacade();
-        workers_service= new WorkersService(workers_facade);
-        ShiftJobsFacade jobs_facade = new ShiftJobsFacade();
-        jobs_service = new ShiftJobsService(jobs_facade);
-        ShiftCanidatesWorkersFacade canidates_facade = new ShiftCanidatesWorkersFacade();
-        canidates_service = new ShiftWorkersCanidatesService(canidates_facade);
-        ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, canidates_facade);
-        placement_service = new ShiftPlacementService(placement_facade);
+    private  final Scanner scanner = new Scanner(System.in);
+    private  final WorkersService workers_service;
+    private  final ShiftJobsService jobs_service;
+    private  final ShiftPlacementService placement_service;
+    private  final ShiftWorkersCanidatesService canidates_service;
+    private  final LocationService locationService;
 
+    public ServiceControl(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service){
+        this.workers_service= workers_service;
+        this.jobs_service = jobs_service;
+        this.canidates_service = candidates_service;
+        this.placement_service = placement_service;
+        this.locationService = locationService;
     }
-    public static void main(String[] args) {
-        ServiceControl service = new ServiceControl();
-        run();
-    }
-    public static void run(){
+//    public   void main(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service) {
+//        ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
+//        run();
+//    }
+    public void run(){
         boolean exit=false;
         System.out.println("system woke up... \nsystem initialize");
-        System.out.println("Enter true to load preset data and false to enter without");
-        boolean data  = scanner.nextBoolean();
-        if(data)
-            load_data();
-        scanner.nextLine();
+//        System.out.println("Enter true to load preset data and false to enter without");
+//        boolean data  = scanner.nextBoolean();
+//        if(data)
+//            load_data();
+//        scanner.nextLine();
         while (!exit) {
             System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placement' for placement service \n 4) 'canidate' for shift canidates service \n 5) 'exit' for exit: ");
             String command = scanner.nextLine();
@@ -63,34 +62,34 @@ public class ServiceControl{
             }
         }
     }
-    public static void load_data(){
-        workers_service.addWorker("Mark", 0, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
-        workers_service.addWorker("Pam", 1, "hapoalim", 31.4, "no extra hours",  LocalDate.parse("2015-05-05"), false);
-        workers_service.addWorker("Elon", 2, "mizrachi", 38.7, "manager terms",  LocalDate.parse("2009-11-11"), true);
-        workers_service.addWorker("Tim", 3, "leomi", 29.9, "trying term",  LocalDate.parse("2021-09-12"), false);
-       
-        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true,new Location(),0);
-        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true,new Location(),1);
-        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true,new Location(),2);
-        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true,new Location(),3);
-
-        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),true,new Location(),0);
-        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),false,new Location(),1);
-        
-        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-
-
-        jobs_service.addJob(LocalDate.parse("2028-01-02"),false,new Location(),0);
-
-        placement_service.addPlacement(LocalDate.parse("2027-01-01"), true, new Location(), 0, List.of(0, 1, 2, 3), List.of(0, 1, 0, 1));
-        placement_service.addPlacement(LocalDate.parse("2028-01-02"), false, new Location(), 0, List.of(1), List.of(0));
-
-
-    }
-    public static void runCanidateService(){
+//    public   void load_data(){
+//        workers_service.addWorker("Mark", 0, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
+//        workers_service.addWorker("Pam", 1, "hapoalim", 31.4, "no extra hours",  LocalDate.parse("2015-05-05"), false);
+//        workers_service.addWorker("Elon", 2, "mizrachi", 38.7, "manager terms",  LocalDate.parse("2009-11-11"), true);
+//        workers_service.addWorker("Tim", 3, "leomi", 29.9, "trying term",  LocalDate.parse("2021-09-12"), false);
+//
+//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),0);
+//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),1);
+//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),2);
+//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),3);
+//
+//        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),true, new Location(),0);
+//        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),false, new Location(),1);
+//
+//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
+//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
+//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
+//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
+//
+//
+//        jobs_service.addJob(LocalDate.parse("2028-01-02"),false,new Location(),0);
+//
+//        placement_service.addPlacement(LocalDate.parse("2027-01-01"), true, new Location(), 0, List.of(0, 1, 2, 3), List.of(0, 1, 0, 1));
+//        placement_service.addPlacement(LocalDate.parse("2028-01-02"), false, new Location(), 0, List.of(1), List.of(0));
+//
+//
+//    }
+    public void runCanidateService(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to shifts canidates workers service \n 1) for adding new canidate worker to a shift enter 'add' \n 2) for removing a worker canidate from a shift enter 'remove' \n 3) for viewing all shift canidates workers in a shift 'view' \n 4) for returning to main menu enter 'return' \n");
@@ -112,7 +111,7 @@ public class ServiceControl{
             }
         }
     }
-    public static void runCanidatesServiceRemove(){
+    public void runCanidatesServiceRemove(){
         LocalDate date= null;
         boolean is_morning=false;
         int worker=-1;
@@ -141,7 +140,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runCanidatesServiceAdd(){
+    public void runCanidatesServiceAdd(){
         LocalDate date= null;
         boolean is_morning=false;
         int worker=-1;
@@ -169,7 +168,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runViewCanidatesShiftService(){
+    public void runViewCanidatesShiftService(){
         LocalDate date= null;
         boolean is_morning=false;
         try{
@@ -193,7 +192,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runJobsService(){
+    public void runJobsService(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to shifts jobs service \n 1) for adding new job enter 'add' \n 2) for removing job enter 'remove' \n 3) for editing job  enter 'edit' \n 4) for viewing all jobs in a shift 'view' \n 5) for returning to main menu enter 'return' \n");
@@ -214,11 +213,11 @@ public class ServiceControl{
                 runViewShiftJobsService();
             }
             else{ 
-                 System.out.println("the system did not understand your input, tryng again:");
+                 System.out.println("the system did not understand your input, trying again:");
             }
         }
     }
-    public static void runViewShiftJobsService(){
+    public  void runViewShiftJobsService(){
         LocalDate date= null;
         boolean is_morning=false;
         try{
@@ -242,7 +241,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runPlacementService(){
+    public   void runPlacementService(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to shift placement service \n 1) for adding placement job enter 'add' \n 2) for changing placment enter 'change'\n 3) for viewing shift placement enter 'view' \n 3) for returning to main menu enter 'return' \n");
@@ -264,7 +263,7 @@ public class ServiceControl{
             }
         }
     }
-    public static void runChangePlacementService(){
+    public   void runChangePlacementService(){
         LocalDate date= null;
         boolean is_morning=false;
         int id_change_from=0, id_change_to=0;
@@ -297,7 +296,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runPlacementServiceAdd(){
+    public   void runPlacementServiceAdd(){
         boolean exit=false;
         List<Integer> jobs = new ArrayList<>();
         List<Integer> ids = new ArrayList<>();
@@ -360,7 +359,7 @@ public class ServiceControl{
         }
         System.out.println(placement_service.addPlacement(date, is_morning, location, shift_manager, ids, jobs));
     }
-    public static void runViewPlacementService(){
+    public   void runViewPlacementService(){
         LocalDate date= null;
         boolean is_morning=false;
         try{
@@ -383,7 +382,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runJobsServiceEdit(){
+    public   void runJobsServiceEdit(){
         LocalDate date= null;
         boolean is_morning=false;
         int job_to_be_changed=-1, job_to_change_to=-1;
@@ -416,7 +415,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runJobsServiceRemove(){
+    public   void runJobsServiceRemove(){
         LocalDate date= null;
         boolean is_morning=false;
         int job=-1;
@@ -445,7 +444,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runJobsServiceAdd(){
+    public   void runJobsServiceAdd(){
         LocalDate date= null;
         boolean is_morning=false;
         int job=-1;
@@ -473,7 +472,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runWorkersService(){
+    public   void runWorkersService(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to workers service \n 1) for adding new worker enter 'add' \n 2) for removing worker enter 'remove' \n 3) for editing worker info enter 'edit' \n 4) for viewing all workers 'view' \n 5) for returning to main menu enter 'return' \n");
@@ -499,7 +498,7 @@ public class ServiceControl{
             }
         }
     }
-    public static void runWorkersServiceEdit(){
+    public   void runWorkersServiceEdit(){
         boolean exit=false;
         while (!exit) {
             System.out.println("Welcome to workers edit service \n 1) for editing worker name 'name' \n 2) for editing worker id 'id' \n 3) for editing worker bank account info enter 'bank account' \n 4) for editing worker salary enter 'salary' \n 5) for editing worker salary condision enter 'salary condision' \n 6) for editing worker start date enter 'date' \n 7) for editing if worker can be shift manager enter 'shift manager' \n 8) for returning to workers service menu enter 'return' \n");
@@ -534,7 +533,7 @@ public class ServiceControl{
             
         }
     }
-    public static void runWorkersServiceEditShiftManager(){
+    public   void runWorkersServiceEditShiftManager(){
         int id = 0;
         boolean new_is_shift_manager =false;
         try{
@@ -554,7 +553,7 @@ public class ServiceControl{
         }
 
     }  
-    public static void runWorkersServiceEditStartDate(){
+    public   void runWorkersServiceEditStartDate(){
         int id = 0;
         LocalDate new_date =null;
         try{
@@ -576,7 +575,7 @@ public class ServiceControl{
         }
 
     }  
-    public static void runWorkersServiceEditSalaryCondision(){
+    public void runWorkersServiceEditSalaryCondision(){
         int id = 0;
         String new_salary_condisions ="";
         try{
@@ -597,7 +596,7 @@ public class ServiceControl{
         }
 
     }  
-    public static void runWorkersServiceEditSalary(){
+    public void runWorkersServiceEditSalary(){
         int id = 0;
         float new_salary =0;
         try{
@@ -619,7 +618,7 @@ public class ServiceControl{
         }
 
     }  
-    public static void runWorkersServiceEditBankAccount(){
+    public void runWorkersServiceEditBankAccount(){
         String new_bank_account = "";
         int id =0;
         try{
@@ -640,7 +639,7 @@ public class ServiceControl{
         }
 
     }  
-    public static void runWorkersServiceEditId(){
+    public void runWorkersServiceEditId(){
         int new_id = 0;
         int id =0;
         try{
@@ -662,7 +661,7 @@ public class ServiceControl{
         }
 
     }   
-    public static void runWorkersServiceEditName(){
+    public void runWorkersServiceEditName(){
         String new_name = "";
         int id=0;
         try{
@@ -684,7 +683,7 @@ public class ServiceControl{
 
         runWorkersService();
     }
-    public static void runWorkersServiceRemove(){
+    public void runWorkersServiceRemove(){
         int id = 0;
         try{
 
@@ -702,7 +701,7 @@ public class ServiceControl{
         }
 
     }
-    public static void runWorkersServiceAdd(){
+    public void runWorkersServiceAdd(){
         String name = "";
         int id = 0;
         String bank_account = "";
@@ -750,7 +749,34 @@ public class ServiceControl{
         runWorkersService();
         
     }
-    private static Location getLocation(){
-        return new Location();
+
+    private Location getLocation(){
+        return locationService.getLocationById(selectLocation());
+    }
+
+    private int selectLocation() {
+        List<String> locations = locationService.getLocationsDisplay();
+        if (locations.isEmpty()) {
+            System.out.println("No locations available.");
+            return -1;
+        }
+
+        System.out.println("\n--- Select Source Location ---");
+        for (int i = 0; i < locations.size(); i++)
+            System.out.println( locations.get(i));
+        while (true) {
+            int choice = promptInt("Enter Location ID: ");
+            if (choice >= 0 && choice < locations.size()) return choice;
+            System.out.println("Invalid Location ID.");
+        }
+    }
+
+    private int promptInt(String msg) {
+        while (true) {
+            try {
+                System.out.print(msg);
+                return Integer.parseInt(scanner.nextLine().trim());
+            } catch (Exception e) { System.out.println("Invalid input. Please enter an integer."); }
+        }
     }
 }

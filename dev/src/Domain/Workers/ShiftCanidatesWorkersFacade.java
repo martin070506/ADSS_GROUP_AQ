@@ -6,7 +6,7 @@ import java.util.List;
 
 import Domain.Workers.Shift;
 import Domain.Workers.ShiftCanidates;
-import Presentation.Workers.Location;
+import Domain.Transportation.Location;
 
 public class ShiftCanidatesWorkersFacade {
     private List<ShiftCanidates> canidates_list;
