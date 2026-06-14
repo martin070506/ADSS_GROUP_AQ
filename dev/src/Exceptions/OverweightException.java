@@ -1,6 +1,6 @@
 package Exceptions;
 
-import Domain.Product;
+import Domain.Transportation.Product;
 
 import java.util.Map;
 
