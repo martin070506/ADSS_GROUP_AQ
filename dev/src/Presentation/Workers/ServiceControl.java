@@ -244,7 +244,7 @@ public class ServiceControl{
     public   void runPlacementService(){
         boolean exit=false;
         while (!exit) {
-            System.out.println("Welcome to shift placement service \n 1) for adding placement job enter 'add' \n 2) for changing placment enter 'change'\n 3) for viewing shift placement enter 'view' \n 3) for returning to main menu enter 'return' \n");
+            System.out.println("Welcome to shift placement service \n 1) for adding placement job enter 'add' \n 2) for changing placement enter 'change'\n 3) for viewing shift placement enter 'view' \n 3) for returning to main menu enter 'return' \n");
             String command = scanner.nextLine();
              if (command.equals("return")) {
                 exit=true;
@@ -325,7 +325,7 @@ public class ServiceControl{
 
         }
         while (!exit) {
-            System.out.println(" placement adding menu: \n 1) to enter a placement enter 'add' \n 2) to stop enterin placement enter 'stop'");
+            System.out.println(" placement adding menu: \n 1) to enter a placement enter 'add' \n 2) to stop entering placement enter 'stop'");
             String command = scanner.nextLine();
              if (command.equals("stop")) {
                 exit=true;
@@ -336,30 +336,30 @@ public class ServiceControl{
                     ids.addFirst(scanner.nextInt());
                     scanner.nextLine();
                     try{
-                        System.out.println("enter the worker job {0 for casheer, 1 for shop keeper}:");
+                        System.out.println("enter the worker job {0 for casheer, 1 for shop keeper, 2 for driver}:");
                         jobs.addFirst(scanner.nextInt());
                         scanner.nextLine();
                     }
                     catch(Exception e){
                         ids.removeFirst();
-                        System.out.println("the system did not understand your input, tryng again:");
+                        System.out.println("the system did not understand your input, trying again:");
                     }
                     
                 }
                 catch(Exception e){
-                    System.out.println("the system did not understand your input, tryng again:");
+                    System.out.println("the system did not understand your input, trying again:");
 
                 }
                 
             }
 
             else{ 
-                 System.out.println("the system did not understand your input, tryng again:");
+                 System.out.println("the system did not understand your input, trying again:");
             }
         }
         System.out.println(placement_service.addPlacement(date, is_morning, location, shift_manager, ids, jobs));
     }
-    public   void runViewPlacementService(){
+    public void runViewPlacementService(){
         LocalDate date= null;
         boolean is_morning=false;
         try{
@@ -382,7 +382,7 @@ public class ServiceControl{
         }
 
     }
-    public   void runJobsServiceEdit(){
+    public void runJobsServiceEdit(){
         LocalDate date= null;
         boolean is_morning=false;
         int job_to_be_changed=-1, job_to_change_to=-1;
@@ -431,7 +431,7 @@ public class ServiceControl{
             Location location = getLocation();
 
 
-            System.out.println("enter '0' for removing casheer job, '1' for shop keeper");
+            System.out.println("enter '0' for removing casheer job, '1' for shop keeper, '2' for driver:");
             job = scanner.nextInt();
             scanner.nextLine();
 
@@ -459,7 +459,7 @@ public class ServiceControl{
             
             Location location = getLocation();
             
-            System.out.println("enter '0' for adding casheer job, '1' for shop keeper");
+            System.out.println("enter '0' for adding casheer job, '1' for shop keeper, '2' for driver:");
             job = scanner.nextInt();
             scanner.nextLine();
 
@@ -475,7 +475,7 @@ public class ServiceControl{
     public void runWorkersService(){
         boolean exit=false;
         while (!exit) {
-            System.out.println("Welcome to workers service \n 1) for adding new worker enter 'add' \n 2) for removing worker enter 'remove' \n 3) for editing worker info enter 'edit' \n 4) for viewing all workers 'view' \n 5) for returning to main menu enter 'return' \n");
+            System.out.println("Welcome to workers service \n 1) for adding new worker enter 'add' \n 2) for adding new driver 'add driver' \n 3) for removing worker enter 'remove' \n 4) for editing worker info enter 'edit' \n 5) for viewing all workers 'view' \n 6) for returning to main menu enter 'return' \n");
             String command = scanner.nextLine();
 
             if (command.equals("return")) {
@@ -483,6 +483,9 @@ public class ServiceControl{
             }
             else if (command.equals("add")) {
                 runWorkersServiceAdd();
+            }
+            else if (command.equals("add driver")) {
+                runWorkersServiceAddDriver();
             }
             else if (command.equals("remove")) {
                 runWorkersServiceRemove();
@@ -700,6 +703,57 @@ public class ServiceControl{
 
         }
 
+    }
+    public void runWorkersServiceAddDriver(){
+        String name = "";
+        int id = 0;
+        String bank_account = "";
+        float salary = 0;
+        String salary_condision = "";
+        LocalDate start_date = null;
+        boolean is_shift_manager = false;
+        int license = -1;
+        try{
+
+            System.out.println("enter new worker name: ");
+            name = scanner.nextLine();
+
+            System.out.println("enter new worker id: ");
+            id = scanner.nextInt();
+            scanner.nextLine();
+
+            System.out.println("enter new worker bank account info: ");
+            bank_account = scanner.nextLine();
+
+            System.out.println("enter new worker salary: ");
+            salary = scanner.nextFloat();
+            scanner.nextLine();
+
+            System.out.println("enter new worker salary condisions: ");
+            salary_condision = scanner.nextLine();
+
+            System.out.print("Enter new worker start date in this format (YYYY-MM-DD): ");
+            String dateInput = scanner.nextLine();
+            start_date = LocalDate.parse(dateInput);
+
+            System.out.println("enter if new worker can be shift manager: (false/true) ");
+            is_shift_manager = scanner.nextBoolean();
+            scanner.nextLine();
+
+            System.out.println("enter new driver license: ");
+            license = scanner.nextInt();
+            scanner.nextLine();
+
+            String result =workers_service.addDriver(name, id, bank_account, salary, salary_condision, start_date, is_shift_manager, license);
+            System.out.println(result);
+
+        }
+        catch(Exception e){
+            System.out.println("entered wrong data type, returning to workers service menu ");
+
+        }
+
+        runWorkersService();
     }
     public void runWorkersServiceAdd(){
         String name = "";

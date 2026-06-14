@@ -1,6 +1,9 @@
 package Service.Workers;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import Domain.Workers.ShiftCanidatesWorkersFacade;
 import Domain.Transportation.Location;
@@ -20,7 +23,9 @@ public class ShiftWorkersCanidatesService {
     public String getCandidatesForShift(LocalDate date, boolean is_morning, Location location){
         return canidates.getCandidatesForShift(date,is_morning, location);
     }
-    
+    public List<Integer> getAllAvialableDrivers(LocalDate date, boolean is_morning, Location location){
+        return canidates.getAllAvialableDrivers(date,is_morning, location);
+    }
 
 
 }

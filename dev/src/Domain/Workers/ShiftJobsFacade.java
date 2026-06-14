@@ -6,9 +6,9 @@ import java.util.List;
 import Domain.Workers.Shift;
 import Domain.Workers.ShiftJobs;
 import Domain.Transportation.Location;
-
+import Domain.Workers.Worker;
 public class ShiftJobsFacade {
-    private List<ShiftJobs> shifts;
+    private final List<ShiftJobs> shifts;
     public ShiftJobsFacade(){
         shifts= new ArrayList<>();
     }

@@ -10,7 +10,7 @@ import Domain.Workers.Shift;
 import Domain.Transportation.Location;
 
 public class ShiftPlacement{
-    private Shift shift;
+    private final Shift shift;
     private HashMap<Integer, Jobs> placements;
     private int shift_manager;
     public ShiftPlacement(LocalDate date, boolean is_morning, Location location){
@@ -25,7 +25,7 @@ public class ShiftPlacement{
         Jobs job = placements.get(id_to_out);
         placements.remove(id_to_out);
         placements.put(id_to_in, job);
-        return "secceed, changed "+job+" from "+id_to_out+" to "+id_to_in;
+        return "succeed, changed "+job+" from "+id_to_out+" to "+id_to_in;
     }
     public Shift getShift() {
         return shift;
@@ -45,6 +45,7 @@ public class ShiftPlacement{
         });
         return result.toString();
     }
+
     public String addPlacement(int id, int job){
         if(placements.containsKey(id)){
             return "faild, worker already have job in this shift";
@@ -56,6 +57,10 @@ public class ShiftPlacement{
         else if (job ==1 ){
             placements.put(id, Jobs.SHOPKEEPER);
             return "succeed, placment added for"+ id +" -> shop keeper";
+        }
+        else if (job ==2 ){
+            placements.put(id, Jobs.DRIVER);
+            return "succeed, placment added for"+ id +" -> driver";
         }
         return "faild, job not found";
     }

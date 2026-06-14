@@ -10,9 +10,11 @@ import Domain.Transportation.Location;
 
 public class ShiftCanidatesWorkersFacade {
     private List<ShiftCanidates> canidates_list;
+    private WorkersFacade workers;
+    public ShiftCanidatesWorkersFacade(WorkersFacade workers) {
 
-    public ShiftCanidatesWorkersFacade() {
         this.canidates_list = new ArrayList<>();
+        this.workers= workers;
     }
     public boolean containWorker(LocalDate date, boolean is_morning, Location location, int id){
         Shift shift = new Shift(date, is_morning, location);
@@ -22,7 +24,24 @@ public class ShiftCanidatesWorkersFacade {
         }
         return false;
     }
-    public void startPlacement(LocalDate date,boolean is_morning, Location location){
+    public List<Integer> getAllAvialableDrivers(LocalDate date, boolean is_morning, Location location){
+        Shift shift = new Shift(date, is_morning, location);
+        List<Integer> avialable_drivers=new ArrayList<>();
+        List<Integer> avialable_workers =new ArrayList<>();
+
+        for (ShiftCanidates shiftCanidates : canidates_list) {
+            if(shift.equals(shiftCanidates.getShift()))
+                avialable_workers.addAll(shiftCanidates.getWorkersIds());
+        }
+        for (int i=0; i<avialable_workers.size(); i++){
+            if(workers.isDriver(avialable_workers.get(i))){
+                avialable_drivers.add(avialable_workers.get(i));
+            }
+        }
+        return avialable_drivers;
+    }
+
+        public void startPlacement(LocalDate date,boolean is_morning, Location location){
         Shift shift = new Shift(date, is_morning, location);
         for (ShiftCanidates shiftCanidates : canidates_list) {
             if(shift.equals(shiftCanidates.getShift()))

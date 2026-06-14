@@ -1,5 +1,6 @@
 package Service.Workers;
 import java.time.LocalDate;
+import java.util.List;
 
 import Domain.Workers.ShiftJobsFacade;
 import Domain.Transportation.Location;
@@ -27,4 +28,8 @@ public class ShiftJobsService {
     public String getShift(LocalDate date, boolean is_morning, Location location){
         return jobs_facade.getShiftJobs(date, is_morning, location);
     }
+    public boolean hashShopKeeper(LocalDate date, boolean is_morning, Location location){
+        return jobs_facade.hashShopKeeper(date, is_morning, location);
+    }
+
 }

@@ -13,20 +13,15 @@ public class Driver extends Worker {
 
 
 
-    public void setAvailable(boolean available){
-        isAvailable = true;
-    }
-
-    public int getLicense() {
+    @Override
+    public int getLicance() {
         return license;
     }
-
-    public String getDriverName() {
-        return driverName;
-    }
+    @Override
+    public boolean isDriver(){return true;}
 
     @Override
     public String toString() {
-        return String.format("ID: %d Driver: %s (License: %d)", id,driverName, license);
+        return String.format("Driver: "+ super.toString() +" driver license: "+ license);
     }
 }

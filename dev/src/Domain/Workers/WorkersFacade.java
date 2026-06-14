@@ -24,6 +24,21 @@ public class WorkersFacade {
         workers.put(id, worker);
         return "success, worker with id: " + id + " has been added.";
     }
+    public String addDriver(String name, int id, String bankAccount, double salary, String salaryCondition, LocalDate startDate, boolean isShiftManager, int license) {
+        if (workers.containsKey(id)) {
+            return "failed, worker with id: " + id + " already exists.";
+        }
+        try{
+            Worker worker = new Driver(name, id, bankAccount, salary, salaryCondition, startDate, isShiftManager, license);
+            workers.put(id, worker);
+
+        }
+        catch (Exception e){
+            return "failed, "+ e + ".";
+
+        }
+        return "success, worker with id: " + id + " has been added.";
+    }
 
     public String editWorkerName(int id, String newName) {
         if (!workers.containsKey(id)) {
@@ -33,7 +48,9 @@ public class WorkersFacade {
         worker.setName(newName);
         return "success, name changed to: " + newName;
     }
-
+    public boolean isDriver(int id){return workers.get(id).isDriver();}
+    public int getLicense(int id){return workers.get(id).getLicance();}
+    public String getName(int id){return workers.get(id).getName();}
     public String removeWorker(int id) {
         if (!workers.containsKey(id)) {
             return "failed, worker with id: " + id + " doesn't exist.";
@@ -118,7 +135,10 @@ public class WorkersFacade {
         }
         return result.toString();
     }
+    public String getDriver(int id){
+        if(workers.get(id) instanceof Driver){return workers.get(id).toString();}
+        else{return "failed, "+id+" is not a driver";}
+    }
 
-    
 
 }

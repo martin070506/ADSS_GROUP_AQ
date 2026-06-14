@@ -22,7 +22,7 @@ public class ShiftCanidates {
     }
     public String addCandidate(int id){
         if(placement_started){
-            return "failed, cannot change shift jobs after pacement started";
+            return "failed, cannot change shift jobs after placement started";
         }
         if(workers_ids.contains(id))
             return ("Failed, the worker with id: "+id+

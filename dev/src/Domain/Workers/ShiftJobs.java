@@ -39,6 +39,11 @@ public class ShiftJobs{
             jobs.put(Jobs.SHOPKEEPER, currentCount + 1);
             return "succeed, added job shop keeper to shift";
         }
+        else if(job ==2){
+            int currentCount = jobs.getOrDefault(Jobs.DRIVER, 0);
+            jobs.put(Jobs.DRIVER, currentCount + 1);
+            return "succeed, added job driver to shift";
+        }
         return "faild, job not founded";
     }
     
@@ -61,6 +66,14 @@ public class ShiftJobs{
             }
             jobs.put(Jobs.SHOPKEEPER, currentCount - 1);
             return "succeed, removed job shop keeper from shift";
+        }
+        else if(job ==2){
+            int currentCount = jobs.getOrDefault(Jobs.DRIVER, 0);
+            if( currentCount == 0 ){
+                return "faild to lower driver jobs, because it already 0";
+            }
+            jobs.put(Jobs.SHOPKEEPER, currentCount - 1);
+            return "succeed, removed job driver from shift";
         }
         return "faild, job not founded";
     }

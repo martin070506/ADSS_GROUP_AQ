@@ -12,7 +12,10 @@ public class WorkersService{
         String result = workers.addWorker(name, id,  bank_account, salary, salary_condision, start_date, is_shift_manager);
         return ("the result for adding new worker are: "+ result);
     }
-
+    public String addDriver(String name, int id, String bank_account, double salary, String salary_condision, LocalDate start_date, boolean is_shift_manager, int license){
+        String result = workers.addDriver(name, id,  bank_account, salary, salary_condision, start_date, is_shift_manager, license);
+        return ("the result for adding new Driver are: "+ result);
+    }
     public String removeWorker(int id){
         String result = workers.removeWorker(id);
         return("the result for removing worker are: "+ result);   
@@ -48,5 +51,14 @@ public class WorkersService{
     }
     public String getAllWorkers(){
         return workers.getAllWorkers();
+    }
+    public int getLicense(int id){
+        return workers.getLicense(id);
+    }
+    public String getName(int id){
+        return workers.getName(id);
+    }
+    public String getDriver(int id){
+        return workers.getDriver(id);
     }
 }

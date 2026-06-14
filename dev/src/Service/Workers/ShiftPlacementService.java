@@ -23,4 +23,7 @@ public class ShiftPlacementService {
     public String getShift(LocalDate date, boolean is_morning, Location location){
         return shift_placement_facade.getShiftPlacment(date, is_morning, location);
     }
+    public String PlaceDriver(LocalDate date, boolean is_morning, Location location, int driver_id){
+        return shift_placement_facade.PlaceDriver(date, is_morning, location, driver_id);
+    }
 }

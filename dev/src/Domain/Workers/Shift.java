@@ -4,9 +4,9 @@ import Domain.Transportation.Location;
 
 
 public class Shift {
-    private LocalDate date;
-    private boolean is_morning;
-    private Location location;
+    private final LocalDate date;
+    private final boolean is_morning;
+    private final Location location;
     public Shift(LocalDate date, boolean is_morning, Location location){
         this.date=date;
         this.is_morning=is_morning;
