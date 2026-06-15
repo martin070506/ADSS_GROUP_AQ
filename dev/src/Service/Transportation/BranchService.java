@@ -7,45 +7,40 @@ import java.util.List;
 
 public class BranchService {
     private final List<BranchManager> branches;
+    private final LocationService locationService;
 
-    public BranchService(List<BranchManager> branches) {
-        this.branches = branches;
-    }
-    public BranchService() {
+
+    public BranchService(LocationService locationService) {
+        this.locationService = locationService;
         this.branches = new ArrayList<>();
     }
 
     public List<BranchManager> getBranches() {
         return branches;
     }
-    public void addBranch(BranchManager branch) {
-        branches.add(branch);
-    }
 
-    public void addBranch(Location l) {
-        addBranch(new BranchManager(l));
-    }
-
-
-    // FIXED: Lookup by integer position instead of string matching
-    public BranchManager getBranchById(int id) {
-        for  (BranchManager branch : branches) {
-            if(branch.getLocation().id() == id) {
-                return branch;
-            }
-        }
-        throw new IllegalArgumentException("Branch index out of bounds: " + id);
+    public void addBranch(String addr, String phone, String contact) {
+        int locationId = locationService.addLocation(addr, phone, contact);
+        branches.add(new BranchManager(locationService.getLocation(locationId)));
     }
 
     public void removeBranch(BranchManager branch) {
         branches.remove(branch);
     }
 
-    public List<String> getBranchesDisplay() {
-        List<String> branchesDisplay = new ArrayList<>();
-        for (BranchManager branch : branches) {
-            branchesDisplay.add(branch.toString());
-        }
-        return branchesDisplay;
+    public List<Integer> getBranchesId() {
+        List<Integer> branchesId = new ArrayList<>();
+        for (BranchManager branch : branches)
+            branchesId.add(branch.getLocation().id());
+
+        return branchesId;
+    }
+
+    public String getBranchDisplay(Integer branchId) {
+        for (BranchManager branch : branches)
+            if (branch.getLocation().id() == branchId)
+                return branch.toString();
+
+        throw new IllegalArgumentException("Branch ID not found: " + branchId);
     }
 }

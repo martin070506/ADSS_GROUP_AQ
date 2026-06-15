@@ -26,6 +26,4 @@ public class ShiftWorkersCanidatesService {
     public List<Integer> getAllAvialableDrivers(LocalDate date, boolean is_morning, Location location){
         return canidates.getAllAvialableDrivers(date,is_morning, location);
     }
-
-
 }

@@ -1,7 +1,5 @@
 package Domain.Transportation;
 
-import Domain.Workers.Driver;
-
 import java.time.LocalDate;
 import java.util.*;
 
@@ -13,27 +11,27 @@ public class TransportFile {
     private String suppliersLog;
     private String requestsLog;
 
-    public TransportFile(LocalDate departureTime, Truck truck, String driverInfo, Location source) {
-        transportLog = "Source: " + source.toString() + '\n'+
+    public TransportFile(LocalDate departureTime, String truckInfo, String driverInfo, String sourceInfo) {
+        transportLog = "Source: " + sourceInfo + '\n'+
                 "Departure Time: " + departureTime + '\n';
-        trucksLog = truck.toString();
+        trucksLog = truckInfo;
         driversLog = driverInfo;
         requestsLog = "";
         suppliersLog = "";
     }
 
-    public void leaveSupplier(Supplier supplier, int weight) {
-        transportLog += "Left Supplier " + supplier.getName() + ", Truck Weight : " + weight + '\n';
-        suppliersLog += supplier.getSupplierLocation().toString() + '\n';
+    public void leaveSupplier(String supplierName, String supplierInfo, int weight) {
+        transportLog += "Left Supplier " + supplierName + ", Truck Weight : " + weight + '\n';
+        suppliersLog += supplierInfo + '\n';
     }
 
-    public void arriveAtSupplier(Supplier supplier) {
-        transportLog += "Arrived at Supplier " + supplier.getName() + '\n';
+    public void arriveAtSupplier(String supplierName) {
+        transportLog += "Arrived at Supplier " + supplierName + '\n';
     }
 
-    public void skipSupplier(Supplier supplier) {
+    public void skipSupplier(String supplierName) {
 
-        transportLog += "Skipped Supplier " + supplier.getName() + '\n';
+        transportLog += "Skipped Supplier " + supplierName + '\n';
     }
 
     public void overWeightAlert(int weight) {
@@ -41,27 +39,23 @@ public class TransportFile {
         transportLog += "Over Weight Alert, Truck Weight : " + weight + '\n';
     }
 
-    public void changeTruck(Truck truck){
-        transportLog += "Truck swapped, New capacity: " + truck.getMaxWeight() + '\n';
-        trucksLog = " (Swapped)\n" + truck.toString();
+    public void changeTruck(int truckCapacity, String truckInfo){
+        transportLog += "Truck swapped, New capacity: " + truckCapacity + '\n';
+        trucksLog = " (Swapped)\n" + truckInfo;
     }
 
-    public void changeDriver(String driverName) {
-        transportLog += "Driver swapped, Name: " + driverName;
-        trucksLog = " (Swapped)\n" + driverName;
+    public void skipRequest(String requestName) {
+
+        transportLog += "Skipped Request " + requestName + '\n';
     }
 
-    public void skipRequest(Request request) {
-        transportLog += "Skipped Request " + request.getContactName() + '\n';
+    public void arriveAtRequest(String requestName) {
+        transportLog += "Arrived at Request " + requestName + '\n';
     }
 
-    public void arriveAtRequest(Request request) {
-        transportLog += "Arrived at Request " + request.getContactName() + '\n';
-    }
-
-    public void leaveRequest(Request request) {
-        transportLog += "Left Request " + request.getContactName() + '\n';
-        requestsLog += request.toString();
+    public void leaveRequest(String requestName, String requestInfo) {
+        transportLog += "Left Request " + requestName + '\n';
+        requestsLog += requestInfo;
     }
 
     public String toString(Map<Product, Integer> itemsLeft) {

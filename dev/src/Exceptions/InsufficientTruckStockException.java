@@ -1,8 +1,14 @@
 package Exceptions;
 
 public class InsufficientTruckStockException extends DomainException {
-    public InsufficientTruckStockException(String productName, int requested, int available) {
-        super("Truck has insufficient stock for product: " + productName +
-                "! Requested: " + requested + ", Available: " + available);
+    int productId;
+    int requested;
+    int available;
+
+    public InsufficientTruckStockException(int productId, int requested, int available) {
+        super("Truck has insufficient stock.");
+        this.productId = productId;
+        this.requested = requested;
+        this.available = available;
     }
 }

@@ -26,19 +26,16 @@ public class Main {
         ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(candidates_facade);
         ShiftPlacementService placement_service = new ShiftPlacementService(placement_facade);
 
-        RequestService requestService = new RequestService();
-        ProductCatalogService productService = new ProductCatalogService();
-        SupplierService supplierService = new SupplierService();
-        TransportManagerService transportService = new TransportManagerService();
-        TruckService truckService = new TruckService();
-        BranchService branchService = new BranchService();
         LocationService locationService = new LocationService();
+        RequestService requestService = new RequestService(locationService);
+        ProductCatalogService productService = new ProductCatalogService();
+        SupplierService supplierService = new SupplierService((locationService));
+        TruckService truckService = new TruckService(productService);
+        TransportManagerService transportService = new TransportManagerService(truckService, truckService, supplierService, requestService, workers_service);
+        BranchService branchService = new BranchService(locationService);
 
 
-        CompanyManager companyManager = CompanyManager.getInstance(locationService, requestService, productService, supplierService,
-                transportService, truckService, branchService, workers_service);
-
-        AdminConsole appUI = new AdminConsole(companyManager, productService, transportService, supplierService,
+        AdminConsole appUI = new AdminConsole(productService, transportService, supplierService,
                 requestService, truckService, branchService, locationService, workers_service, candidates_service,
                 placement_service, jobs_service);
 

@@ -1,73 +1,90 @@
 package Service.Transportation;
 
-import Domain.Transportation.Location;
-import Domain.Transportation.Product;
 import Domain.Transportation.Supplier;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SupplierService {
     private final List<Supplier> suppliers;
+    private final LocationService locationService;
 
-    public SupplierService() {
+    public SupplierService(LocationService locationService) {
+        this.locationService = locationService;
         this.suppliers = new ArrayList<>();
     }
 
-
-
-    public void addSupplier(Location location, Map<Product, Integer> productMap) {
-        Supplier supplier = new Supplier(location, productMap);
+    public void addSupplier(int locationId, Map<Integer, Integer> productMap) {
+        Supplier supplier = new Supplier(locationService.getLocation(locationId), productMap);
         suppliers.add(supplier);
     }
 
-    public List<String> getSuppliersDisplay() {
-        List<String> display = new ArrayList<>();
-        for (Supplier supplier : suppliers) {
-            display.add(supplier.toString());
-        }
-        return display;
+    public List<Integer> getSupplierIds() {
+        List<Integer> supplierIds = new ArrayList<>();
+        for (Supplier supplier : suppliers)
+            supplierIds.add(supplier.getLocationId());
+
+        return supplierIds;
     }
 
-    public Supplier getSupplierById(int supplierId) {
-        for(Supplier supplier : suppliers) {
-            if(supplier.getSupplierLocation().id() == supplierId) {
-                return supplier;
+    public List<Integer> getProductIds(int locationId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == locationId)
+                return supplier.getProductIds();
+
+        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+    }
+
+    public int getProductStock(int locationId, int productId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == locationId)
+                return supplier.getProductStock(productId);
+
+        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+    }
+
+    public void handleShipment(int supplierId, Map<Integer, Integer> itemsToLoad) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == supplierId) {
+                supplier.handleShipment(itemsToLoad);
+                return;
             }
-        }
-        throw new IllegalArgumentException("Supplier not found: " + supplierId);
+
+        throw new IllegalArgumentException("Supplier not found at location: " + supplierId);
     }
 
-    public Map<Supplier, Map<Integer, Integer>> mapIndicesToSuppliers(Map<Integer, Map<Integer, Integer>> supplierIndices) {
-        Map<Supplier, Map<Integer, Integer>> supplierMap = new HashMap<>();
-        for (Map.Entry<Integer, Map<Integer, Integer>> entry : supplierIndices.entrySet()) {
-            supplierMap.put(getSupplierById(entry.getKey()), entry.getValue());
-        }
-        return supplierMap;
+    public String getSupplierName(int locationId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == locationId)
+                return supplier.getName();
+
+        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
     }
 
-    public List<String> getProductNamesForSupplier(int supplierIdx) {
-        List<String> productNames = new ArrayList<>();
-        Supplier supplier = getSupplierById(supplierIdx);
-        for (Product product : supplier.getProductsAvailable().keySet()) {
-            productNames.add(product.toString());
-        }
-        return productNames;
+    public String getSupplierDisplay(int supplierId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == supplierId)
+                return supplier.toString();
+
+        throw new IllegalArgumentException("Supplier not found at location: " + supplierId);
     }
 
-    public int getProductStock(int supplierIdx, int productId) {
-        Supplier supplier = getSupplierById(supplierIdx);
-        return supplier.getProductStock(productId);
+    public void addStock(Integer key, Integer value, int supplierId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == supplierId) {
+                supplier.addStock(key, value);
+                return;
+            }
+
+        throw new IllegalArgumentException("Supplier not found at location: " + supplierId);
     }
 
-    public List<Integer> getProductIdsForSupplier(int supplierIdx) {
-        List<Integer> productIds = new ArrayList<>();
-        Supplier supplier = getSupplierById(supplierIdx);
-        for (Product product : supplier.getProductsAvailable().keySet()) {
-            productIds.add(product.id());
-        }
-        return productIds;
+    public void resupplySupplier(int sId, int pId, int qty) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == sId)
+                supplier.addStock(pId, qty);
+
+        throw new IllegalArgumentException("Supplier not found at location: " + sId);
     }
 }

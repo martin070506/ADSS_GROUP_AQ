@@ -12,7 +12,6 @@ import java.util.*;
 
 public class AdminConsole {
     private final Scanner scanner = new Scanner(System.in);
-    private final CompanyManager companyManager;
     private final ProductCatalogService productService;
     private final TransportManagerService transportService;
     private final SupplierService supplierService;
@@ -23,14 +22,12 @@ public class AdminConsole {
     private final WorkersService workers_service;
     private final ShiftWorkersCanidatesService candidates_service;
     private final ShiftPlacementService placement_service;
-    private final ShiftJobsService jobs_service;
 
-    public AdminConsole(CompanyManager companyManager, ProductCatalogService productService, TransportManagerService transportService,
+    public AdminConsole(ProductCatalogService productService, TransportManagerService transportService,
                         SupplierService supplierService, RequestService requestService, TruckService truckService,
                         BranchService branchService, LocationService locationService, WorkersService workers_service,
                         ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service,
                         ShiftJobsService jobs_service) {
-        this.companyManager = companyManager;
         this.productService = productService;
         this.transportService = transportService;
         this.supplierService = supplierService;
@@ -41,7 +38,6 @@ public class AdminConsole {
         this.workers_service = workers_service;
         this.candidates_service = candidates_service;
         this.placement_service = placement_service;
-        this.jobs_service = jobs_service;
     }
 
     public void start() {
@@ -51,7 +47,7 @@ public class AdminConsole {
         System.out.print("Choice: ");
 
         if (scanner.nextLine().trim().equals("1")) {
-            DemoDataLoader.load(companyManager,productService,truckService,branchService);
+            // DemoDataLoader.load(companyManager,productService,truckService,branchService);
             System.out.println("Demo Data Loaded Successfully.");
         } else { manualSetup(); }
 
@@ -98,97 +94,98 @@ public class AdminConsole {
 
     private void runShipmentCycle() {
 
-        if (requestService.getActiveRequestLocations().isEmpty()) {
+        if (requestService.getActiveRequestLocationIds().isEmpty()) {
             System.out.println("No active requests available.");
             return;
         }
-        MainConsole shipmentConsole = new MainConsole(companyManager, transportService, supplierService, productService,
+
+        MainConsole shipmentConsole = new MainConsole(transportService, supplierService, productService,
                 truckService, locationService, workers_service, candidates_service, placement_service);
-        try { shipmentConsole.initiateShipment(); }
+        try {shipmentConsole.initiateShipment(requestService.getActiveRequestLocationIds()); }
         catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
         catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
     }
 
     private void addBranchRequest() {
-        List<String> branches = branchService.getBranchesDisplay();
-        if (branches.isEmpty()) {
+        List<Integer> branchIds = branchService.getBranchesId();
+        if (branchIds.isEmpty()) {
             System.out.println("Error: No branch locations available.");
             return;
         }
 
-        int branchIndex;
+        int branchId;
         while (true) {
-            System.out.println("\nSelect Branch Id:");
-            for (int i = 0; i < branches.size(); i++) {
-                System.out.println(branches.get(i));
-            }
-            branchIndex = promptInt("Enter Branch Id: ") ;
+            System.out.println("\nSelect Branch ID:");
+            for (Integer branch : branchIds)
+                System.out.println(branchService.getBranchDisplay(branch));
 
-            if (branchIndex > -1) {
+            branchId = promptInt("Enter Branch ID: ") ;
+
+            if (branchIds.contains(branchId))
                 break;
-            }
-            System.out.println("Invalid Branch Index. Please try again.");
+
+            System.out.println("Invalid Branch ID. Please try again.");
         }
 
-        // FIX: Keep the map matching primitive IDs/Indices in the UI layer
-        Map<Integer, Integer> requestedProductQuantities = new HashMap<>();
-        List<String> productCatalog = productService.getProductsDisplay();
+        Map<Integer, Integer> requestedProducts = new HashMap<>();
+        List<Integer> productIds = productService.getProductsId();
 
         while (true) {
             System.out.println("\nAvailable Products:");
-            for (int i = 0; i < productCatalog.size(); i++) {
-                System.out.println( productCatalog.get(i));
-            }
+            for (Integer productId : productIds)
+                System.out.println(productService.getProductDisplay(productId));
 
-            System.out.print("Select Products (or 'done'): ");
-            String input = scanner.nextLine().trim();
-            if (input.equalsIgnoreCase("done")) break;
+            int productId = promptInt("Select Products (or '-1'): ");
 
-            try {
-                int productId = Integer.parseInt(input);
-                if (productId >= 0 && productId < productCatalog.size()) {
-                    int qty = promptInt("Quantity needed: ");
-                    if (qty > 0) {
-                        requestedProductQuantities.put(productId, requestedProductQuantities.getOrDefault(productId, 0) + qty);
-                    } else {
-                        System.out.println("Quantity must be greater than 0.");
-                    }
-                } else {
-                    System.out.println("Invalid Product Index.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input.");
-            }
+            if (productId == -1)
+                break;
+
+            if (!productIds.contains(productId))
+                System.out.println("Invalid Product ID.");
+
+            int amount = promptInt("Quantity needed: ");
+            if (amount > 0)
+                requestedProducts.put(productId, requestedProducts.getOrDefault(productId, 0) + amount);
+            else
+                System.out.println("Quantity must be greater than 0.");
         }
 
-        if (!requestedProductQuantities.isEmpty()) {
+        if (!requestedProducts.isEmpty())
             try {
-                // FIX: Pass raw index values down. Service layer maps these to real objects.
-                companyManager.addRequest(branchIndex, requestedProductQuantities);
+                requestService.addRequest(branchId, requestedProducts);
                 System.out.println("Request successfully executed.");
             } catch (Exception e) {
                 System.out.println("Failed to execute request: " + e.getMessage());
             }
-        }
     }
 
     private void resupplySupplier() {
-        List<String> suppliers = supplierService.getSuppliersDisplay();
+        List<Integer> suppliers = supplierService.getSupplierIds();
         if (suppliers.isEmpty()) {
             System.out.println("No suppliers available.");
             return;
         }
 
-        System.out.println("\nSelect Supplier to Restock:");
-        for (int i = 0; i < suppliers.size(); i++)
-            System.out.println( suppliers.get(i));
-        int sId = promptInt("Enter Supplier: ");
+        int sId;
+        while (true) {
+            System.out.println("\nSelect Supplier to Restock:");
+            for (Integer supplier : suppliers)
+                System.out.println(supplierService.getSupplierDisplay(supplier));
+            sId = promptInt("Enter Supplier: ");
+            if (suppliers.contains(sId)) break;
+            System.out.println("Invalid Supplier ID. Please try again.");
+        }
 
-        List<String> catalog = productService.getProductsDisplay();
-        System.out.println("Select Product:");
-        for (int i = 0; i < catalog.size(); i++)
-            System.out.println(catalog.get(i));
-        int pId = promptInt("Enter Product: ");
+        int pId;
+        while (true) {
+            List<Integer> catalog = productService.getProductsId();
+            System.out.println("Select Product:");
+            for (Integer integer : catalog)
+                System.out.println(productService.getProductDisplay(integer));
+            pId = promptInt("Enter Product: ");
+            if (catalog.contains(pId)) break;
+            System.out.println("Invalid Product ID. Please try again.");
+        }
 
         int qty;
         while (true) {
@@ -198,50 +195,54 @@ public class AdminConsole {
         }
 
         try {
-            companyManager.resupplySupplier(sId, pId, qty);
+            supplierService.resupplySupplier(sId, pId, qty);
             System.out.println("Stock updated.");
         } catch (Exception e) { System.out.println("Failed to update stock: " + e.getMessage()); }
     }
 
     private void deleteBranchRequest() {
-        List<String> activeBranches = requestService.getActiveRequestLocations();
+        List<Integer> activeBranches = requestService.getActiveRequestLocationIds();
         if (activeBranches.isEmpty()) {
             System.out.println("No active requests available.");
             return;
         }
 
-        int branchIndex;
+        int branchId;
         while (true) {
             System.out.println("Which request would you like to remove?");
-            for (int i = 0; i < activeBranches.size(); i++)
-                System.out.println( activeBranches.get(i));
-            branchIndex = promptInt("Enter Branch: ") ;
-            if (branchIndex >= 0 && branchIndex < activeBranches.size()) break;
+            for (Integer activeBranch : activeBranches)
+                System.out.println(branchService.getBranchDisplay(activeBranch));
+            branchId = promptInt("Enter Branch: ") ;
+            if (activeBranches.contains(branchId)) 
+                break;
             System.out.println("Invalid Branch Index. Please try again.");
         }
-        System.out.println("\nBranch Request:" + activeBranches.get(branchIndex));
+        System.out.println("\nBranch Request:" + activeBranches.get(branchId));
         try {
-            requestService.removeRequestByIndex(branchIndex);
+            requestService.removeRequest(branchId);
             System.out.println("Request removed.");
         } catch (Exception e) { System.out.println("Failed to remove request: " + e.getMessage()); }
     }
 
     private void updateBranchRequest() {
-        List<String> activeRequestsLocation = requestService.getActiveRequestLocations();
+        List<Integer> activeRequestsLocation = requestService.getActiveRequestLocationIds();
         if (activeRequestsLocation.isEmpty()) {
             System.out.println("No active requests available.");
             return;
         }
 
-        int branchIndex;
-        do {
+        int branchId;
+        while (true){
             System.out.println("Which request would you like to update?");
-            for (int i = 0; i < activeRequestsLocation.size(); i++)
-                System.out.println(activeRequestsLocation.get(i));
-            branchIndex = promptInt("Enter Branch: ");
-        } while (!requestService.isValidActiveRequestIndex(branchIndex));
+            for (Integer integer : activeRequestsLocation) 
+                System.out.println(branchService.getBranchDisplay(integer));
+            branchId = promptInt("Enter Branch ID: ");
+            if (activeRequestsLocation.contains(branchId)) 
+                break;
+            System.out.println("Invalid Branch ID. Please try again.");
+        } 
 
-        List<String> catalog = productService.getProductsDisplay();
+        List<Integer> catalog = productService.getProductsId();
 
         while (true) {
             System.out.print("\nType 'add', 'remove', or 'done': ");
@@ -249,34 +250,59 @@ public class AdminConsole {
             if (action.equalsIgnoreCase("done")) break;
 
             if (action.equalsIgnoreCase("add")) {
-                System.out.println("Select Product:");
-                for (int i = 0; i < catalog.size(); i++)
-                    System.out.println(catalog.get(i));
-                int pId = promptInt("Product: ");
-                int qty = promptInt("Amount to add: ");
+                int pId;
+                int qty;
+                while (true) {
+                    System.out.println("Select Product:");
+                    for (Integer integer : catalog)
+                        System.out.println(productService.getProductDisplay(integer));
 
+                    pId = promptInt("Product: ");
+                    qty = promptInt("Amount to add: ");
+                    if (!catalog.contains(pId)) {
+                        System.out.println("Invalid Product ID.");
+                        continue;
+                    }
+                    if (qty > 0) 
+                        break;
+                    System.out.println("Quantity must be greater than 0.");
+                }
                 try {
-                    companyManager.updateRequestAddProduct(branchIndex, pId, qty);
+                    requestService.updateRequestAddProduct(branchId, pId, qty);
+
                     System.out.println("Added.");
                 } catch (Exception e) { System.out.println("Error: " + e.getMessage()); }
 
             } else if (action.equalsIgnoreCase("remove")) {
-                Map<String, Integer> productsInRequest = companyManager.getProductsInRequestDisplay(branchIndex);
+                Map<Integer, Integer> productsInRequest = requestService.getProducts(branchId);
                 if (productsInRequest.isEmpty()) {
                     System.out.println("No products available to remove.");
                     continue;
                 }
 
-                System.out.println("Select Product to remove:");
-                List<String> products = new ArrayList<>(productsInRequest.keySet());
-                int i = 1;
-                for (String product : products)
-                    System.out.println("[" + i++ + "] " + product + " (" + productsInRequest.get(product) + " units left)");
-                int pId = promptInt("Product: ");
-                int qty = promptInt("Amount to remove: ");
-
+                int pId;
+                int qty;
+                while (true) {
+                    System.out.println("Select Product to remove:");
+                    List<Integer> products = new ArrayList<>(productsInRequest.keySet());
+                    int i = 1;
+                    for (Integer product : products)
+                        System.out.println(productService.getProductDisplay(product) + " (" + productsInRequest.get(product) + " units left)");
+                    pId = promptInt("Product: ");
+                    qty = promptInt("Amount to remove: ");
+                    if (!products.contains(pId)) {
+                        System.out.println("Invalid Product ID.");
+                        continue;
+                    }
+                    if (qty > productsInRequest.get(pId)) {
+                        System.out.println("Quantity exceeds available stock.");
+                        continue;
+                    }
+                    if (qty > 0)
+                        break;
+                }
                 try {
-                    companyManager.updateRequestRemoveProduct(branchIndex, pId, qty);
+                    requestService.updateRequestRemoveProduct(branchId, pId, qty);
                     System.out.println("Removed.");
                 } catch (Exception e) { System.out.println("Error: " + e.getMessage()); }
             } else { System.out.println("Invalid command."); }
@@ -373,8 +399,7 @@ public class AdminConsole {
         System.out.print("Contact: ");
         String contact = scanner.nextLine().trim();
         try {
-            //WE ADD A BRANCH (LOCATION) to BOTH SERVICES IT'S OUR RESPONSIBILITY THAT EACH SERVICE DOES IT ON ITS OWN BUT WE CALL THEM TOGETHER ALWAYS
-            companyManager.addBranchLocation(addr, phone, contact);
+            branchService.addBranch(addr, phone, contact);
             System.out.println("Store added.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
@@ -390,18 +415,24 @@ public class AdminConsole {
         String contact = scanner.nextLine().trim();
 
         Map<Integer, Integer> stockIds = new HashMap<>();
-        List<String> catalog = productService.getProductsDisplay();
+        List<Integer> catalog = productService.getProductsId();
 
-        for (int i = 0; i < catalog.size(); i++) {
-            System.out.print("Supply " + catalog.get(i) + "? (y/n): ");
-            if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
-                int qty = promptInt("Quantity: ");
-                stockIds.put(i, qty);
-            }
+        for (Integer productId : catalog)
+            System.out.println(productService.getProductDisplay(productId));
+
+        while (true) {
+            int id = promptInt("Enter Product ID (-1 to finish): ");
+
+            if (id == -1)
+                break;
+
+            int amount = promptInt("Quantity: ");
+            stockIds.put(id, amount);
         }
 
         try {
-            companyManager.registerSupplierByIndices(addr, phone, contact, stockIds);
+            int locationId = locationService.addLocation(addr, phone, contact);
+            supplierService.addSupplier(locationId, stockIds);
             System.out.println("Supplier registered.");
         } catch (Exception e) {
             System.out.println(e.getMessage());

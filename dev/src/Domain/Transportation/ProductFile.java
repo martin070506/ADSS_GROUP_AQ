@@ -1,44 +1,45 @@
 package Domain.Transportation;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class ProductFile {
     private final int fileNumber;
-    private Map<Product, Integer> products;
+    private final Map<Integer, Integer> products;
 
 
 
-    public ProductFile(Map<Product, Integer> products, int fileNumber){
+    public ProductFile(Map<Integer, Integer> products, int fileNumber){
         this.products = products;
         this.fileNumber = fileNumber;
     }
 
-    public Map<Product, Integer> getProducts() {
+    public Map<Integer, Integer> getProducts() {
         return products;
     }
     public int getFileNumber() {
         return fileNumber;
     }
 
-    public void addProduct(Product product, int amount) {
-        products.put(product, products.getOrDefault(product, 0) + amount);
+    public void addProduct(int productId, int amount) {
+        int currentAmount = products.getOrDefault(productId, 0);
+        products.put(productId, currentAmount + amount);
     }
 
-    public void addProducts(Map<Product, Integer> newProducts) {
-        products = Product.combineProducts(new HashMap<>(products), newProducts);
+    public void addProducts(Map<Integer, Integer> newProducts) {
+        for (Map.Entry<Integer, Integer> entry : newProducts.entrySet())
+            addProduct(entry.getKey(), entry.getValue());
     }
 
-    public void removeProducts(Map<Product, Integer> productsToRemove) {
-        products = Product.reduceProducts(new HashMap<>(products), productsToRemove);
+    public void removeProducts(Map<Integer, Integer> productsToRemove) {
+        for (Map.Entry<Integer, Integer> entry : productsToRemove.entrySet())
+            removeProduct(entry.getKey(), entry.getValue());
     }
 
-    public void removeProduct(Product product, int quantityToRemove) {
-        int currentAmount = products.getOrDefault(product, 0);
-        if (currentAmount <= quantityToRemove) {
-            products.remove(product);
-        } else {
-            products.put(product, currentAmount - quantityToRemove);
-        }
+    public void removeProduct(int productId, int amount) {
+        int currentAmount = products.getOrDefault(productId, 0);
+        if (currentAmount <= amount)
+            products.remove(productId);
+        else
+            products.put(productId, currentAmount - amount);
     }
 }

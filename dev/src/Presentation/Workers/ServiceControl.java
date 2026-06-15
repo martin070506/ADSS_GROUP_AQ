@@ -804,22 +804,23 @@ public class ServiceControl{
     }
 
     private Location getLocation(){
-        return locationService.getLocationById(selectLocation());
+        return locationService.getLocation(selectLocation());
     }
 
     private int selectLocation() {
-        List<String> locations = locationService.getLocationsDisplay();
+        List<Integer> locations = locationService.getLocationIds();
         if (locations.isEmpty()) {
             System.out.println("No locations available.");
             return -1;
         }
 
-        System.out.println("\n--- Select Source Location ---");
-        for (int i = 0; i < locations.size(); i++)
-            System.out.println( locations.get(i));
+        System.out.println("\n--- Select Location ---");
+        for (Integer location : locations)
+            System.out.println(locationService.getLocationDisplay(location));
         while (true) {
             int choice = promptInt("Enter Location ID: ");
-            if (choice >= 0 && choice < locations.size()) return choice;
+            if (locations.contains(choice))
+                return choice;
             System.out.println("Invalid Location ID.");
         }
     }

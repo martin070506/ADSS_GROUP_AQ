@@ -2,11 +2,14 @@ package Exceptions;
 
 public class ProductNotFoundOnTruckException extends DomainException {
 
-    public ProductNotFoundOnTruckException(String productName) {
-        super("Error: Product '" + productName + "' not found on truck.");
-    }
+    int productId;
+    int requestedAmount;
+    int availableAmount;
 
-    public ProductNotFoundOnTruckException(String productName, int requestedAmount, int availableAmount) {
-        super("Error: Not enough quantity for '" + productName + "' on the truck. Requested: " + requestedAmount + " | Available: " + availableAmount);
+    public ProductNotFoundOnTruckException(int productId, int requestedAmount, int availableAmount) {
+        super("Product not found on truck! Product ID: " + productId + ", Requested Amount: " + requestedAmount + ", Available Amount: " + availableAmount);
+        this.productId = productId;
+        this.requestedAmount = requestedAmount;
+        this.availableAmount = availableAmount;
     }
 }

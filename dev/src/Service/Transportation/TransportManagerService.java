@@ -1,11 +1,10 @@
 package Service.Transportation;
 
-import Domain.Transportation.*;
+import Domain.Transportation.Transport;
 import Exceptions.*;
 import Service.Workers.WorkersService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,93 +12,93 @@ public class TransportManagerService {
 
     private final List<Transport> transports;
     private int transportIdCounter;
-    private TruckService truckService;
-    private WorkersService workers_service;
+    private final TruckService truckService;
+    private final SupplierService supplierService;
+    private final RequestService requestService;
+    private final WorkersService workers_service;
 
 
-    public TransportManagerService() {
+    public TransportManagerService(TruckService truckService, TruckService truckService1, SupplierService supplierService, RequestService requestService, WorkersService workersService) {
+        this.truckService = truckService1;
+        this.supplierService = supplierService;
+        this.requestService = requestService;
         this.transports = new ArrayList<>();
         this.transportIdCounter = 1;
+        this.workers_service = workersService;
     }
 
-    public void setService(TruckService truckService, WorkersService workers_service) {
-        this.truckService = truckService;
-        this.workers_service = workers_service;
-    }
-
-    public int createTransport(Truck truck, int driverId, Location source, List<Request> requests,
-                               Map<Supplier, Map<Product, Integer>> supplierAllocations) {
+    public int createTransport(int truckId, int driverId, int sourceId, List<Integer> requests,
+                               Map<Integer, Map<Integer, Integer>> supplierAllocations,
+                               String truckInfo, String sourceInfo) {
         Transport transport = new Transport(
                 transportIdCounter++,
                 java.time.LocalDate.now(),
-                truck,
+                truckId,
                 driverId,
-                "Driver: " + workers_service.getName(driverId) + ", License: " + workers_service.getLicense(driverId),
-                source,
+                sourceId,
                 requests,
-                supplierAllocations
-        );
+                supplierAllocations,
+                truckInfo,
+                "Driver: " + workers_service.getName(driverId) + ", License: " + workers_service.getLicense(driverId),
+                sourceInfo);
 
         transports.add(transport);
         return transport.getId();
     }
 
-    public Transport getTransportById(int id) {
-        for (Transport transport : transports)
-            if (transport.getId() == id)
-                return transport;
-
-        throw new DomainException("Transport not found");
-    }
+//    public Transport getTransportById(int id) {
+//        for (Transport transport : transports)
+//            if (transport.getId() == id)
+//                return transport;
+//
+//        throw new DomainException("Transport not found");
+//    }
 
     public void removeTransportById(int transportById) {
-        Transport transport = getTransportById(transportById);
-        transports.remove(transport);
+        transports.removeIf(transport -> transport.getId() == transportById);
     }
 
-    // === NEW CLEAN INITIALIZATION STEP ===
-    public void prepareTruckForDeparture(int transportId) {
-        Transport transport = getTransportById(transportId);
-        transport.getTruck().emptyTruck(); // Clears it safely BEFORE the lifecycle retries ever start
-    }
-
-    // === FINISH CLEANUP STEP ===
     public void finishShipment(int transportId) {
-        Transport transport = getTransportById(transportId);
-        transport.getTruck().emptyTruck(); // Guarantees a fresh truck at the end
+        truckService.emptyTruck(getTruckId(transportId));
     }
 
     // === LIVE STATE ENGINE OPERATIONS ===
     public void processTransportLifecycle(int transportId) {
-        Transport transport = getTransportById(transportId);
+        Transport transport = getTransport(transportId);
 
-        // 1. Process Suppliers Ingestion Loop
-        while (!transport.getSupplierAllocations().isEmpty()) {
-            Supplier currentSupplier = transport.getFirstSupplier();
-            Map<Product, Integer> itemsToLoad = transport.getSupplierAllocations().get(currentSupplier);
+        while (!transport.getSupplierAllocationIds().isEmpty()) {
+            int supplierId = transport.getFirstSupplierId();
+            Map<Integer, Integer> itemsToLoad = transport.getSupplierAllocationIds().get(supplierId);
 
-            // Keep the supplier in the map until it successfully loads without throwing an OverweightException
-            currentSupplier.handleShipment(itemsToLoad, transport.getTruck());
+            supplierService.handleShipment(supplierId, itemsToLoad);
 
-            // Finalize state records only on successful ingestion completion
-            transport.getTransportFile().arriveAtSupplier(currentSupplier);
-            transport.getTransportFile().leaveSupplier(currentSupplier, transport.getTruck().getCurrentWeight());
-            transport.getSupplierAllocations().remove(currentSupplier);
+            transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
+            transport.UpdateLeaveSupplier(supplierService.getSupplierName(supplierId),
+                    supplierService.getSupplierDisplay(supplierId), truckService.getTruckWeight(transport.getTruckId()));
+            transport.removeSupplier(supplierId);
         }
 
         // 2. Process Branch Delivery Drops Loop
-        while (!transport.getRequests().isEmpty()) {
-            Request currentRequest = transport.getRequests().getFirst();
+        while (!transport.getRequestIds().isEmpty()) {
+            int requestId = transport.getRequestIds().getFirst();
             try {
-                transport.getTransportFile().arriveAtRequest(currentRequest);
-                currentRequest.handleShipment(transport.getTruck());
-                transport.getTransportFile().leaveRequest(currentRequest);
-                transport.removeRequest(currentRequest);
-            } catch (Exceptions.ProductNotFoundOnTruckException itse) {
-                System.out.println("Skipped Destination: " + itse.getMessage());
+                transport.UpdateArriveAtRequest(requestService.getRequestContactName(requestId));
+                truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
+                transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId), requestService.getRequestDisplay(requestId));
+                transport.removeRequest(requestId);
+            } catch (Exceptions.ProductNotFoundOnTruckException its) {
+                System.out.println("Skipped Destination: " + its.getMessage()); // TODO: remove print
                 skipRequest(transportId);
             }
         }
+    }
+
+    private Transport getTransport(int transportId) {
+        for (Transport transport : transports)
+            if (transport.getId() == transportId)
+                return transport;
+
+        throw new IllegalArgumentException("Transport not found: " + transportId);
     }
 
     public void handleStockException(int transportId, DomainException ise) {
@@ -110,141 +109,163 @@ public class TransportManagerService {
         }
     }
 
-    public void resolveOverweightIssue(int transportId, String choice) {
-        switch (choice) {
-            case "2" -> {
-                performEmergencyDropOff(transportId);
-                finalizeCurrentSupplierLoading(transportId);
-            }
-            case "4" -> {
-                int maxWeight = getTruckWeightByTransportId(transportId);
-                int currentDriverLicense = workers_service.getLicense(getDriverLicense(transportId));
-
-                for (int i = 0; i < truckService.getAvailableTrucksDisplay().size(); i++) {
-                    Truck newTruck = truckService.getAvailableTruckById(i);
-
-                    if (newTruck.getMaxWeight() > maxWeight && newTruck.getMinLicense() <= currentDriverLicense) {
-                        replaceTruck(transportId, newTruck);
-                        System.out.println("Dynamic truck replacement execution complete.");
-                        finalizeCurrentSupplierLoading(transportId);
-                        return;
-                    }
-                }
-                System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
-                skipSupplier(transportId);
-            }
-            default -> skipSupplier(transportId);
-        }
+    public void resolveOverweightIssue(int transportId, int choice) {
+        if (choice == 2) {
+            performEmergencyDropOff(transportId);
+            finalizeCurrentSupplierLoading(transportId);
+        } else
+            skipSupplier(transportId);
     }
 
-    public void resolveOverweightWithFineTuning(int transportId, int UIProductIndex, int amountToRemove) {
-        Transport transport = getTransportById(transportId);
-        List<Product> loadedProducts = new ArrayList<>(transport.getTruck().getLoadedProducts().keySet());
-
-        if (UIProductIndex >= 0 && UIProductIndex < loadedProducts.size()) {
-            Product targetProduct = loadedProducts.get(UIProductIndex);
-
-            Map<Product, Integer> itemsToRemove = new HashMap<>();
-            itemsToRemove.put(targetProduct, amountToRemove);
-
-            manualRemoveItems(transport, itemsToRemove);
+    public void resolveOverweightWithFineTuning(int transportId, int productId, int amountToRemove) {
+        Transport transport = getTransport(transportId);
+        if (transport.getSupplierAllocationIds().isEmpty()) {
+            skipSupplier(transportId);
+        } else {
+            int truckId = transport.getTruckId();
+            Map<Integer, Integer> itemsToRemove = Map.of(productId, amountToRemove);
+            truckService.removeProducts(itemsToRemove, truckId);
+            transport.removeItems(itemsToRemove);
         }
     }
 
     public void finalizeCurrentSupplierWithFineTune(int transportId) {
         finalizeCurrentSupplierLoading(transportId);
     }
-
-    private void finalizeCurrentSupplierLoading(int transportId) {
-        Transport transport = getTransportById(transportId);
-        if (!transport.getSupplierAllocations().isEmpty()) {
-            Supplier supplier = transport.getFirstSupplier();
-            transport.getTransportFile().arriveAtSupplier(supplier);
-            transport.getTransportFile().leaveSupplier(supplier, transport.getTruck().getCurrentWeight());
-            transport.getSupplierAllocations().remove(supplier);
-        }
-    }
-
-    // === CORE LOGISTICS MUTATORS ===
-    public void skipSupplier(int transportIndex) {
-        Transport transport = getTransportById(transportIndex);
-        if (transport.getSupplierAllocations().isEmpty()) return;
-
-        Supplier supplier = transport.getFirstSupplier();
-        transport.getTransportFile().skipSupplier(supplier);
-        Map<Product, Integer> thingsToRemove = transport.getSupplierAllocations().get(supplier);
-
-        try {
-            transport.removeItems(thingsToRemove);
-            for (Map.Entry<Product, Integer> entry : thingsToRemove.entrySet()) {
-                supplier.addStock(entry.getKey(), entry.getValue());
+//
+public void finalizeCurrentSupplierLoading(int transportId){
+            Transport transport = getTransport(transportId);
+            if (!transport.getSupplierAllocationIds().isEmpty()) {
+                int supplierId = transport.getFirstSupplierId();
+                transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
+                transport.UpdateLeaveSupplier(supplierService.getSupplierName(supplierId),
+                        supplierService.getSupplierDisplay(supplierId),
+                        truckService.getTruckWeight(transport.getTruckId()));
+                transport.getSupplierAllocationIds().remove(supplierId);
             }
-        } catch (ProductNotFoundOnTruckException e) {
-            System.out.println(e.getMessage());
         }
-        transport.getSupplierAllocations().remove(supplier);
-    }
+//
+//    // === CORE LOGISTICS MUTATORS ===
+        public void skipSupplier ( int transportIndex){
+            Transport transport = getTransport(transportIndex);
+            if (transport.getSupplierAllocationIds().isEmpty())
+                return;
 
-    public void skipRequest(int transportIndex) {
-        Transport transport = getTransportById(transportIndex);
-        if (transport.getRequests().isEmpty()) return;
-        Request request = transport.getRequests().getFirst();
-        transport.getTransportFile().skipRequest(request);
-        transport.removeRequest(request);
-    }
+            int supplierId = transport.getFirstSupplierId();
+            transport.UpdateSkipSupplier(supplierService.getSupplierName(supplierId));
+            Map<Integer, Integer> thingsToRemove = transport.getSupplierAllocationIds().get(supplierId);
 
-    public void manualRemoveItems(Transport transport, Map<Product, Integer> itemsToRemove) {
-        if (itemsToRemove == null || itemsToRemove.isEmpty()) return;
+            try {
+                transport.removeItems(thingsToRemove);
+                for (Map.Entry<Integer, Integer> entry : thingsToRemove.entrySet())
+                    supplierService.addStock(entry.getKey(), entry.getValue(), supplierId);
 
-        try {
-            transport.removeItems(itemsToRemove);
-            Supplier currentSupplier = transport.getFirstSupplier();
-            Map<Product, Integer> pendingAllocation = transport.getSupplierAllocations().get(currentSupplier);
-
-            if (pendingAllocation != null) {
-                for (Map.Entry<Product, Integer> entry : itemsToRemove.entrySet()) {
-                    Product product = entry.getKey();
-                    int qtyToRemove = entry.getValue();
-
-                    if (pendingAllocation.containsKey(product)) {
-                        int updatedQty = pendingAllocation.get(product) - qtyToRemove;
-                        if (updatedQty <= 0) {
-                            pendingAllocation.remove(product);
-                        } else {
-                            pendingAllocation.put(product, updatedQty);
-                        }
-                    }
-                    currentSupplier.addStock(product, qtyToRemove);
-                }
+            } catch (ProductNotFoundOnTruckException e) {
+                System.out.println(e.getMessage());
             }
-        } catch (ProductNotFoundOnTruckException e) {
-            System.out.println("Fine-tune failed: " + e.getMessage());
+            transport.getSupplierAllocationIds().remove(supplierId);
         }
-    }
 
-    public void performEmergencyDropOff(int transportIndex) {
-        Transport transport = getTransportById(transportIndex);
-        if (transport.getRequests().isEmpty()) {
-            throw new NoDestinationForEmergencyDropOffException();
+        public void skipRequest ( int transportIndex){
+            Transport transport = getTransport(transportIndex);
+            if (transport.getRequestIds().isEmpty())
+                return;
+            int requestId = transport.getRequestIds().getFirst();
+            transport.UpdateSkipSupplier(requestService.getRequestContactName(requestId));
+            transport.removeRequest(requestId);
         }
-        Request request = transport.getRequests().getFirst();
-        transport.getTransportFile().arriveAtRequest(request);
-        request.handleShipment(transport.getTruck());
-        transport.getTransportFile().leaveRequest(request);
-        transport.removeRequest(request);
+
+//    public void manualRemoveItems(Transport transport, Map<Product, Integer> itemsToRemove) {
+//        if (itemsToRemove == null || itemsToRemove.isEmpty()) return;
+//
+//        try {
+//            transport.removeItems(itemsToRemove);
+//            Supplier currentSupplier = transport.getFirstSupplierId();
+//            Map<Product, Integer> pendingAllocation = transport.getSupplierAllocations().get(currentSupplier);
+//
+//            if (pendingAllocation != null) {
+//                for (Map.Entry<Product, Integer> entry : itemsToRemove.entrySet()) {
+//                    Product product = entry.getKey();
+//                    int qtyToRemove = entry.getValue();
+//
+//                    if (pendingAllocation.containsKey(product)) {
+//                        int updatedQty = pendingAllocation.get(product) - qtyToRemove;
+//                        if (updatedQty <= 0) {
+//                            pendingAllocation.remove(product);
+//                        } else {
+//                            pendingAllocation.put(product, updatedQty);
+//                        }
+//                    }
+//                    currentSupplier.addStock(product, qtyToRemove);
+//                }
+//            }
+//        } catch (ProductNotFoundOnTruckException e) {
+//            System.out.println("Fine-tune failed: " + e.getMessage());
+//        }
+//    }
+
+        public void performEmergencyDropOff (int transportIndex){
+            Transport transport = getTransport(transportIndex);
+            if (transport.getRequestIds().isEmpty()) {
+                throw new NoDestinationForEmergencyDropOffException();
+            }
+            int requestId = transport.getRequestIds().getFirst();
+            transport.UpdateArriveAtRequest(requestService.getRequestContactName(requestId));
+            requestService.handleShipment(requestId, truckService.getTruckProducts(transport.getTruckId()));
+            truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
+            transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId),
+                    requestService.getRequestDisplay(requestId));
+            transport.removeRequest(requestId);
+        }
+
+        public void replaceTruck(int transportId, int newTruckId) {
+            Transport transport = getTransport(transportId);
+            truckService.replaceTrucks(transport.getTruckId(), newTruckId);
+            transport.replaceTruck(newTruckId, truckService.getTruckWeight(newTruckId),
+                    truckService.getTruckDisplay(newTruckId));
+        }
+//
+//    public int getTruckWeightByTransportId(int transportIndex) {
+//        return getTransportById(transportIndex).getTruck().getCurrentWeight();
+//    }
+//
+//    public int getDriverLicense(int transportIndex) {
+//        return workers_service.getLicense(getTransportById(transportIndex).getDriverId());
+//    }
+
+        public int getTruckId(int transportId){
+            for (Transport transport : transports)
+                if (transport.getId() == transportId)
+                    return transport.getTruckId();
+
+            throw new IllegalArgumentException("Transport not found: " + transportId);
+        }
+
+        public void startShipment(int transportId) {
+            truckService.emptyTruck(getTruckId(transportId));
+        }
+
+    public int getDriverId(int transportId) {
+        for (Transport transport : transports)
+            if (transport.getId() == transportId)
+                return transport.getDriverId();
+
+        throw new IllegalArgumentException("Transport not found: " + transportId);
     }
 
-    public void replaceTruck(int transportId, Truck newTruck) {
-        Transport transport = getTransportById(transportId);
-        transport.getTruck().transferHoldingsToOtherTruck(newTruck);
-        transport.replaceTruck(newTruck);
+    public String getFirstSupplierName(int transportId) {
+        for (Transport transport : transports)
+            if (transport.getId() == transportId)
+                return supplierService.getSupplierName(transport.getFirstSupplierId());
+
+        throw new IllegalArgumentException("Transport not found: " + transportId);
     }
 
-    public int getTruckWeightByTransportId(int transportIndex) {
-        return getTransportById(transportIndex).getTruck().getCurrentWeight();
-    }
+    public String getTransportFileDisplay(int transportId) {
+        for (Transport transport : transports)
+            if (transport.getId() == transportId)
+                return transport.toString();
 
-    public int getDriverLicense(int transportIndex) {
-        return workers_service.getLicense(getTransportById(transportIndex).getDriverId());
+        throw new IllegalArgumentException("Transport not found: " + transportId);
     }
 }

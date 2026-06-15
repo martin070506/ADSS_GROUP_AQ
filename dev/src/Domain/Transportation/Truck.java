@@ -1,6 +1,6 @@
 package Domain.Transportation;
 
-import Exceptions.OverweightException;
+import Exceptions.InsufficientTruckStockException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +12,8 @@ public class Truck {
     private final String model;
     private final int minLicense;
     private boolean isAvailable;
-    private  int id;
-    private Map<Product, Integer> loadedProducts;
+    private final int id;
+    private final Map<Integer, Integer> loadedProducts;
 
 
     public Truck(int id,int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
@@ -27,34 +27,31 @@ public class Truck {
         this.minLicense = minLicense;
         isAvailable = true;
         loadedProducts = new HashMap<>();
-        this.id=id;
+        this.id = id;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
     }
 
     public int getId() {
         return id;
     }
 
-
-
-    public int getCurrentWeight() {
-        int currentWeight = startWeight;
-        for (Map.Entry<Product, Integer> entry : loadedProducts.entrySet())
-            currentWeight += entry.getKey().weight() * entry.getValue();
-        return currentWeight;
-    }
-
     public int getMaxWeight() {
         return maxWeight;
     }
-    public Map<Product, Integer> getLoadedProducts() {
+
+    public Map<Integer, Integer> getLoadedProducts() {
         return loadedProducts;
     }
+
     public void emptyTruck(){
-        removeProducts(new HashMap<>(loadedProducts));
+        loadedProducts.clear();
     }
 
-    public int getTruckNumber() {
-        return truckNumber;
+    public int getStartWeight() {
+        return startWeight;
     }
 
     public void transferHoldingsToOtherTruck(Truck replacement){
@@ -66,31 +63,37 @@ public class Truck {
     public int getMinLicense() {
         return minLicense;
     }
-    public String getModel() {
-        return model;
-    }
 
     public boolean isAvailable() {
         return isAvailable;
     }
 
-    public void setAvailable(boolean isAvailable) {
-        this.isAvailable = isAvailable;
+    public void addProducts(Map<Integer, Integer> newProducts) {
+        for (Map.Entry<Integer, Integer> entry : newProducts.entrySet()) {
+            int productId = entry.getKey();
+            int amount = entry.getValue();
+            loadedProducts.put(productId, loadedProducts.getOrDefault(productId, 0) + amount);
+        }
     }
 
-    public void addProducts(Map<Product, Integer> newProducts) {
-        this.loadedProducts = Product.combineProducts(this.loadedProducts, newProducts);
-        if (getCurrentWeight() > maxWeight)
-            throw new OverweightException(getCurrentWeight(), maxWeight, newProducts);
-    }
+    public void removeProducts(Map<Integer, Integer> productsToRemove) {
+        for (Map.Entry<Integer, Integer> entry : productsToRemove.entrySet()) {
+            int productId = entry.getKey();
+            int amount = entry.getValue();
+            if (loadedProducts.getOrDefault(productId, 0) < amount)
+                throw new InsufficientTruckStockException(productId, amount, loadedProducts.getOrDefault(productId, 0));
+        }
 
-    public void removeProducts(Map<Product, Integer> productsToRemove) {
-        loadedProducts = Product.reduceProducts(new HashMap<>(loadedProducts), productsToRemove);
+        for (Map.Entry<Integer, Integer> entry : productsToRemove.entrySet()) {
+            int productId = entry.getKey();
+            int amount = entry.getValue();
+            loadedProducts.put(productId, loadedProducts.get(productId) - amount);
+        }
     }
 
     @Override
     public String toString() {
-        return "ID: "+id +"Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
+        return "ID: " + id + " | Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
                 maxWeight + "kg | Min License: " + minLicense;
     }
 }

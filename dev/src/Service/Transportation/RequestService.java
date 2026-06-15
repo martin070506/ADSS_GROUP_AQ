@@ -1,57 +1,105 @@
 package Service.Transportation;
 
-import Domain.Transportation.Product;
 import Domain.Transportation.Request;
-import Domain.Transportation.Location;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RequestService {
+    private final LocationService locationService;
     private final List<Request> requests = new ArrayList<>();
     private int fileNumberCounter = 1;
 
-    public void addRequest(Location storeLocation, Map<Product, Integer> neededItems) {
+    public RequestService(LocationService locationService) {
+        this.locationService = locationService;
+    }
+
+
+    public void addRequest(int locationId, Map<Integer, Integer> neededItems) {
         for (Request request : requests)
-            if (request.getLocation() == storeLocation) {
+            if (request.getLocation().id() == locationId) {
                 request.addProducts(neededItems);
                 return;
             }
-        requests.add(new Request(storeLocation, fileNumberCounter++, neededItems));
+
+        requests.add(new Request(locationService.getLocation(locationId), fileNumberCounter++, neededItems));
     }
 
-    public List<String> getActiveRequestLocations() {
-        List<String> activeLocations = new ArrayList<>();
+    public List<Integer> getActiveRequestLocationIds() {
+        List<Integer> activeRequestLocationIds = new ArrayList<>();
         for (Request request : requests)
-            activeLocations.add(request.getLocation().toString());
+            activeRequestLocationIds.add(request.getLocation().id());
 
-        return activeLocations;
+        return activeRequestLocationIds;
     }
 
-    // FIXED: Retrieve request object by internal array location tracking
-    public Request getRequestByIndex(int index) {
-        if (index >= 0 && index < requests.size()) {
-            return requests.get(index);
-        }
-        throw new IllegalArgumentException("Request index out of bounds: " + index);
+    public void removeRequest(int locationId) {
+        for (Request request : requests)
+            if (request.getLocation().id() == locationId) {
+                requests.remove(request);
+                return;
+            }
+
+        throw new IllegalArgumentException("Request not found at location: " + locationId);
     }
 
-    // FIXED: Drops elements by positional lookup index matching
-    public void removeRequestByIndex(int index) {
-        if (index >= 0 && index < requests.size()) {
-            requests.remove(index);
-        } else {
-            throw new IllegalArgumentException("Invalid request index removal request: " + index);
-        }
-    }
+    public List<Integer> getAllRequests() {
+        List<Integer> allRequests = new ArrayList<>();
+        for (Request request : requests)
+            allRequests.add(request.getLocation().id());
 
-    public List<Request> getAllRequests() {
-        List<Request> allRequests = new ArrayList<>(requests);
         requests.clear();
         return allRequests;
     }
 
-    public boolean isValidActiveRequestIndex(int requestIndex) {
-        return requestIndex >= 0 && requestIndex < requests.size();
+    public String getRequestContactName(int locationId) {
+        for (Request request : requests)
+            if (request.getLocationId() == locationId)
+                return request.getContactName();
+
+        throw new IllegalArgumentException("Request not found at location: " + locationId);
+    }
+
+    public Map<Integer, Integer> getProducts(int locationId) {
+        for (Request request : requests)
+            if (request.getLocationId() == locationId)
+                return request.getProducts();
+
+        throw new IllegalArgumentException("Request not found at location: " + locationId);
+    }
+
+    public String getRequestDisplay(int locationId) {
+        for (Request request : requests)
+            if (request.getLocationId() == locationId)
+                return request.toString();
+
+        throw new IllegalArgumentException("Request not found at location: " + locationId);
+    }
+
+    public void updateRequestAddProduct(int branchIndex, int pId, int qty) {
+        for (Request request : requests)
+            if (request.getLocationId() == branchIndex)
+                request.addProduct(pId, qty);
+
+        throw new IllegalArgumentException("Request not found at location: " + branchIndex);
+    }
+
+    public void updateRequestRemoveProduct(int branchId, int pId, int qty) {
+        for (Request request : requests)
+            if (request.getLocationId() == branchId)
+                request.removeProduct(pId, qty);
+
+        throw new IllegalArgumentException("Request not found at location: " + branchId);
+    }
+
+    public void handleShipment(int requestId, Map<Integer, Integer> truckProducts) {
+        for (Request request : requests)
+            if (request.getLocationId() == requestId) {
+                request.handleShipment(truckProducts);
+                return;
+            }
+
+        throw new IllegalArgumentException("Request not found at location: " + requestId);
     }
 }

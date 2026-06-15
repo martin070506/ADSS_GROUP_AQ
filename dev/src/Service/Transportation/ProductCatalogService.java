@@ -10,9 +10,6 @@ public class ProductCatalogService {
     private final List<Product> products;
     private int productCounter=0;
 
-    public ProductCatalogService(List<Product> products) {
-        this.products = products;
-    }
     public ProductCatalogService() {
         this.products = new ArrayList<>();
     }
@@ -23,36 +20,35 @@ public class ProductCatalogService {
         products.remove(product);
     }
 
-    // FIXED: Safely retrieves by catalog index
-    public Product getProductById(int id) {
-        for (Product product : products) {
-            if(product.id() == id) return product;
-        }
-        throw new IllegalArgumentException("Product index out of bounds: " + id);
+    public String getProductDisplay(int productId) {
+        for (Product product : products)
+            if (product.id() == productId)
+                return product.toString();
+
+        throw new IllegalArgumentException("Product ID not found: " + productId);
     }
 
-    public List<String> getProductsDisplay() {
-        List<String> display = new ArrayList<>();
-        for (Product product : products) {
-            display.add(product.toString());
-        }
-        return display;
+    public List<Integer> getProductsId() {
+        List<Integer> productsId = new ArrayList<>();
+        for (Product product : products)
+            productsId.add(product.id());
+
+        return productsId;
     }
 
     public Map<Product, Integer> mapIndicesToProducts(Map<Integer, Integer> selectedIndices) {
         Map<Product, Integer> productMap = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : selectedIndices.entrySet())
-            productMap.put(getProductById(entry.getKey()), entry.getValue());
+            productMap.put(products.get(entry.getKey()), entry.getValue());
 
         return productMap;
     }
 
-    public int getIndexByName(String s) {
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).name().equals(s)) {
-                return i;
-            }
-        }
-        return -1;
+    public int getWeightForProduct(int productId) {
+        for (Product product : products)
+            if (product.id() == productId)
+                return product.weight();
+
+        throw new IllegalArgumentException("Product ID not found: " + productId);
     }
 }

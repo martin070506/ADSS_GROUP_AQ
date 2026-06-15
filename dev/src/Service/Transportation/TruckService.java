@@ -3,40 +3,101 @@ package Service.Transportation;
 import Domain.Transportation.Truck;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TruckService {
     private final List<Truck> trucks;
-    private int counter=0;
-    public TruckService() { this.trucks = new ArrayList<>(); }
-    public TruckService(List<Truck> trucks) { this.trucks = new ArrayList<>(trucks); }
+    private int counter = 0;
+    private final ProductCatalogService productService;
 
-    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense)
-    {
-        trucks.add(new Truck(counter++,truckNumber,model,truckWeight,MaxWeight,requiredLicense));
 
-    }
-
-    // FIXED: Direct choice indexing selection
-    public Truck getAvailableTruckById(int index) {
-        List<Truck> available = getAvailableTrucksList(Integer.MAX_VALUE);
-        if (index >= 0 && index < available.size()) {
-            return available.get(index);
-        }
-        throw new IllegalArgumentException("Truck choice out of bounds.");
+    public TruckService(ProductCatalogService productService) {
+        this.productService = productService;
+        this.trucks = new ArrayList<>();
     }
 
 
+    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense) {
+        trucks.add(new Truck(counter++, truckNumber, model, truckWeight, MaxWeight, requiredLicense));
+    }
 
-    private List<Truck> getAvailableTrucksList(int minLicense) {
-        List<Truck> available = new ArrayList<>();
-        for (Truck t : trucks) if (t.isAvailable() && t.getMinLicense() <= minLicense) available.add(t);
+    public Truck getTruck(int truckId) {
+        for (Truck truck : trucks)
+            if (truck.getId() == truckId)
+                return truck;
+
+        throw new IllegalArgumentException("Truck not found: " + truckId);
+    }
+
+    public List<Integer> getBiggerTruckIds(int minLicense, int truckId) {
+        int maxWeight = getTruckWeight(truckId);
+        List<Integer> available = new ArrayList<>();
+        for (Truck truck : trucks)
+            if (truck.isAvailable() && truck.getMinLicense() <= minLicense && truck.getMaxWeight() >= maxWeight)
+                available.add(truck.getId());
+
         return available;
     }
 
-    public List<String> getAvailableTrucksDisplay() { return getAvailableTrucksDisplay(Integer.MAX_VALUE); }
-    public List<String> getAvailableTrucksDisplay(int minLicense) {
-        List<String> display = new ArrayList<>();
-        for (Truck t : getAvailableTrucksList(minLicense)) display.add(t.toString());
-        return display;
+    public String getTruckDisplay(int truckId) {
+        for (Truck truck : trucks)
+            if (truck.getId() == truckId)
+                return truck.toString();
+
+        throw new IllegalArgumentException("Truck not found: " + truckId);
+    }
+
+    public void emptyTruck(int truckId) {
+        Truck truck = getTruck(truckId);
+        truck.emptyTruck();
+    }
+
+    public int getTruckWeight(int truckId) {
+        Truck truck = getTruck(truckId);
+        int weight = truck.getStartWeight();
+        Map<Integer, Integer> loadedProducts = truck.getLoadedProducts();
+        for (Map.Entry<Integer, Integer> entry : loadedProducts.entrySet())
+            weight += productService.getWeightForProduct(entry.getKey()) * entry.getValue();
+
+        return weight;
+    }
+
+    public void removeProducts(Map<Integer, Integer> products, int truckId) {
+        Truck truck = getTruck(truckId);
+        truck.removeProducts(products);
+    }
+
+    public int getTruckMaxWeight(int truckId) {
+        return getTruck(truckId).getMaxWeight();
+    }
+
+    public void replaceTrucks(int truckId, int newTruckId) {
+        Truck truck = getTruck(truckId);
+        Truck replacement = getTruck(newTruckId);
+        replacement.transferHoldingsToOtherTruck(truck);
+        truck.emptyTruck();
+        truck.setAvailable(true);
+        replacement.setAvailable(false);
+    }
+
+    public Map<Integer, Integer> getTruckProducts(int truckId) {
+        return getTruck(truckId).getLoadedProducts();
+    }
+
+    public List<Integer> getAvailableTruckIds() {
+        List<Integer> available = new ArrayList<>();
+        for (Truck truck : trucks)
+            if (truck.isAvailable())
+                available.add(truck.getId());
+
+        return available;
+    }
+
+    public boolean isDriverEligable(int license, int truckId) {
+        for (Truck truck : trucks)
+            if (truck.getId() == truckId)
+                return truck.getMinLicense() <= license;
+
+        throw new IllegalArgumentException("Truck not found: " + truckId);
     }
 }
