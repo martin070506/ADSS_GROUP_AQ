@@ -31,7 +31,7 @@ public class Main {
         ProductCatalogService productService = new ProductCatalogService();
         SupplierService supplierService = new SupplierService((locationService));
         TruckService truckService = new TruckService(productService);
-        TransportManagerService transportService = new TransportManagerService(truckService, truckService, supplierService, requestService, workers_service);
+        TransportManagerService transportService = new TransportManagerService(truckService, supplierService, requestService, workers_service);
         BranchService branchService = new BranchService(locationService);
 
 

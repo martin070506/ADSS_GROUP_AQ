@@ -77,12 +77,12 @@ public class RequestService {
         throw new IllegalArgumentException("Request not found at location: " + locationId);
     }
 
-    public void updateRequestAddProduct(int branchIndex, int pId, int qty) {
+    public void updateRequestAddProduct(int branchId, int pId, int qty) {
         for (Request request : requests)
-            if (request.getLocationId() == branchIndex)
+            if (request.getLocationId() == branchId)
                 request.addProduct(pId, qty);
 
-        throw new IllegalArgumentException("Request not found at location: " + branchIndex);
+        throw new IllegalArgumentException("Request not found at location: " + branchId);
     }
 
     public void updateRequestRemoveProduct(int branchId, int pId, int qty) {

@@ -56,7 +56,7 @@ public class Worker {
     public void setId(int id) {
         this.id = id;
     }
-    public int getLicance(){
+    public int getLicense(){
         return -1;
     }
     public void setBankInfo(String bank_info) {
