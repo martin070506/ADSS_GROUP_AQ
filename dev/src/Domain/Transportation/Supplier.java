@@ -14,6 +14,7 @@ public class Supplier {
         this.productsAvailable = productsAvailable;
     }
 
+
     public String getName() {
         return location.contactName();
     }
