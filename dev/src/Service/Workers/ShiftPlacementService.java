@@ -6,7 +6,7 @@ import java.util.List;
 import Domain.Workers.ShiftPlacmentFacade;
 import Domain.Transportation.Location;
 
-public class ShiftPlacementService {
+public class  ShiftPlacementService {
     private ShiftPlacmentFacade shift_placement_facade;
     public ShiftPlacementService( ShiftPlacmentFacade place){
         shift_placement_facade = place;
