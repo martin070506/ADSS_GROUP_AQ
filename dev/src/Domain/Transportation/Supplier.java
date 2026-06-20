@@ -13,7 +13,9 @@ public class Supplier {
         this.location = location;
         this.productsAvailable = productsAvailable;
     }
-
+    public Location getLocation() {
+        return location;
+    }
 
     public String getName() {
         return location.contactName();

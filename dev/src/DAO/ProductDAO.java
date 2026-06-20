@@ -1,6 +1,8 @@
 package DAO;
 
 import DTO.ProductDTO;
+import Domain.Transportation.Product;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +21,7 @@ public class ProductDAO {
      * Checks if a product ID already exists in the database.
      */
     public boolean exists(int id) throws SQLException {
-        String sql = "SELECT 1 FROM products WHERE id = ? LIMIT 1";
+        String sql = "SELECT 1 FROM Product WHERE id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -27,9 +29,19 @@ public class ProductDAO {
             }
         }
     }
+    public int getHighestProductID() throws SQLException {
+        String sql = "SELECT MAX(id) FROM Product";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
 
     public void addProduct(ProductDTO product) throws SQLException {
-        String sql = "INSERT INTO products (id, name, weight) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Product (id, name, weight) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, product.id());
             stmt.setString(2, product.name());
@@ -38,13 +50,13 @@ public class ProductDAO {
         }
     }
 
-    public List<ProductDTO> loadAllProducts() throws SQLException {
-        List<ProductDTO> products = new ArrayList<>();
-        String sql = "SELECT id, name, weight FROM products";
+    public List<Product> loadAllProducts() throws SQLException {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT id, name, weight FROM Product";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                products.add(new ProductDTO(
+                products.add(new Product(
                         rs.getInt("id"),
                         rs.getString("name"),
                         rs.getInt("weight")
@@ -55,7 +67,7 @@ public class ProductDAO {
     }
 
     public void removeProduct(int id) throws SQLException {
-        String sql = "DELETE FROM products WHERE id = ?";
+        String sql = "DELETE FROM Product WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();

@@ -7,6 +7,7 @@ import Service.Workers.ShiftPlacementService;
 import Service.Workers.ShiftWorkersCanidatesService;
 import Service.Workers.WorkersService;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -47,7 +48,8 @@ public class AdminConsole {
         System.out.print("Choice: ");
 
         if (scanner.nextLine().trim().equals("1")) {
-            // DemoDataLoader.load(companyManager,productService,truckService,branchService);
+            //TODO make sql load the data at the beginning of the program, the comment made was to always fetch from SQL
+            //TODO so the SQL load is not neccessiraly here, but at the Main Class.
             System.out.println("Demo Data Loaded Successfully.");
         } else { manualSetup(); }
 
@@ -336,6 +338,8 @@ public class AdminConsole {
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -388,6 +392,8 @@ public class AdminConsole {
             System.out.println("Truck added successfully.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -403,6 +409,8 @@ public class AdminConsole {
             System.out.println("Store added.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -431,8 +439,8 @@ public class AdminConsole {
         }
 
         try {
-            int locationId = locationService.addLocation(addr, phone, contact);
-            supplierService.addSupplier(locationId, stockIds);
+
+            supplierService.addSupplier(addr,phone,contact, stockIds);
             System.out.println("Supplier registered.");
         } catch (Exception e) {
             System.out.println(e.getMessage());
