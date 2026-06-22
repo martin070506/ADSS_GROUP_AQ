@@ -59,4 +59,8 @@ public class Request {
     public int getLocationId() {
         return location.id();
     }
+
+    public int getFileNumber() {
+        return productFile.getFileNumber();
+    }
 }

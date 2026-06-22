@@ -220,7 +220,7 @@ public class MainConsole {
                 continue;
             }
 
-            if (!truckService.isDriverEligable(workers_service.getLicense(driverIndex), truckId)) {
+            if (!truckService.isDriverEligible(workers_service.getLicense(driverIndex), truckId)) {
                 System.out.println("Driver is not eligible to this truck.");
                 continue;
             }

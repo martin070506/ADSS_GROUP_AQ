@@ -338,8 +338,6 @@ public class AdminConsole {
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             return true;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -392,8 +390,6 @@ public class AdminConsole {
             System.out.println("Truck added successfully.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -409,8 +405,6 @@ public class AdminConsole {
             System.out.println("Store added.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 

@@ -45,16 +45,16 @@ public class TruckDAO {
     /**
      * Adds a new truck record to the database with all 6 fields.
      */
-    public void addTruck(TruckDTO truck) throws SQLException {
-        // Fixed: Added 6 placeholders (?, ?, ?, ?, ?, ?) to match the 6 columns
+    public void addTruck(Truck truck) throws SQLException {
+        TruckDTO truckDTO = new TruckDTO(truck);
         String sql = "INSERT INTO Truck (truck_id, truck_model, required_license, truck_number, startWeight, maxWeight) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, truck.id());          // Assumed truckID() based on your record definition
-            stmt.setString(2, truck.model());    // Assumed truckModel() based on your record definition
-            stmt.setInt(3, truck.minLicense());  // Assumed requiredLicense() based on your record definition
-            stmt.setInt(4, truck.truckNumber());
-            stmt.setInt(5, truck.startWeight());
-            stmt.setInt(6, truck.maxWeight());
+            stmt.setInt(1, truckDTO.id());          // Assumed truckID() based on your record definition
+            stmt.setString(2, truckDTO.model());    // Assumed truckModel() based on your record definition
+            stmt.setInt(3, truckDTO.minLicense());  // Assumed requiredLicense() based on your record definition
+            stmt.setInt(4, truckDTO.truckNumber());
+            stmt.setInt(5, truckDTO.startWeight());
+            stmt.setInt(6, truckDTO.maxWeight());
             stmt.executeUpdate();
         }
         System.out.println("Truck added successfully");

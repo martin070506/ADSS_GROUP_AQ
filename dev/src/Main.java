@@ -1,6 +1,4 @@
-import DAO.LocationDAO;
-import DAO.ProductDAO;
-import DAO.TruckDAO;
+import DAO.*;
 import Domain.Transportation.*;
 import Domain.Workers.ShiftCanidatesWorkersFacade;
 import Domain.Workers.ShiftJobsFacade;
@@ -16,10 +14,10 @@ import Service.Workers.WorkersService;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -28,62 +26,116 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         Connection dbConnection = DatabaseManager.getConnection();
-        //TODO REMEMBER WE ALWAYS LOAD FROM THE DB FIRST, WE DONT NEED A MANUAL LOAD, WE STILL HAVE MANUAL ADDITION
-        ProductDAO productDB=new ProductDAO(dbConnection);
+
+        // ==========================================
+        // 1. PRODUCTS TEST
+        // ==========================================
+        ProductDAO productDB = new ProductDAO(dbConnection);
         ProductCatalogService productCatalogService = new ProductCatalogService(productDB);
         productCatalogService.loadAllProductsFromDB();
-        System.out.println("CHECKING PRODUCTS");
-        List<Integer> l0=productCatalogService.getProductsId();
-        for(Integer i:l0){
+        System.out.println("--- CHECKING PRODUCTS ---");
+        List<Integer> l0 = productCatalogService.getProductsId();
+        for(Integer i : l0){
             System.out.println(productCatalogService.getProductDisplay(i));
         }
 
-        TruckDAO truckDB=new TruckDAO(DatabaseManager.getConnection());
-        TruckService truckService=new TruckService(productCatalogService,truckDB);
+        // ==========================================
+        // 2. TRUCKS TEST
+        // ==========================================
+        TruckDAO truckDB = new TruckDAO(dbConnection);
+        TruckService truckService = new TruckService(productCatalogService, truckDB);
         truckService.loadAllTrucksFromDB();
-        System.out.println("CHECKING TRUCKS");
-        List<Integer> l1=truckService.getAvailableTruckIds();
-        for(Integer i:l1){
+        System.out.println("\n--- CHECKING TRUCKS ---");
+        List<Integer> l1 = truckService.getAvailableTruckIds();
+        for(Integer i : l1){
             System.out.println(truckService.getTruckDisplay(i));
         }
 
-        //TODO ALWAYS REMEMBER TO LOAD LOCATIONS BEFORE BRANCHES/SUPPLIERS
-        LocationDAO locationDB=new LocationDAO(dbConnection);
-
-        LocationService locationService=new LocationService(locationDB);
+        // ==========================================
+        // 3. LOCATIONS TEST
+        // ==========================================
+        LocationDAO locationDB = new LocationDAO(dbConnection);
+        LocationService locationService = new LocationService(locationDB);
         locationService.loadLocationsFromDB();
-        System.out.println("CHECKING Locations");
-        List<Integer> l2=locationService.getLocationIds();
-        for(Integer i:l2){
+        System.out.println("\n--- CHECKING LOCATIONS ---");
+        List<Integer> l2 = locationService.getLocationIds();
+        for(Integer i : l2){
             System.out.println(locationService.getLocation(i).toString());
         }
 
-        BranchService branchService=new BranchService(locationService,locationDB);
+        // ==========================================
+        // 4. BRANCHES TEST
+        // ==========================================
+        BranchService branchService = new BranchService(locationService);
         branchService.loadBranchesFromDB();
-        System.out.println("CHECKING BRANCHES");
-        List<Integer> l3=branchService.getBranchesId();
-        for(Integer i:l3){
+        branchService.addBranch("New Branch St", "050-123", "Dani");
+        System.out.println("\n--- CHECKING BRANCHES ---");
+        List<Integer> l3 = branchService.getBranchesId();
+        for(Integer i : l3){
             System.out.println(branchService.getBranchDisplay(i));
         }
 
-        SupplierService supplierService=new SupplierService(locationService,locationDB);
+        // ==========================================
+        // 5. SUPPLIERS TEST
+        // ==========================================
+        SupplierService supplierService = new SupplierService(locationService, new SupplierAllocationDAO(dbConnection));
         supplierService.loadSuppliersFromDB();
-        System.out.println("CHECKING Suppliers");
-        List<Integer> l4=supplierService.getSupplierIds();
-        for(Integer i:l4){
+        supplierService.addSupplier("Supplier St", "052-456", "Avi", new HashMap<>());
+        System.out.println("\n--- CHECKING SUPPLIERS ---");
+        List<Integer> l4 = supplierService.getSupplierIds();
+        for(Integer i : l4){
             System.out.println(supplierService.getSupplierDisplay(i));
         }
 
+        // ==========================================
+        // 6. REQUESTS TEST (3 TABLES DB)
+        // ==========================================
+        System.out.println("\n=================================");
+        System.out.println("   TESTING REQUESTS (3 TABLES)   ");
+        System.out.println("=================================");
 
+        RequestDAO requestDB = new RequestDAO(dbConnection, locationDB);
+        RequestService requestService = new RequestService(locationService, requestDB);
 
+        // שלב 1: טעינה והצגה של הבקשות הפעילות כרגע
+        requestService.loadRequestsFromDB();
+        System.out.println("1. Current ACTIVE Requests Loaded From DB:");
+        List<Integer> activeRequestIds = requestService.getRequestsIds();
+        if (activeRequestIds.isEmpty()) {
+            System.out.println("   No active requests found in DB.");
+        } else {
+            for(Integer locId : activeRequestIds){
+                System.out.println("   " + requestService.getRequestDisplay(locId));
+            }
+        }
 
+        // קוד טסט: יצירת בקשה חדשה לגמרי דרך ה-Service
+        System.out.println("\n2. Simulating: Creating a new Active Request through Service...");
 
+        int testLocationId = 1; // ודאו שסניף מספר 1 קיים אצלכם!
 
+        // יצירת מילון מוצרים לבקשה (למשל מוצר 0 ומוצר 1)
+        Map<Integer, Integer> testItems = new HashMap<>();
+        testItems.put(0, 100);
+        testItems.put(1, 250);
 
+        // הוספת הבקשה למערכת (זה ייצר את הקובץ וישמור ב-3 הטבלאות ב-DB אוטומטית)
+        requestService.addRequest(testLocationId, testItems);
+        System.out.println("   -> Success! Request added for Location " + testLocationId);
 
+        // טעינה מחדש כדי לראות שהמערכת באמת קולטת את זה מה-DB
+        System.out.println("\n3. Reloading Active Requests from DB to verify:");
+        requestService.loadRequestsFromDB();
+        for(Integer locId : requestService.getRequestsIds()){
+            System.out.println("   " + requestService.getRequestDisplay(locId));
+        }
 
-
-
+        /*
+        // שלב 4: סימולציית סיום הובלה (מחיקה רק מטבלת Active_Requests)
+        System.out.println("\n4. Simulating: Transport Completed...");
+        requestService.removeRequest(testLocationId);
+        System.out.println("   -> Request completed and removed from active view, history preserved in DB.");
+        */
 
 
 

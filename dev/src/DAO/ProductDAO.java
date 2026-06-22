@@ -40,12 +40,13 @@ public class ProductDAO {
         return 0;
     }
 
-    public void addProduct(ProductDTO product) throws SQLException {
+    public void addProduct(Product product) throws SQLException {
+        ProductDTO productDTO = new ProductDTO(product.id(), product.name(), product.weight());
         String sql = "INSERT INTO Product (id, name, weight) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, product.id());
-            stmt.setString(2, product.name());
-            stmt.setInt(3, product.weight());
+            stmt.setInt(1, productDTO.id());
+            stmt.setString(2, productDTO.name());
+            stmt.setInt(3, productDTO.weight());
             stmt.executeUpdate();
         }
     }

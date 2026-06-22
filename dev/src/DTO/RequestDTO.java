@@ -1,4 +1,10 @@
 package DTO;
 
-public record RequestDTO(int locationID,int productID,int amount,int fileNumber) {
-}//PK is LOCATION,PRODUCT
+import Domain.Transportation.Request;
+
+public record RequestDTO(int locationID , int fileNumber) {
+
+    public RequestDTO(Request request) {
+        this(request.getLocationId(), request.getFileNumber());
+    }
+}

@@ -1,7 +1,6 @@
 package Service.Transportation;
 
 import DAO.TruckDAO;
-import DTO.TruckDTO;
 import Domain.Transportation.Truck;
 
 import java.sql.SQLException;
@@ -11,55 +10,68 @@ import java.util.Map;
 
 public class TruckService {
     private final List<Truck> trucks;
-    private int counter = 0;
+    private int counter;
     private final ProductCatalogService productService;
     private final TruckDAO truckDAO;
 
-
-    public TruckService(ProductCatalogService productService, TruckDAO truckDAO) throws SQLException {
+    public TruckService(ProductCatalogService productService, TruckDAO truckDAO) {
         this.productService = productService;
         this.trucks = new ArrayList<>();
-        this.counter=truckDAO.getHighestTruckID()+1;//adding 1 to start from a new ID
         this.truckDAO = truckDAO;
+        try {
+            this.counter = truckDAO.getHighestTruckID() + 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public void loadAllTrucksFromDB() throws SQLException {
-        this.trucks.addAll(truckDAO.loadAllTrucks());
+
+    public void loadAllTrucksFromDB() {
+        try {
+            this.trucks.clear();
+            this.trucks.addAll(truckDAO.loadAllTrucks());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-
-    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense) throws SQLException {
-        int count=counter++;
-        Truck t =new Truck(count, truckNumber, model, truckWeight, MaxWeight, requiredLicense);
-        TruckDTO tDTO=new TruckDTO(count, truckNumber, model, truckWeight, MaxWeight, requiredLicense);
-        trucks.add(t);
-        truckDAO.addTruck(tDTO);
-
+    public void addTruck(int truckNumber, String model, int truckWeight, int maxWeight, int requiredLicense) {
+        int count = counter++;
+        Truck truck = new Truck(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
+        trucks.add(truck);
+        try {
+            truckDAO.addTruck(truck);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Truck getTruck(int truckId) {
-        for (Truck truck : trucks)
-            if (truck.getId() == truckId)
+        for (Truck truck : trucks) {
+            if (truck.getId() == truckId) {
                 return truck;
-
+            }
+        }
         throw new IllegalArgumentException("Truck not found: " + truckId);
     }
 
     public List<Integer> getBiggerTruckIds(int minLicense, int truckId) {
-        int maxWeight = getTruckWeight(truckId);
-        List<Integer> available = new ArrayList<>();
-        for (Truck truck : trucks)
-            if (truck.isAvailable() && truck.getMinLicense() <= minLicense && truck.getMaxWeight() >= maxWeight)
-                available.add(truck.getId());
+        Truck oldTruck = getTruck(truckId);
+        int oldTruckTotalWeight = getTruckWeight(truckId);
+        int cargoWeight = oldTruckTotalWeight - oldTruck.getStartWeight();
 
+        List<Integer> available = new ArrayList<>();
+        for (Truck truck : trucks) {
+            if (truck.isAvailable() && truck.getMinLicense() <= minLicense) {
+                if (truck.getStartWeight() + cargoWeight <= truck.getMaxWeight()) {
+                    available.add(truck.getId());
+                }
+            }
+        }
         return available;
     }
 
     public String getTruckDisplay(int truckId) {
-        for (Truck truck : trucks)
-            if (truck.getId() == truckId)
-                return truck.toString();
-
-        throw new IllegalArgumentException("Truck not found: " + truckId);
+        return getTruck(truckId).toString();
     }
 
     public void emptyTruck(int truckId) {
@@ -71,9 +83,10 @@ public class TruckService {
         Truck truck = getTruck(truckId);
         int weight = truck.getStartWeight();
         Map<Integer, Integer> loadedProducts = truck.getLoadedProducts();
-        for (Map.Entry<Integer, Integer> entry : loadedProducts.entrySet())
-            weight += productService.getWeightForProduct(entry.getKey()) * entry.getValue();
 
+        for (Map.Entry<Integer, Integer> entry : loadedProducts.entrySet()) {
+            weight += productService.getWeightForProduct(entry.getKey()) * entry.getValue();
+        }
         return weight;
     }
 
@@ -87,11 +100,13 @@ public class TruckService {
     }
 
     public void replaceTrucks(int truckId, int newTruckId) {
-        Truck truck = getTruck(truckId);
+        Truck oldTruck = getTruck(truckId);
         Truck replacement = getTruck(newTruckId);
-        replacement.transferHoldingsToOtherTruck(truck);
-        truck.emptyTruck();
-        truck.setAvailable(true);
+
+        oldTruck.transferHoldingsToOtherTruck(replacement);
+        oldTruck.emptyTruck();
+
+        oldTruck.setAvailable(true);
         replacement.setAvailable(false);
     }
 
@@ -101,18 +116,15 @@ public class TruckService {
 
     public List<Integer> getAvailableTruckIds() {
         List<Integer> available = new ArrayList<>();
-        for (Truck truck : trucks)
-            if (truck.isAvailable())
+        for (Truck truck : trucks) {
+            if (truck.isAvailable()) {
                 available.add(truck.getId());
-
+            }
+        }
         return available;
     }
 
-    public boolean isDriverEligable(int license, int truckId) {
-        for (Truck truck : trucks)
-            if (truck.getId() == truckId)
-                return truck.getMinLicense() <= license;
-
-        throw new IllegalArgumentException("Truck not found: " + truckId);
+    public boolean isDriverEligible(int license, int truckId) {
+        return getTruck(truckId).getMinLicense() <= license;
     }
 }

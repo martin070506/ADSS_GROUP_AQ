@@ -1,7 +1,6 @@
 package Service.Transportation;
 
 import DAO.ProductDAO;
-import DTO.ProductDTO;
 import Domain.Transportation.Product;
 
 import java.sql.SQLException;
@@ -15,18 +14,31 @@ public class ProductCatalogService {
     private int productCounter=0;
     private final ProductDAO productDAO;
 
-    public ProductCatalogService(ProductDAO productDAO) throws SQLException {
+    public ProductCatalogService(ProductDAO productDAO) {
         this.products = new ArrayList<>();
         this.productDAO=productDAO;
-        this.productCounter=productDAO.getHighestProductID();
+        try {
+            this.productCounter=productDAO.getHighestProductID();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public void loadAllProductsFromDB() throws SQLException {
-        this.products.addAll(productDAO.loadAllProducts());
+    public void loadAllProductsFromDB() {
+        try {
+            this.products.addAll(productDAO.loadAllProducts());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public void addProduct(String name, int weight) throws SQLException {
-        int id=productCounter++;
-        products.add(new Product(id,name, weight));
-        productDAO.addProduct(new ProductDTO(id,name,weight));
+    public void addProduct(String name, int weight) {
+        int id = productCounter++;
+        Product product = new Product(id,name, weight);
+        products.add(product);
+        try {
+            productDAO.addProduct(product);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
     public void removeProduct(Product product) {
         products.remove(product);

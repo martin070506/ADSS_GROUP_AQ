@@ -1,5 +1,7 @@
 package DAO;
 
+import DTO.ProductFileDTO;
+import DTO.ProductFile_ItemsDTO;
 import DTO.RequestDTO;
 import Domain.Transportation.Location;
 import Domain.Transportation.Request;
@@ -8,41 +10,41 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class RequestDAO {
     private final Connection connection;
-    private final Random random = new Random(); // Used to generate the unique int fileNumber
+    private final LocationDAO locationDAO;
 
-    /**
-     * Constructor to pass your active database connection.
-     */
-    public RequestDAO(Connection connection) {
+    public RequestDAO(Connection connection, LocationDAO locationDAO) {
         this.connection = connection;
+        this.locationDAO = locationDAO;
     }
 
-    /**
-     * Checks if any request entry exists for a given location ID.
-     */
-    public boolean exists(int locationId) throws SQLException {
-        String sql = "SELECT 1 FROM requests WHERE location_id = ? LIMIT 1";
+    private int getActiveFileNumber(int locationId) throws SQLException {
+        String sql = "SELECT file_number FROM Request WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                if (rs.next()) {
+                    return rs.getInt("file_number");
+                }
             }
         }
+        return -1;
     }
 
-    /**
-     * Checks if a specific location-product pairing request entry exists.
-     */
+    public boolean exists(int locationId) throws SQLException {
+        return getActiveFileNumber(locationId) != -1;
+    }
+
     public boolean exists(int locationId, int productId) throws SQLException {
-        String sql = "SELECT 1 FROM requests WHERE location_id = ? AND product_id = ? LIMIT 1";
+        int fileNumber = getActiveFileNumber(locationId);
+        if (fileNumber == -1) return false;
+
+        String sql = "SELECT 1 FROM ProductFile_Items WHERE file_number = ? AND product_id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, locationId);
+            stmt.setInt(1, fileNumber);
             stmt.setInt(2, productId);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -50,89 +52,138 @@ public class RequestDAO {
         }
     }
 
-    /**
-     * Fetches all requested products for a given location, builds a Map,
-     * generates a unique integer file number, and constructs a rich Request object.
-     */
     public Request getRequestByLocation(Location location) throws SQLException {
+        int fileNumber = getActiveFileNumber(location.id());
+        if (fileNumber == -1) return null;
+
         Map<Integer, Integer> neededItems = new HashMap<>();
-        String sql = "SELECT product_id, amount FROM requests WHERE location_id = ?";
+        String sql = "SELECT product_id, amount FROM ProductFile_Items WHERE file_number = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, location.id());
-
+            stmt.setInt(1, fileNumber);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    int productId = rs.getInt("product_id");
-                    int amount = rs.getInt("amount");
-                    neededItems.put(productId, amount);
+                    neededItems.put(rs.getInt("product_id"), rs.getInt("amount"));
                 }
             }
         }
 
-        // Return null if no records were found in the database for this location
-        if (neededItems.isEmpty()) {
-            return null;
-        }
-
-        int uniqueFileNumber = generateUniqueFileNumber();
-        return new Request(location, uniqueFileNumber, neededItems);
+        return new Request(location, fileNumber, neededItems);
     }
 
-    /**
-     * Persists a RequestDTO to the database.
-     * If the location_id and product_id combination already exists, it overwrites the amount.
-     */
-    public void addRequest(RequestDTO requestDto) throws SQLException {
-        // If the key combination exists, update it. Otherwise, insert it.
-        if (exists(requestDto.locationID(), requestDto.productID())) {
-            String updateSql = "UPDATE requests SET amount = ? WHERE location_id = ? AND product_id = ?";
+    public void addProductFile(ProductFileDTO fileDto) throws SQLException {
+        String sql = "INSERT INTO ProductFile (file_number, location_id) VALUES (?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, fileDto.fileNumber());
+            stmt.setInt(2, fileDto.locationId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void addProductFileItem(ProductFile_ItemsDTO itemDto) throws SQLException {
+        String checkSql = "SELECT 1 FROM ProductFile_Items WHERE file_number = ? AND product_id = ? LIMIT 1";
+        boolean itemExists;
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, itemDto.fileNumber());
+            checkStmt.setInt(2, itemDto.productId());
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                itemExists = rs.next();
+            }
+        }
+
+        if (itemExists) {
+            String updateSql = "UPDATE ProductFile_Items SET amount = ? WHERE file_number = ? AND product_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
-                stmt.setInt(1, requestDto.amount());
-                stmt.setInt(2, requestDto.locationID());
-                stmt.setInt(3, requestDto.productID());
+                stmt.setInt(1, itemDto.amount());
+                stmt.setInt(2, itemDto.fileNumber());
+                stmt.setInt(3, itemDto.productId());
                 stmt.executeUpdate();
             }
         } else {
-            String insertSql = "INSERT INTO requests (location_id, product_id, amount) VALUES (?, ?, ?)";
+            String insertSql = "INSERT INTO ProductFile_Items (file_number, product_id, amount) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
-                stmt.setInt(1, requestDto.locationID());
-                stmt.setInt(2, requestDto.productID());
-                stmt.setInt(3, requestDto.amount());
+                stmt.setInt(1, itemDto.fileNumber());
+                stmt.setInt(2, itemDto.productId());
+                stmt.setInt(3, itemDto.amount());
                 stmt.executeUpdate();
             }
         }
     }
 
-    /**
-     * Overloaded Deletion: Wipes out ALL request rows tied to a specific location ID.
-     */
+    public void addRequest(Request request) throws SQLException {
+        RequestDTO requestDTO = new RequestDTO(request);
+        if (exists(requestDTO.locationID())) {
+            String updateSql = "UPDATE Request SET file_number = ? WHERE location_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
+                stmt.setInt(1, requestDTO.fileNumber());
+                stmt.setInt(2, requestDTO.locationID());
+                stmt.executeUpdate();
+            }
+        } else {
+            String insertSql = "INSERT INTO Request (location_id, file_number) VALUES (?, ?)";
+            try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
+                stmt.setInt(1, requestDTO.locationID());
+                stmt.setInt(2, requestDTO.fileNumber());
+                stmt.executeUpdate();
+            }
+        }
+    }
+
     public void removeAllRequestsForLocationID(int locationId) throws SQLException {
-        String sql = "DELETE FROM requests WHERE location_id = ?";
-
+        String sql = "DELETE FROM Request WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
             stmt.executeUpdate();
         }
     }
 
-    /**
-     * Overloaded Deletion: Wipes out a SPECIFIC product row for a specific location ID.
-     */
     public void removeRequestPair(int locationId, int productId) throws SQLException {
-        String sql = "DELETE FROM requests WHERE location_id = ? AND product_id = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, locationId);
-            stmt.setInt(2, productId);
-            stmt.executeUpdate();
+        int fileNumber = getActiveFileNumber(locationId);
+        if (fileNumber != -1) {
+            String sql = "DELETE FROM ProductFile_Items WHERE file_number = ? AND product_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setInt(1, fileNumber);
+                stmt.setInt(2, productId);
+                stmt.executeUpdate();
+            }
         }
     }
 
-    /**
-     * Helper method to generate a positive unique integer identifier.
-     */
-    private int generateUniqueFileNumber() {
-        return random.nextInt(1_000_000_000) & Integer.MAX_VALUE;
+    public Collection<Request> loadAllRequests() throws SQLException {
+        Map<Integer, Map<Integer, Integer>> productsByLocation = new HashMap<>();
+        Map<Integer, Integer> fileNumberByLocation = new HashMap<>();
+
+        String sql = "SELECT ar.location_id, ar.file_number, pfi.product_id, pfi.amount " +
+                "FROM Request ar " +
+                "JOIN ProductFile_Items pfi ON ar.file_number = pfi.file_number";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int locationId = rs.getInt("location_id");
+                int fileNumber = rs.getInt("file_number");
+                int productId = rs.getInt("product_id");
+                int amount = rs.getInt("amount");
+
+                fileNumberByLocation.put(locationId, fileNumber);
+                productsByLocation.putIfAbsent(locationId, new HashMap<>());
+                productsByLocation.get(locationId).put(productId, amount);
+            }
+        }
+
+        List<Request> allRequests = new ArrayList<>();
+
+        for (int locationId : fileNumberByLocation.keySet()) {
+            Location location = locationDAO.getLocation(locationId);
+
+            if (location != null) {
+                int fileNumber = fileNumberByLocation.get(locationId);
+                Map<Integer, Integer> neededItems = productsByLocation.get(locationId);
+                allRequests.add(new Request(location, fileNumber, neededItems));
+            }
+        }
+
+        return allRequests;
     }
 }

@@ -164,7 +164,7 @@ public void finalizeCurrentSupplierLoading(int transportId){
             try {
                 transport.removeItems(thingsToRemove);
                 for (Map.Entry<Integer, Integer> entry : thingsToRemove.entrySet())
-                    supplierService.addStock(entry.getKey(), entry.getValue(), supplierId);
+                    supplierService.resupplySupplier(supplierId, entry.getKey(), entry.getValue());
 
             } catch (ProductNotFoundOnTruckException e) {
                 System.out.println(e.getMessage());

@@ -96,4 +96,12 @@ public class Truck {
         return "ID: " + id + " | Truck #" + truckNumber + " [" + model + "] | Max Weight: " +
                 maxWeight + "kg | Min License: " + minLicense;
     }
+
+    public int getTruckNumber() {
+        return truckNumber;
+    }
+
+    public String getModel() {
+        return model;
+    }
 }
