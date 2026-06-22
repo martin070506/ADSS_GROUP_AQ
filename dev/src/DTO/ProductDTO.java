@@ -1,3 +1,9 @@
 package DTO;
 
-public record ProductDTO(int id, String name, int weight) {}
+import Domain.Transportation.Product;
+
+public record ProductDTO(
+        int id,
+        String name,
+        int weight
+) {}

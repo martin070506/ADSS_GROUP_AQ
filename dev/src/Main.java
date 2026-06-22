@@ -94,7 +94,7 @@ public class Main {
         System.out.println("   TESTING REQUESTS (3 TABLES)   ");
         System.out.println("=================================");
 
-        RequestDAO requestDB = new RequestDAO(dbConnection, locationDB);
+        RequestDAO requestDB = new RequestDAO(dbConnection);
         RequestService requestService = new RequestService(locationService, requestDB);
 
         // שלב 1: טעינה והצגה של הבקשות הפעילות כרגע

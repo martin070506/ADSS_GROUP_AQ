@@ -3,25 +3,24 @@ package DAO;
 import DTO.ProductFileDTO;
 import DTO.ProductFile_ItemsDTO;
 import DTO.RequestDTO;
-import Domain.Transportation.Location;
-import Domain.Transportation.Request;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RequestDAO {
     private final Connection connection;
-    private final LocationDAO locationDAO;
 
-    public RequestDAO(Connection connection, LocationDAO locationDAO) {
+    public RequestDAO(Connection connection) {
         this.connection = connection;
-        this.locationDAO = locationDAO;
     }
 
-    private int getActiveFileNumber(int locationId) throws SQLException {
+    public int getActiveFileNumber(int locationId) throws SQLException {
         String sql = "SELECT file_number FROM Request WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
@@ -50,25 +49,6 @@ public class RequestDAO {
                 return rs.next();
             }
         }
-    }
-
-    public Request getRequestByLocation(Location location) throws SQLException {
-        int fileNumber = getActiveFileNumber(location.id());
-        if (fileNumber == -1) return null;
-
-        Map<Integer, Integer> neededItems = new HashMap<>();
-        String sql = "SELECT product_id, amount FROM ProductFile_Items WHERE file_number = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, fileNumber);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    neededItems.put(rs.getInt("product_id"), rs.getInt("amount"));
-                }
-            }
-        }
-
-        return new Request(location, fileNumber, neededItems);
     }
 
     public void addProductFile(ProductFileDTO fileDto) throws SQLException {
@@ -110,8 +90,7 @@ public class RequestDAO {
         }
     }
 
-    public void addRequest(Request request) throws SQLException {
-        RequestDTO requestDTO = new RequestDTO(request);
+    public void addRequest(RequestDTO requestDTO) throws SQLException {
         if (exists(requestDTO.locationID())) {
             String updateSql = "UPDATE Request SET file_number = ? WHERE location_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
@@ -149,9 +128,9 @@ public class RequestDAO {
         }
     }
 
-    public Collection<Request> loadAllRequests() throws SQLException {
-        Map<Integer, Map<Integer, Integer>> productsByLocation = new HashMap<>();
-        Map<Integer, Integer> fileNumberByLocation = new HashMap<>();
+    // המיפוי החדש: DAO מחזיר מפה של RequestDTO (הכותרת) ורשימה של פריטים (ItemsDTO)
+    public Map<RequestDTO, List<ProductFile_ItemsDTO>> loadAllRequests() throws SQLException {
+        Map<RequestDTO, List<ProductFile_ItemsDTO>> requestsMap = new HashMap<>();
 
         String sql = "SELECT ar.location_id, ar.file_number, pfi.product_id, pfi.amount " +
                 "FROM Request ar " +
@@ -166,24 +145,12 @@ public class RequestDAO {
                 int productId = rs.getInt("product_id");
                 int amount = rs.getInt("amount");
 
-                fileNumberByLocation.put(locationId, fileNumber);
-                productsByLocation.putIfAbsent(locationId, new HashMap<>());
-                productsByLocation.get(locationId).put(productId, amount);
+                RequestDTO requestDTO = new RequestDTO(locationId, fileNumber);
+
+                requestsMap.putIfAbsent(requestDTO, new ArrayList<>());
+                requestsMap.get(requestDTO).add(new ProductFile_ItemsDTO(fileNumber, productId, amount));
             }
         }
-
-        List<Request> allRequests = new ArrayList<>();
-
-        for (int locationId : fileNumberByLocation.keySet()) {
-            Location location = locationDAO.getLocation(locationId);
-
-            if (location != null) {
-                int fileNumber = fileNumberByLocation.get(locationId);
-                Map<Integer, Integer> neededItems = productsByLocation.get(locationId);
-                allRequests.add(new Request(location, fileNumber, neededItems));
-            }
-        }
-
-        return allRequests;
+        return requestsMap;
     }
 }

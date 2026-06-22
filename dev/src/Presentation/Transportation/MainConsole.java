@@ -6,6 +6,7 @@ import Service.Workers.ShiftPlacementService;
 import Service.Workers.ShiftWorkersCanidatesService;
 import Service.Workers.WorkersService;
 
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -36,13 +37,15 @@ public class MainConsole {
 
     public void initiateShipment(List<Integer> requests) {
 
+        boolean isMorning = LocalTime.now().isAfter(LocalTime.of(4, 59)) && LocalTime.now().isBefore(LocalTime.of(17, 0));
+
         int sourceIdx = selectSourceLocation();
         if (sourceIdx == -1) return;
 
         int truckId = chooseTruck();
         if (truckId == -1) return;
 
-        int driverId = chooseDriver(sourceIdx, truckId);
+        int driverId = chooseDriver(sourceIdx, truckId, isMorning);
         if (driverId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
@@ -50,10 +53,10 @@ public class MainConsole {
         if (supplierAllocationsIds.isEmpty()) return;
 
         try {
-            int transportId = transportService.createTransport(truckId, driverId, sourceIdx, requests, 
+            transportService.createTransport(truckId, driverId, sourceIdx, requests, 
                     supplierAllocationsIds, truckService.getTruckDisplay(truckId), 
                     locationService.getLocationDisplay(sourceIdx));
-            processShipmentFlow(transportId);
+            processShipmentFlow(isMorning);
         } catch (DomainException e) {
             System.out.println("Validation Error: " + e.getMessage());
         } catch (Exception e) {
@@ -61,20 +64,26 @@ public class MainConsole {
         }
     }
 
-    private void processShipmentFlow(int transportId) {
-        transportService.startShipment(transportId);
+    private void processShipmentFlow(boolean isMorning) {
+        transportService.startShipment();
 
         boolean shipmentFinish = false;
         while (!shipmentFinish) {
             try {
-                transportService.processTransportLifecycle(transportId);
+                transportService.processTransportLifecycle(isMorning);
                 shipmentFinish = true;
             } catch (OverweightException oe) {
-                handleOverweightUI(transportId);
+                handleOverweightUI();
             } catch (InsufficientSupplierStockException | InsufficientTruckStockException ise) {
                 System.out.println("Stock Problem: " + ise.getMessage());
-                try { transportService.handleStockException(transportId, ise); }
-                catch (Exception e) { System.out.println("Error handling stock: " + e.getMessage()); }
+                try {
+                    transportService.handleStockException(ise);
+                } catch (Exception e) {
+                    System.out.println("Error handling stock: " + e.getMessage());
+                }
+            } catch (MissingShopKeeper msk) {
+                System.out.println("ShopKeeper Missing: " + msk.getMessage());
+                transportService.skipRequest();
             } catch (DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
                 break;
@@ -85,16 +94,14 @@ public class MainConsole {
         }
 
         if (shipmentFinish) {
-            // Step 3: Safely clear out the truck's contents for future shipments
-            transportService.finishShipment(transportId);
-            System.out.println(transportService.getTransportFileDisplay(transportId));
-            transportService.removeTransportById(transportId);
+            System.out.println(transportService.getTransportFileDisplay());
+            transportService.finishShipment();
             System.out.println("Shipment finished successfully!");
         }
     }
 
-    public void handleOverweightUI(int transportId) {
-        String supplierName = transportService.getFirstSupplierName(transportId);
+    public void handleOverweightUI() {
+        String supplierName = transportService.getFirstSupplierName();
         int choice;
 
         while (true) {
@@ -115,13 +122,13 @@ public class MainConsole {
         try {
             switch (choice) {
                 case 3:
-                    getItemsToRemoveUI(transportId);
+                    getItemsToRemoveUI();
                     break;
                 case 4:
-                    int driverLicense = workers_service.getLicense(transportService.getDriverId(transportId));
+                    int driverLicense = workers_service.getLicense(transportService.getDriverId());
 
                     List<Integer> truckIds = truckService.getBiggerTruckIds(driverLicense,
-                            transportService.getTruckId(transportId));
+                            transportService.getTruckId());
                     while (!truckIds.isEmpty()) {
                         for (int truckId : truckIds)
                             System.out.println(truckService.getTruckDisplay(truckId));
@@ -129,8 +136,8 @@ public class MainConsole {
                         System.out.print("Enter Truck ID to replace: ");
                         int newTruckId = Integer.parseInt(scanner.nextLine().trim());
                         if (truckIds.contains(newTruckId)) {
-                            transportService.replaceTruck(transportId, newTruckId);
-                            transportService.finalizeCurrentSupplierLoading(transportId);
+                            transportService.replaceTruck(newTruckId);
+                            transportService.finalizeCurrentSupplierLoading();
                             return;
                         } else {
                             System.out.println("Invalid Truck ID. Please try again.");
@@ -138,16 +145,16 @@ public class MainConsole {
                     }
                     break;
                 default:
-                    transportService.resolveOverweightIssue(transportId, choice);
+                    transportService.resolveOverweightIssue(choice);
             }
             System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
-            transportService.skipSupplier(transportId);
+            transportService.skipSupplier();
         } catch (Exception e) { System.out.println("Error handling overweight: " + e.getMessage()); }
     }
 
-    private void getItemsToRemoveUI(int transportId) {
+    private void getItemsToRemoveUI() {
         while (true) {
-            Map<Integer, Integer> currentItemsDisplay = truckService.getTruckProducts(transportService.getTruckId(transportId));
+            Map<Integer, Integer> currentItemsDisplay = truckService.getTruckProducts(transportService.getTruckId());
             if (currentItemsDisplay.isEmpty()) {
                 System.out.println("The truck is now empty!");
                 break;
@@ -170,7 +177,7 @@ public class MainConsole {
                 if (productId >= 0 && productId < productNames.size()) {
                     int amt = promptInt("Amount to remove: ");
                     if (amt > 0) {
-                        transportService.resolveOverweightWithFineTuning(transportId, productId, amt);
+                        transportService.resolveOverweightWithFineTuning(productId, amt);
                         System.out.println("Items removed.");
                     } else { System.out.println("Invalid amount."); }
                 } else { System.out.println("Product ID not found on truck."); }
@@ -196,9 +203,8 @@ public class MainConsole {
         }
     }
 
-    private int chooseDriver(int sourceIdx, int truckId) {
+    private int chooseDriver(int sourceIdx, int truckId, boolean isMorning) {
         LocalDate today = LocalDate.now();
-        boolean isMorning = Math.random() > 0.5; // TODO: notice
         List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocation(sourceIdx)); // TODO: notice break of Domain
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");

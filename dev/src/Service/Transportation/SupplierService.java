@@ -1,11 +1,13 @@
 package Service.Transportation;
 
 import DAO.SupplierAllocationDAO;
+import DTO.SupplierAllocationDTO;
 import Domain.Transportation.Location;
 import Domain.Transportation.Supplier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +27,15 @@ public class SupplierService {
         List<Location> supplierLocations = locationService.loadAllSuppliers();
         try {
             for (Location loc : supplierLocations) {
-                Map<Integer, Integer> allocations = allocationDAO.getAllocations(loc.id());
+                // 1. קבלת רשימת DTOs מה-DAO
+                List<SupplierAllocationDTO> dtoList = allocationDAO.getAllocations(loc.id());
+
+                // 2. המרת הרשימה למפה (Map) עבור ה-Domain Object
+                Map<Integer, Integer> allocations = new HashMap<>();
+                for (SupplierAllocationDTO dto : dtoList) {
+                    allocations.put(dto.productID(), dto.amountOfProduct());
+                }
+
                 suppliers.add(new Supplier(loc, allocations));
             }
         } catch (SQLException e) {
@@ -38,8 +48,10 @@ public class SupplierService {
             int locationId = locationService.addSupplierLocation(addr, phone, contact);
             Location newLocation = locationService.getLocation(locationId);
 
-            for (Map.Entry<Integer, Integer> entry : productMap.entrySet())
-                allocationDAO.addAllocation(locationId, entry.getKey(), entry.getValue());
+            for (Map.Entry<Integer, Integer> entry : productMap.entrySet()) {
+                // המרה ל-DTO לפני שליחה ל-DAO
+                allocationDAO.addAllocation(new SupplierAllocationDTO(locationId, entry.getKey(), entry.getValue()));
+            }
 
             Supplier supplier = new Supplier(newLocation, productMap);
             suppliers.add(supplier);
@@ -82,7 +94,8 @@ public class SupplierService {
                 try {
                     for (Map.Entry<Integer, Integer> entry : itemsToLoad.entrySet()) {
                         int updatedStock = supplier.getProductStock(entry.getKey());
-                        allocationDAO.updateAllocation(supplierId, entry.getKey(), updatedStock);
+                        // המרה ל-DTO לפני עדכון ה-DB
+                        allocationDAO.updateAllocation(new SupplierAllocationDTO(supplierId, entry.getKey(), updatedStock));
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -116,7 +129,10 @@ public class SupplierService {
             if (supplier.getLocationId() == locationId) {
                 supplier.addStock(productId, amount);
                 try {
-                    allocationDAO.updateAllocation(locationId, productId, supplier.getProductStock(productId));                } catch (SQLException e) {
+                    // המרה ל-DTO לפני עדכון ה-DB
+                    int updatedStock = supplier.getProductStock(productId);
+                    allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, productId, updatedStock));
+                } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
                 return;

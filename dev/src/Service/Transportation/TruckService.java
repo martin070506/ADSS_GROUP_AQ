@@ -1,6 +1,7 @@
 package Service.Transportation;
 
 import DAO.TruckDAO;
+import DTO.TruckDTO;
 import Domain.Transportation.Truck;
 
 import java.sql.SQLException;
@@ -28,7 +29,20 @@ public class TruckService {
     public void loadAllTrucksFromDB() {
         try {
             this.trucks.clear();
-            this.trucks.addAll(truckDAO.loadAllTrucks());
+            // ה-DAO מחזיר רשימה של DTOs
+            List<TruckDTO> dtos = truckDAO.loadAllTrucks();
+
+            // ה-Service ממיר כל DTO לישות Domain חכמה
+            for (TruckDTO dto : dtos) {
+                this.trucks.add(new Truck(
+                        dto.id(),
+                        dto.truckNumber(),
+                        dto.model(),
+                        dto.startWeight(),
+                        dto.maxWeight(),
+                        dto.minLicense()
+                ));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -38,8 +52,11 @@ public class TruckService {
         int count = counter++;
         Truck truck = new Truck(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
         trucks.add(truck);
+
         try {
-            truckDAO.addTruck(truck);
+            // ה-Service מכין DTO עבור ה-DAO כדי לשמור על הפרדת שכבות
+            TruckDTO dto = new TruckDTO(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
+            truckDAO.addTruck(dto);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

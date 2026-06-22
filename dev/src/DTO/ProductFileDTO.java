@@ -1,3 +1,6 @@
 package DTO;
 
-public record ProductFileDTO(int fileNumber, int locationId) {}
+public record ProductFileDTO(
+        int fileNumber,
+        int locationId
+) {}

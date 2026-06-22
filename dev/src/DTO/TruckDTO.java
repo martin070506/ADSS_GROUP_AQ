@@ -2,7 +2,14 @@ package DTO;
 
 import Domain.Transportation.Truck;
 
-public record TruckDTO(int id, int truckNumber, String model, int startWeight, int maxWeight, int minLicense) {
+public record TruckDTO(
+        int id,
+        int truckNumber,
+        String model,
+        int startWeight,
+        int maxWeight,
+        int minLicense
+) {
 
     public TruckDTO(Truck truck) {
         this(

@@ -1,10 +1,15 @@
 package Service.Transportation;
 
 import DAO.RequestDAO;
+import DTO.ProductFileDTO;
+import DTO.ProductFile_ItemsDTO;
+import DTO.RequestDTO;
+import Domain.Transportation.Location;
 import Domain.Transportation.Request;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,12 +28,24 @@ public class RequestService {
     public void loadRequestsFromDB() {
         try {
             requests.clear();
-            requests.addAll(requestDAO.loadAllRequests());
 
-            // עדכון הקאונטר הפנימי לפי המספר הגבוה ביותר שנטען, כדי למנוע כפילויות
-            for (Request request : requests) {
-                if (request.getFileNumber() >= fileNumberCounter) {
-                    fileNumberCounter = request.getFileNumber() + 1;
+            // 1. מקבלים את הנתונים הגולמיים מה-DAO (רק DTOs)
+            Map<RequestDTO, List<ProductFile_ItemsDTO>> rawRequests = requestDAO.loadAllRequests();
+
+            // 2. עוברים על הנתונים, בונים Domain, ומשתמשים ב-LocationService כדי להביא Location אמיתי
+            for (Map.Entry<RequestDTO, List<ProductFile_ItemsDTO>> entry : rawRequests.entrySet()) {
+                RequestDTO reqDto = entry.getKey();
+                Location location = locationService.getLocation(reqDto.locationID());
+
+                Map<Integer, Integer> itemsMap = new HashMap<>();
+                for (ProductFile_ItemsDTO itemDto : entry.getValue()) {
+                    itemsMap.put(itemDto.productId(), itemDto.amount());
+                }
+
+                requests.add(new Request(location, reqDto.fileNumber(), itemsMap));
+
+                if (reqDto.fileNumber() >= fileNumberCounter) {
+                    fileNumberCounter = reqDto.fileNumber() + 1;
                 }
             }
         } catch (SQLException e) {
@@ -41,14 +58,28 @@ public class RequestService {
             for (Request request : requests) {
                 if (request.getLocation().id() == locationId) {
                     request.addProducts(neededItems);
-                    requestDAO.addRequest(request);
+
+                    // סנכרון ל-DB: עדכון הפריטים שהתווספו/עודכנו
+                    for (Map.Entry<Integer, Integer> entry : neededItems.entrySet()) {
+                        int pId = entry.getKey();
+                        int newTotalAmount = request.getProducts().get(pId);
+                        requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, newTotalAmount));
+                    }
                     return;
                 }
             }
 
+            // יצירת בקשה חדשה לגמרי
             Request newRequest = new Request(locationService.getLocation(locationId), fileNumberCounter++, neededItems);
             requests.add(newRequest);
-            requestDAO.addRequest(newRequest); // שומר את הבקשה החדשה ב-DB
+
+            // שמירת הבקשה החדשה ב-DB דרך ה-DTOs
+            requestDAO.addProductFile(new ProductFileDTO(newRequest.getFileNumber(), locationId));
+            requestDAO.addRequest(new RequestDTO(locationId, newRequest.getFileNumber()));
+
+            for (Map.Entry<Integer, Integer> entry : neededItems.entrySet()) {
+                requestDAO.addProductFileItem(new ProductFile_ItemsDTO(newRequest.getFileNumber(), entry.getKey(), entry.getValue()));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -64,7 +95,7 @@ public class RequestService {
 
     public void removeRequest(int locationId) {
         try {
-            requestDAO.removeAllRequestsForLocationID(locationId); // מסיר מה-DB (מהטבלה האקטיבית)
+            requestDAO.removeAllRequestsForLocationID(locationId); // מסיר מה-DB
             requests.removeIf(request -> request.getLocation().id() == locationId); // מסיר מהזיכרון
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -76,8 +107,6 @@ public class RequestService {
         for (Request request : requests) {
             allRequests.add(request.getLocation().id());
         }
-
-        // שים לב: זה מנקה רק את הזיכרון המקומי. אם צריך לנקות גם DB, צריך להוסיף כאן קריאה ל-DAO.
         requests.clear();
         return allRequests;
     }
@@ -114,11 +143,13 @@ public class RequestService {
             if (request.getLocationId() == branchId) {
                 request.addProduct(pId, qty);
                 try {
-                    requestDAO.addRequest(request); // סנכרון ל-DB
+                    // מעדכנים את הכמות החדשה ב-DB
+                    int updatedAmount = request.getProducts().get(pId);
+                    requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, updatedAmount));
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                return; // תוקן! קריטי כדי שלא יזרוק Exception בסוף
+                return;
             }
         }
         throw new IllegalArgumentException("Request not found at location: " + branchId);
@@ -129,11 +160,18 @@ public class RequestService {
             if (request.getLocationId() == branchId) {
                 request.removeProduct(pId, qty);
                 try {
-                    requestDAO.addRequest(request); // סנכרון ל-DB (דרוס את הכמות הישנה בחדשה)
+                    Integer remainingAmount = request.getProducts().get(pId);
+                    if (remainingAmount == null || remainingAmount <= 0) {
+                        // אם הכמות ירדה ל-0, מוחקים את השורה מה-DB
+                        requestDAO.removeRequestPair(branchId, pId);
+                    } else {
+                        // אחרת, מעדכנים לכמות החדשה (המוקטנת) ב-DB
+                        requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, remainingAmount));
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                return; // תוקן! קריטי כדי שלא יזרוק Exception בסוף
+                return;
             }
         }
         throw new IllegalArgumentException("Request not found at location: " + branchId);
@@ -142,10 +180,17 @@ public class RequestService {
     public void handleShipment(int requestId, Map<Integer, Integer> truckProducts) {
         for (Request request : requests) {
             if (request.getLocationId() == requestId) {
-                request.handleShipment(truckProducts);
+                request.handleShipment(truckProducts); // מוריד את הפריטים שסופקו
                 try {
-                    // אחרי פריקת הסחורה, מעדכנים את הכמויות החדשות במסד הנתונים
-                    requestDAO.addRequest(request);
+                    // סנכרון כל הפריטים שהיו על המשאית מול ה-DB (הקטנת כמות או מחיקה)
+                    for (Integer pId : truckProducts.keySet()) {
+                        Integer remainingAmount = request.getProducts().get(pId);
+                        if (remainingAmount == null || remainingAmount <= 0) {
+                            requestDAO.removeRequestPair(requestId, pId);
+                        } else {
+                            requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, remainingAmount));
+                        }
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -161,5 +206,14 @@ public class RequestService {
             requestsIds.add(request.getLocationId());
         }
         return requestsIds;
+    }
+
+    public Location getRequestLocation(int requestId) {
+        for (Request request : requests) {
+            if (request.getLocationId() == requestId) {
+                return request.getLocation();
+            }
+        }
+        throw new IllegalArgumentException("Request not found at location: " + requestId);
     }
 }

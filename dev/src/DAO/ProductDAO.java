@@ -1,7 +1,6 @@
 package DAO;
 
 import DTO.ProductDTO;
-import Domain.Transportation.Product;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,18 +16,16 @@ public class ProductDAO {
         this.connection = connection;
     }
 
-    /**
-     * Checks if a product ID already exists in the database.
-     */
     public boolean exists(int id) throws SQLException {
         String sql = "SELECT 1 FROM Product WHERE id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next(); // Returns true if a row was found
+                return rs.next();
             }
         }
     }
+
     public int getHighestProductID() throws SQLException {
         String sql = "SELECT MAX(id) FROM Product";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -40,8 +37,7 @@ public class ProductDAO {
         return 0;
     }
 
-    public void addProduct(Product product) throws SQLException {
-        ProductDTO productDTO = new ProductDTO(product.id(), product.name(), product.weight());
+    public void addProduct(ProductDTO productDTO) throws SQLException {
         String sql = "INSERT INTO Product (id, name, weight) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, productDTO.id());
@@ -51,20 +47,24 @@ public class ProductDAO {
         }
     }
 
-    public List<Product> loadAllProducts() throws SQLException {
-        List<Product> products = new ArrayList<>();
+    public List<ProductDTO> loadAllProducts() throws SQLException {
+        List<ProductDTO> products = new ArrayList<>();
         String sql = "SELECT id, name, weight FROM Product";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                products.add(new Product(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getInt("weight")
-                ));
+                products.add(mapRowToProductDTO(rs));
             }
         }
         return products;
+    }
+
+    private ProductDTO mapRowToProductDTO(ResultSet rs) throws SQLException {
+        return new ProductDTO(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getInt("weight")
+        );
     }
 
     public void removeProduct(int id) throws SQLException {

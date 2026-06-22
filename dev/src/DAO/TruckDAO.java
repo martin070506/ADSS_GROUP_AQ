@@ -1,7 +1,6 @@
 package DAO;
 
 import DTO.TruckDTO;
-import Domain.Transportation.Truck;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,20 +12,16 @@ import java.util.List;
 public class TruckDAO {
     private final Connection connection;
 
-    // Constructor to pass your active database connection
     public TruckDAO(Connection connection) {
         this.connection = connection;
     }
 
-    /**
-     * Checks if a truck ID already exists in the database.
-     */
     public boolean exists(int truckID) throws SQLException {
         String sql = "SELECT 1 FROM Truck WHERE truck_id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, truckID);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next(); // Returns true if the truck exists
+                return rs.next();
             }
         }
     }
@@ -36,56 +31,48 @@ public class TruckDAO {
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
-                return rs.getInt(1); // Gets the value of the first column in the result
+                return rs.getInt(1);
             }
         }
-        return 0; // Fallback default if nothing is found
+        return 0;
     }
 
-    /**
-     * Adds a new truck record to the database with all 6 fields.
-     */
-    public void addTruck(Truck truck) throws SQLException {
-        TruckDTO truckDTO = new TruckDTO(truck);
+    public void addTruck(TruckDTO truckDTO) throws SQLException {
         String sql = "INSERT INTO Truck (truck_id, truck_model, required_license, truck_number, startWeight, maxWeight) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, truckDTO.id());          // Assumed truckID() based on your record definition
-            stmt.setString(2, truckDTO.model());    // Assumed truckModel() based on your record definition
-            stmt.setInt(3, truckDTO.minLicense());  // Assumed requiredLicense() based on your record definition
+            stmt.setInt(1, truckDTO.id());
+            stmt.setString(2, truckDTO.model());
+            stmt.setInt(3, truckDTO.minLicense());
             stmt.setInt(4, truckDTO.truckNumber());
             stmt.setInt(5, truckDTO.startWeight());
             stmt.setInt(6, truckDTO.maxWeight());
             stmt.executeUpdate();
         }
-        System.out.println("Truck added successfully");
     }
 
-    /**
-     * Loads all trucks from the database into a List of DTOs with all 6 fields.
-     */
-    public List<Truck> loadAllTrucks() throws SQLException {
-        List<Truck> trucks = new ArrayList<>();
+    public List<TruckDTO> loadAllTrucks() throws SQLException {
+        List<TruckDTO> trucks = new ArrayList<>();
         String sql = "SELECT truck_id, truck_model, required_license, truck_number, startWeight, maxWeight FROM Truck";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                // Adjust this constructor call if your TruckDTO record requires all 6 parameters
-                trucks.add(new Truck(
-                        rs.getInt("truck_id"),
-                        rs.getInt("truck_number"),
-                        rs.getString("truck_model"),
-                        rs.getInt("startWeight"),
-                        rs.getInt("maxWeight"),
-                        rs.getInt("required_license")
-                ));
+                trucks.add(mapRowToTruckDTO(rs));
             }
         }
         return trucks;
     }
 
-    /**
-     * Removes a truck from the database by its primary key ID.
-     */
+    private TruckDTO mapRowToTruckDTO(ResultSet rs) throws SQLException {
+        return new TruckDTO(
+                rs.getInt("truck_id"),
+                rs.getInt("truck_number"),
+                rs.getString("truck_model"),
+                rs.getInt("startWeight"),
+                rs.getInt("maxWeight"),
+                rs.getInt("required_license")
+        );
+    }
+
     public void removeTruck(int truckID) throws SQLException {
         String sql = "DELETE FROM Truck WHERE truck_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

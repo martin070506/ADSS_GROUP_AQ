@@ -1,5 +1,7 @@
 package Domain.Transportation;
 
+import DTO.TransportFileDTO;
+
 import java.time.LocalDate;
 import java.util.*;
 
@@ -99,5 +101,9 @@ public class Transport {
             int amount = entry.getValue();
             supplierAllocationIds.get(productId).put(productId, supplierAllocationIds.get(productId).get(productId) - amount);
         }
+    }
+
+    public TransportFile getTransportFile() {
+        return transportFile;
     }
 }

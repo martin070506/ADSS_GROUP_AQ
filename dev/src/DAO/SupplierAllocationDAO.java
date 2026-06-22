@@ -1,11 +1,13 @@
 package DAO;
 
+import DTO.SupplierAllocationDTO;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SupplierAllocationDAO {
     private final Connection connection;
@@ -25,35 +27,41 @@ public class SupplierAllocationDAO {
         }
     }
 
-    public void addAllocation(int locationId, int productId, int amount) throws SQLException {
-        if (exists(locationId, productId)) {
+    // הפונקציה עכשיו מקבלת DTO
+    public void addAllocation(SupplierAllocationDTO dto) throws SQLException {
+        if (exists(dto.LocationID(), dto.productID())) {
             String updateSql = "UPDATE SupplierAllocation SET amount_of_product = ? WHERE location_id = ? AND product_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
-                stmt.setInt(1, amount);
-                stmt.setInt(2, locationId);
-                stmt.setInt(3, productId);
+                stmt.setInt(1, dto.amountOfProduct());
+                stmt.setInt(2, dto.LocationID());
+                stmt.setInt(3, dto.productID());
                 stmt.executeUpdate();
             }
         } else {
             String insertSql = "INSERT INTO SupplierAllocation (location_id, product_id, amount_of_product) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
-                stmt.setInt(1, locationId);
-                stmt.setInt(2, productId);
-                stmt.setInt(3, amount);
+                stmt.setInt(1, dto.LocationID());
+                stmt.setInt(2, dto.productID());
+                stmt.setInt(3, dto.amountOfProduct());
                 stmt.executeUpdate();
             }
         }
     }
 
-    public Map<Integer, Integer> getAllocations(int locationId) throws SQLException {
-        Map<Integer, Integer> allocations = new HashMap<>();
+    // מחזירה עכשיו רשימה של DTOs במקום Map (תפקיד ה-DAO זה להחזיר שורות מידע)
+    public List<SupplierAllocationDTO> getAllocations(int locationId) throws SQLException {
+        List<SupplierAllocationDTO> allocations = new ArrayList<>();
         String sql = "SELECT product_id, amount_of_product FROM SupplierAllocation WHERE location_id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    allocations.put(rs.getInt("product_id"), rs.getInt("amount_of_product"));
+                    allocations.add(new SupplierAllocationDTO(
+                            locationId,
+                            rs.getInt("product_id"),
+                            rs.getInt("amount_of_product")
+                    ));
                 }
             }
         }
@@ -77,7 +85,8 @@ public class SupplierAllocationDAO {
         }
     }
 
-    public void updateAllocation(int supplierId, int productId, int updatedStock) throws SQLException {
-        addAllocation(supplierId, productId, updatedStock);
+    // מקבלת DTO בדיוק כמו ה-add
+    public void updateAllocation(SupplierAllocationDTO dto) throws SQLException {
+        addAllocation(dto);
     }
 }
