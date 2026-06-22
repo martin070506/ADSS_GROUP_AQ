@@ -14,7 +14,7 @@ public class Driver extends Worker {
 
 
     @Override
-    public int getLicance() {
+    public int getLicense() {
         return license;
     }
     @Override

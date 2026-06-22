@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-06-18T13:45:32+00:00" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="499f7ff3cfab" name="Add New Employee">
+    <mxGraphModel dx="1168" dy="628" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+<mxCell id="0"/>
+<mxCell id="1" parent="0"/>
+<mxCell id="boundary" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=none;" parent="1" vertex="1"><mxGeometry x="97" y="8" width="574" height="368" as="geometry"/></mxCell>
+<mxCell id="admin" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontFamily=Arial;fontSize=14;strokeColor=#000000;fillColor=#ffffff;" parent="1" vertex="1"><mxGeometry x="18" y="145" width="30" height="60" as="geometry"/></mxCell>
+<mxCell id="addNew" value="Add New Employee" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="113" y="165" width="158" height="37" as="geometry"/></mxCell>
+<mxCell id="save" value="Save Employee" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="461" y="23" width="129" height="37" as="geometry"/></mxCell>
+<mxCell id="qual" value="Define Shift Manager Qualification" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="394" y="93" width="262" height="37" as="geometry"/></mxCell>
+<mxCell id="employment" value="Enter Employment Details" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="423" y="165" width="204" height="37" as="geometry"/></mxCell>
+<mxCell id="personal" value="Enter Personal Details" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="437" y="236" width="176" height="37" as="geometry"/></mxCell>
+<mxCell id="workers" value="Open Workers Service" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#ffffff;fontFamily=Arial;fontSize=14;" parent="1" vertex="1"><mxGeometry x="437" y="307" width="176" height="37" as="geometry"/></mxCell>
+<mxCell id="e_actor_add" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="admin" target="addNew"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e_add_save" value="" style="endArrow=open;endFill=0;dashed=1;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="addNew" target="save"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e_add_qual" value="" style="endArrow=open;endFill=0;dashed=1;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="addNew" target="qual"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e_add_emp" value="" style="endArrow=open;endFill=0;dashed=1;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="addNew" target="employment"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e_add_personal" value="" style="endArrow=open;endFill=0;dashed=1;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="addNew" target="personal"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="e_add_workers" value="" style="endArrow=open;endFill=0;dashed=1;html=1;rounded=0;strokeColor=#000000;" parent="1" edge="1" source="addNew" target="workers"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="lbl_save" value="&amp;laquo;include&amp;raquo;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" parent="1" vertex="1"><mxGeometry x="318" y="73" width="80" height="20" as="geometry"/></mxCell>
+<mxCell id="lbl_qual" value="&amp;laquo;include&amp;raquo;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" parent="1" vertex="1"><mxGeometry x="300" y="129" width="80" height="20" as="geometry"/></mxCell>
+<mxCell id="lbl_emp" value="&amp;laquo;include&amp;raquo;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" parent="1" vertex="1"><mxGeometry x="300" y="166" width="80" height="20" as="geometry"/></mxCell>
+<mxCell id="lbl_personal" value="&amp;laquo;include&amp;raquo;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" parent="1" vertex="1"><mxGeometry x="300" y="196" width="80" height="20" as="geometry"/></mxCell>
+<mxCell id="lbl_workers" value="&amp;laquo;include&amp;raquo;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" parent="1" vertex="1"><mxGeometry x="310" y="231" width="80" height="20" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

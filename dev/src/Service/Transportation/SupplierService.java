@@ -1,7 +1,10 @@
 package Service.Transportation;
 
+import DAO.LocationDAO;
+import DTO.LocationDTO;
 import Domain.Transportation.Supplier;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,15 +12,24 @@ import java.util.Map;
 public class SupplierService {
     private final List<Supplier> suppliers;
     private final LocationService locationService;
+    private final LocationDAO locationDAO;
 
-    public SupplierService(LocationService locationService) {
+    public SupplierService(LocationService locationService, LocationDAO locationDAO) {
         this.locationService = locationService;
         this.suppliers = new ArrayList<>();
+        this.locationDAO = locationDAO;
+    }
+    public void loadSuppliersFromDB() throws SQLException {
+        suppliers.addAll(locationDAO.loadAllSuppliersAsEmpty(locationService));
     }
 
-    public void addSupplier(int locationId, Map<Integer, Integer> productMap) {
+    public void addSupplier(String addr,String phone,String contact, Map<Integer, Integer> productMap) throws SQLException {
+        int locationId = locationService.addLocation(addr,phone,contact);
+        LocationDTO locationDTO = new LocationDTO(locationId,contact,addr,phone,false,true);
         Supplier supplier = new Supplier(locationService.getLocation(locationId), productMap);
         suppliers.add(supplier);
+        locationDAO.addLocation(locationDTO);
+        //TODO add rows to the supplier allocation DB, according to the map received
     }
 
     public List<Integer> getSupplierIds() {

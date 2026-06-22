@@ -49,7 +49,7 @@ public class WorkersFacade {
         return "success, name changed to: " + newName;
     }
     public boolean isDriver(int id){return workers.get(id).isDriver();}
-    public int getLicense(int id){return workers.get(id).getLicance();}
+    public int getLicense(int id){return workers.get(id).getLicense();}
     public String getName(int id){return workers.get(id).getName();}
     public String removeWorker(int id) {
         if (!workers.containsKey(id)) {

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-06-18T13:51:39.582803+00:00" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="42256b42729e" name="Update Existing Employee Details">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="system_boundary" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="97" y="7" width="663" height="424" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin_actor" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontFamily=Arial;fontSize=14;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="12" y="145" width="30" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_update" value="Update Existing Employee Details" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="113" y="200" width="258" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_save" value="Save Updated Employee Details" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="497" y="23" width="246" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_new_value" value="Enter New Value" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="557" y="93" width="132" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_worker_id" value="Enter Worker ID" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="557" y="165" width="130" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_field" value="Select Employee Field to Update" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="497" y="236" width="247" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_menu" value="Open Edit Worker Menu" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="527" y="307" width="186" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_service" value="Open Workers Service" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontFamily=Arial;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="532" y="378" width="176" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_admin_update" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="admin_actor" target="uc_update">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_save" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_save">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_new_value" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_new_value">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_worker_id" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_worker_id">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_field" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_field">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_menu" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_menu">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_update_service" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_update" target="uc_service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_save" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="82" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_new_value" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="151" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_worker_id" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="202" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_field" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="252" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_menu" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="275" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_service" value="«include»" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="341" width="80" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

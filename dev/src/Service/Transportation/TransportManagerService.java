@@ -18,8 +18,8 @@ public class TransportManagerService {
     private final WorkersService workers_service;
 
 
-    public TransportManagerService(TruckService truckService, TruckService truckService1, SupplierService supplierService, RequestService requestService, WorkersService workersService) {
-        this.truckService = truckService1;
+    public TransportManagerService(TruckService truckService, SupplierService supplierService, RequestService requestService, WorkersService workersService) {
+        this.truckService = truckService;
         this.supplierService = supplierService;
         this.requestService = requestService;
         this.transports = new ArrayList<>();
@@ -71,11 +71,8 @@ public class TransportManagerService {
             Map<Integer, Integer> itemsToLoad = transport.getSupplierAllocationIds().get(supplierId);
 
             supplierService.handleShipment(supplierId, itemsToLoad);
+            handleSupplierFileChange(transport,supplierId);
 
-            transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
-            transport.UpdateLeaveSupplier(supplierService.getSupplierName(supplierId),
-                    supplierService.getSupplierDisplay(supplierId), truckService.getTruckWeight(transport.getTruckId()));
-            transport.removeSupplier(supplierId);
         }
 
         // 2. Process Branch Delivery Drops Loop
@@ -83,14 +80,23 @@ public class TransportManagerService {
             int requestId = transport.getRequestIds().getFirst();
             try {
                 transport.UpdateArriveAtRequest(requestService.getRequestContactName(requestId));
-                truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
-                transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId), requestService.getRequestDisplay(requestId));
-                transport.removeRequest(requestId);
+                //TODO make an if STATEMENT AND EXECUTE THE FOLLOWING ONLY IF THE REQUEST LOCATION HAS A מחסנאי
+                handleRequestLeaveFileChange(transport,requestId);
             } catch (Exceptions.ProductNotFoundOnTruckException its) {
                 System.out.println("Skipped Destination: " + its.getMessage()); // TODO: remove print
                 skipRequest(transportId);
             }
         }
+    }
+    private void handleSupplierFileChange(Transport transport,int supplierId) {
+        transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
+        transport.UpdateLeaveSupplier(supplierService.getSupplierName(supplierId), supplierService.getSupplierDisplay(supplierId), truckService.getTruckWeight(transport.getTruckId()));
+        transport.removeSupplier(supplierId);
+    }
+    private void handleRequestLeaveFileChange(Transport transport,int requestId) {
+        truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
+        transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId), requestService.getRequestDisplay(requestId));
+        transport.removeRequest(requestId);
     }
 
     private Transport getTransport(int transportId) {
@@ -146,8 +152,8 @@ public void finalizeCurrentSupplierLoading(int transportId){
         }
 //
 //    // === CORE LOGISTICS MUTATORS ===
-        public void skipSupplier ( int transportIndex){
-            Transport transport = getTransport(transportIndex);
+        public void skipSupplier ( int transportId){
+            Transport transport = getTransport(transportId);
             if (transport.getSupplierAllocationIds().isEmpty())
                 return;
 
@@ -166,8 +172,8 @@ public void finalizeCurrentSupplierLoading(int transportId){
             transport.getSupplierAllocationIds().remove(supplierId);
         }
 
-        public void skipRequest ( int transportIndex){
-            Transport transport = getTransport(transportIndex);
+        public void skipRequest ( int transportId){
+            Transport transport = getTransport(transportId);
             if (transport.getRequestIds().isEmpty())
                 return;
             int requestId = transport.getRequestIds().getFirst();
@@ -204,8 +210,8 @@ public void finalizeCurrentSupplierLoading(int transportId){
 //        }
 //    }
 
-        public void performEmergencyDropOff (int transportIndex){
-            Transport transport = getTransport(transportIndex);
+        public void performEmergencyDropOff (int transportId){
+            Transport transport = getTransport(transportId);
             if (transport.getRequestIds().isEmpty()) {
                 throw new NoDestinationForEmergencyDropOffException();
             }
@@ -225,12 +231,12 @@ public void finalizeCurrentSupplierLoading(int transportId){
                     truckService.getTruckDisplay(newTruckId));
         }
 //
-//    public int getTruckWeightByTransportId(int transportIndex) {
-//        return getTransportById(transportIndex).getTruck().getCurrentWeight();
+//    public int getTruckWeightByTransportId(int transportId) {
+//        return getTransportById(transportId).getTruck().getCurrentWeight();
 //    }
 //
-//    public int getDriverLicense(int transportIndex) {
-//        return workers_service.getLicense(getTransportById(transportIndex).getDriverId());
+//    public int getDriverLicense(int transportId) {
+//        return workers_service.getLicense(getTransportById(transportId).getDriverId());
 //    }
 
         public int getTruckId(int transportId){

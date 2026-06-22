@@ -1,6 +1,10 @@
 package Service.Transportation;
 
+import DAO.TruckDAO;
+import DTO.TruckDTO;
 import Domain.Transportation.Truck;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,16 +13,27 @@ public class TruckService {
     private final List<Truck> trucks;
     private int counter = 0;
     private final ProductCatalogService productService;
+    private final TruckDAO truckDAO;
 
 
-    public TruckService(ProductCatalogService productService) {
+    public TruckService(ProductCatalogService productService, TruckDAO truckDAO) throws SQLException {
         this.productService = productService;
         this.trucks = new ArrayList<>();
+        this.counter=truckDAO.getHighestTruckID()+1;//adding 1 to start from a new ID
+        this.truckDAO = truckDAO;
+    }
+    public void loadAllTrucksFromDB() throws SQLException {
+        this.trucks.addAll(truckDAO.loadAllTrucks());
     }
 
 
-    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense) {
-        trucks.add(new Truck(counter++, truckNumber, model, truckWeight, MaxWeight, requiredLicense));
+    public void addTruck(int truckNumber,String model,int truckWeight,int MaxWeight,int requiredLicense) throws SQLException {
+        int count=counter++;
+        Truck t =new Truck(count, truckNumber, model, truckWeight, MaxWeight, requiredLicense);
+        TruckDTO tDTO=new TruckDTO(count, truckNumber, model, truckWeight, MaxWeight, requiredLicense);
+        trucks.add(t);
+        truckDAO.addTruck(tDTO);
+
     }
 
     public Truck getTruck(int truckId) {

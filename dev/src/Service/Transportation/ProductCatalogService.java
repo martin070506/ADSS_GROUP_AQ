@@ -1,6 +1,10 @@
 package Service.Transportation;
 
+import DAO.ProductDAO;
+import DTO.ProductDTO;
 import Domain.Transportation.Product;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,12 +13,20 @@ import java.util.Map;
 public class ProductCatalogService {
     private final List<Product> products;
     private int productCounter=0;
+    private final ProductDAO productDAO;
 
-    public ProductCatalogService() {
+    public ProductCatalogService(ProductDAO productDAO) throws SQLException {
         this.products = new ArrayList<>();
+        this.productDAO=productDAO;
+        this.productCounter=productDAO.getHighestProductID();
     }
-    public void addProduct(String name, int weight) {
-        products.add(new Product(productCounter++,name, weight));
+    public void loadAllProductsFromDB() throws SQLException {
+        this.products.addAll(productDAO.loadAllProducts());
+    }
+    public void addProduct(String name, int weight) throws SQLException {
+        int id=productCounter++;
+        products.add(new Product(id,name, weight));
+        productDAO.addProduct(new ProductDTO(id,name,weight));
     }
     public void removeProduct(Product product) {
         products.remove(product);

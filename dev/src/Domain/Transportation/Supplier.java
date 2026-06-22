@@ -13,18 +13,21 @@ public class Supplier {
         this.location = location;
         this.productsAvailable = productsAvailable;
     }
+    public Location getLocation() {
+        return location;
+    }
 
     public String getName() {
         return location.contactName();
     }
 
-    public void handleShipment(Map<Integer, Integer> supplierAllocations) {
-        checkAvailability(supplierAllocations);
-        dispatchProducts(supplierAllocations);
+    public void handleShipment(Map<Integer, Integer> supplierAllocationIds) {
+        checkAvailability(supplierAllocationIds);
+        dispatchProducts(supplierAllocationIds);
     }
 
-    private void checkAvailability(Map<Integer, Integer> supplierAllocations) {
-        for (Map.Entry<Integer, Integer> entry : supplierAllocations.entrySet()) {
+    private void checkAvailability(Map<Integer, Integer> supplierAllocationIds) {
+        for (Map.Entry<Integer, Integer> entry : supplierAllocationIds.entrySet()) {
             int productId = entry.getKey();
             int requiredAmount = entry.getValue();
             int availableAmount = productsAvailable.getOrDefault(productId, 0);
@@ -34,8 +37,8 @@ public class Supplier {
         }
     }
 
-    private void dispatchProducts(Map<Integer, Integer> supplierAllocations) {
-        for (Map.Entry<Integer, Integer> entry : supplierAllocations.entrySet()) {
+    private void dispatchProducts(Map<Integer, Integer> supplierAllocationIds) {
+        for (Map.Entry<Integer, Integer> entry : supplierAllocationIds.entrySet()) {
             int productId = entry.getKey();
             int amount = entry.getValue();
             productsAvailable.put(productId, productsAvailable.get(productId) - amount);
