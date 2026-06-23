@@ -30,12 +30,30 @@ public class ShiftJobsFacade {
         }
         for (ShiftJobs shiftJobs : shifts) {
             if(shiftJobs.getShift().equals(new Shift(date, is_morning, location))){
-                return shiftJobs.addJob(job);
+                String result = shiftJobs.addJob(job);
+
+                try{
+                    ShiftJobsCountDTO jobs_count = new ShiftJobsCountDTO(job,date,is_morning, location.id(),1);
+                    jobs_count_dao.add(jobs_count);
+                }
+                catch (Exception e){
+                    return "failed, add job to data base";
+                }
+                return result;
             }
         }
         ShiftJobs new_shift_job = new ShiftJobs(date, is_morning, location);
         String result =new_shift_job.addJob(job);
         shifts.add(new_shift_job);
+        try{
+            ShiftJobsDTO jobs = new ShiftJobsDTO(date,is_morning, location.id());
+            jobs_dao.add(jobs);
+            ShiftJobsCountDTO jobs_count = new ShiftJobsCountDTO(job,date,is_morning, location.id(),1);
+            jobs_count_dao.add(jobs_count);
+        }
+        catch (Exception e){
+            return "failed, add job to data base";
+        }
         return result;
     }
     public String loadAllJobs(){

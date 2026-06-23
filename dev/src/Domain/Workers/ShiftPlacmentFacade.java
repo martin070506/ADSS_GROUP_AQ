@@ -85,7 +85,7 @@ public class ShiftPlacmentFacade {
                         if(jobs.getFirst()==2 && !workers.isShiftManager(ids.getFirst())){
                             return "failed, "+ids.getFirst()+" is not a driver";
                         }
-                        String result = shiftPlacement.addPlacement(ids.removeFirst(), jobs.removeFirst());
+                        String result = shiftPlacement.addPlacement(ids.get(i), jobs.get(i));
                         if(!result.startsWith("succeed")){
                             return "failed at adding, "+result;
                         }
@@ -96,6 +96,15 @@ public class ShiftPlacmentFacade {
                     }
                     canidates.startPlacement(date, is_morning, location);
                     allJobs.startPlacement(date,is_morning, location);
+                    try{
+                        for(int i=0; i< ids.size();i++){
+                            ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(jobs.get(i),date,is_morning,location.id(), ids.get(i));
+                            placement_job_worker.add(place_dto_iw);
+                        }
+                    }
+                    catch (Exception e){
+                        return "failed, to add to data base";
+                    }
                     return "succeed, added all placment \n"+ shiftPlacement.toString();
                 }
 
@@ -117,11 +126,20 @@ public class ShiftPlacmentFacade {
             shifts.add(new_Placement);
             canidates.startPlacement(date, is_morning, location);
             allJobs.startPlacement(date,is_morning, location);
-
+            try{
+                ShiftPlacementDTO placment_dto = new ShiftPlacementDTO(date,is_morning,location.id(),shift_manager);
+                placement_dao.add(placment_dto);
+                for(int i=0; i< ids.size();i++){
+                    ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(jobs.get(i),date,is_morning,location.id(), ids.get(i));
+                    placement_job_worker.add(place_dto_iw);
+                }
+            }
+            catch (Exception e){
+                return "failed, to add to data base";
+            }
             return "succeed, added all placment \n"+ new_Placement.toString();
-
-        }
-        public String PlaceDriver(LocalDate date, boolean is_morning, Location location, int driver_id){
+    }
+    public String PlaceDriver(LocalDate date, boolean is_morning, Location location, int driver_id){
             if(!workers.isShiftManager(driver_id)){
                 return "failed, "+driver_id+" is not a driver";
             }
@@ -133,6 +151,13 @@ public class ShiftPlacmentFacade {
                 if(shiftPlacement.getShift().equals(shift)){
                     if(shiftPlacement.getShiftManager()<0){return "failed, shift manager not found";}
                     shiftPlacement.addPlacement(driver_id, 2);
+                    try{
+                        ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(2,date,is_morning,location.id(), driver_id);
+                        placement_job_worker.add(place_dto_iw);
+                    }
+                    catch (Exception e){
+                        return "failed, did not palced driver in the data base";
+                    }
                     return "succeed, "+driver_id+" is now the driver in the shift";
                 }
             }
@@ -142,8 +167,8 @@ public class ShiftPlacmentFacade {
             //shifts.add(new_Placement);
             //return "succeed, "+driver_id+" is now the driver in the shift";
 
-        }
-        public String getShiftPlacment(LocalDate date, boolean is_morning, Location location){
+    }
+    public String getShiftPlacment(LocalDate date, boolean is_morning, Location location){
             Shift shift = new Shift(date, is_morning, location);
             for (ShiftPlacement shiftPlacement : shifts) {
                 if(shiftPlacement.getShift().equals(shift)){
@@ -152,8 +177,8 @@ public class ShiftPlacmentFacade {
 
             }
             return "failed, shift placment not found";
-        }
-        public String changePlacment(LocalDate date, boolean is_morning, Location location, int id_to_out, int id_to_in){
+    }
+    public String changePlacment(LocalDate date, boolean is_morning, Location location, int id_to_out, int id_to_in){
             if(!canidates.containWorker(date, is_morning,location, id_to_in)){
                 return "failed, all workers in placment did not match the shift sets workers canidates ";
             }
@@ -168,13 +193,24 @@ public class ShiftPlacmentFacade {
                             return "failed, placement cant change shift manager";
                         }
                         shiftPlacement.setShiftManager(id_to_in);
+
                     }
 
                 }
-                return shiftPlacement.changePlacment(id_to_out, id_to_in);
+                //updateWorkerInShift
+
+                String result =  shiftPlacement.changePlacment(id_to_out, id_to_in);
+                try{
+                    ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(shiftPlacement.getJob(id_to_out),date,is_morning,location.id(), id_to_out);
+                    placement_job_worker.updateWorkerInShift(place_dto_iw,id_to_in);
+                }
+                catch (Exception e){
+                    return "failed, did not palced driver in the data base";
+                }
+                return result;
             }
             return "failed, shift not found";
-        }
+    }
 
 
 }
