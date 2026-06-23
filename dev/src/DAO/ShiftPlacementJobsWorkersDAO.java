@@ -53,4 +53,44 @@ public class ShiftPlacementJobsWorkersDAO {
         } catch (SQLException e) { throw new RuntimeException(e); }
         return list;
     }
+    public void updateWorkerInShift(ShiftPlacementJobsWorkersDTO oldPlacement, int newWorkerId) {
+        String deleteSql = "DELETE FROM shift_placement_jobs_workers WHERE date = ? AND is_morning_shift = ? AND location_id = ? AND worker_id = ?";
+        String insertSql = "INSERT INTO shift_placement_jobs_workers (job, date, is_morning_shift, location_id, worker_id) VALUES (?, ?, ?, ?, ?)";
+
+        boolean originalAutoCommit = true;
+        try {
+            originalAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try (PreparedStatement delPs = connection.prepareStatement(deleteSql)) {
+                delPs.setDate(1, Date.valueOf(oldPlacement.date()));
+                delPs.setBoolean(2, oldPlacement.is_morning_shift());
+                delPs.setInt(3, oldPlacement.locationId());
+                delPs.setInt(4, oldPlacement.worker_id());
+                delPs.executeUpdate();
+            }
+            try (PreparedStatement insPs = connection.prepareStatement(insertSql)) {
+                insPs.setInt(1, oldPlacement.job());
+                insPs.setDate(2, Date.valueOf(oldPlacement.date()));
+                insPs.setBoolean(3, oldPlacement.is_morning_shift());
+                insPs.setInt(4, oldPlacement.locationId());
+                insPs.setInt(5, newWorkerId);
+                insPs.executeUpdate();
+            }
+            connection.commit();
+
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                e.addSuppressed(rollbackEx);
+            }
+            throw new RuntimeException("Failed to update worker in shift. Transaction rolled back.", e);
+        } finally {
+            try {
+                connection.setAutoCommit(originalAutoCommit);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

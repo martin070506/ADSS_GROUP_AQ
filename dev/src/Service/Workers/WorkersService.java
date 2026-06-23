@@ -25,10 +25,6 @@ public class WorkersService{
         String result = workers.editWorkerName(id, new_name);
         return("the result for editing worker name are: "+ result);    
     }
-    public String editWorkerId(int old_id, int new_id){
-        String result = workers.editWorkerId(old_id, new_id);
-        return("the result for editing worker id are: "+ result); 
-    }
     public String editWorkerBankAccount(int id, String new_bank_account){
         String result = workers.editWorkerBankAccount(id, new_bank_account);
         return("the result for editing worker bank account information are: "+ result); 
@@ -60,5 +56,9 @@ public class WorkersService{
     }
     public String getDriver(int id){
         return workers.getDriver(id);
+    }
+
+    public String loadAllJobs(){
+        return workers.loadAllJobs();
     }
 }

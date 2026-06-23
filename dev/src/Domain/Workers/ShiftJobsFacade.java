@@ -1,15 +1,27 @@
 package Domain.Workers;
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
+import DAO.ShiftJobsCountDAO;
+import DAO.ShiftJobsDAO;
+import DTO.ShiftJobsCountDTO;
+import DTO.ShiftJobsDTO;
 import Domain.Workers.Shift;
 import Domain.Workers.ShiftJobs;
 import Domain.Transportation.Location;
 import Domain.Workers.Worker;
+import DatabaseManager;
+import Service.Transportation.LocationService;
 public class ShiftJobsFacade {
     private final List<ShiftJobs> shifts;
+    private ShiftJobsCountDAO jobs_count_dao;
+    private ShiftJobsDAO jobs_dao;
+
     public ShiftJobsFacade(){
+        Connection dbConnection = DatabaseManager.getConnection();
+        jobs_count_dao = new ShiftJobsCountDAO(dbConnection);
+        jobs_dao = new ShiftJobsDAO(dbConnection);
         shifts= new ArrayList<>();
     }
     public String addJob(LocalDate date, boolean is_morning, Location location, int job){
@@ -18,15 +30,55 @@ public class ShiftJobsFacade {
         }
         for (ShiftJobs shiftJobs : shifts) {
             if(shiftJobs.getShift().equals(new Shift(date, is_morning, location))){
-                return shiftJobs.addJob(job);
+                String result = shiftJobs.addJob(job);
+
+                try{
+                    ShiftJobsCountDTO jobs_count = new ShiftJobsCountDTO(job,date,is_morning, location.id(),1);
+                    jobs_count_dao.add(jobs_count);
+                }
+                catch (Exception e){
+                    return "failed, add job to data base";
+                }
+                return result;
             }
         }
         ShiftJobs new_shift_job = new ShiftJobs(date, is_morning, location);
         String result =new_shift_job.addJob(job);
         shifts.add(new_shift_job);
+        try{
+            ShiftJobsDTO jobs = new ShiftJobsDTO(date,is_morning, location.id());
+            jobs_dao.add(jobs);
+            ShiftJobsCountDTO jobs_count = new ShiftJobsCountDTO(job,date,is_morning, location.id(),1);
+            jobs_count_dao.add(jobs_count);
+        }
+        catch (Exception e){
+            return "failed, add job to data base";
+        }
         return result;
     }
-    
+    public String loadAllJobs(){
+        List<ShiftJobsDTO> list = jobs_dao.loadAll();
+        for ( int i=0;i<list.size(); i++){
+            Location location = Location.getLocation(list.get(i).locationId());
+            ShiftJobs shift = new ShiftJobs(list.get(i).date(), list.get(i).is_morning_shift(), location);
+            shifts.add(shift);
+        }
+        List<ShiftJobsCountDTO> list_count = jobs_count_dao.loadAll();
+        for( int i=0; i< list_count.size(); i++){
+            Location location = Location.getLocation(list_count.get(i).locationId());
+            Shift shift = new Shift(list_count.get(i).date(), list_count.get(i).is_morning_shift(), location);
+            for (ShiftJobs shiftJobs : shifts) {
+                if(shiftJobs.getShift().equals(shift)){
+                    for( int j=0; j<list_count.get(i).count(); j++){
+                        shiftJobs.addJob(list_count.get(i).job());
+
+                    }
+                }
+            }
+        }
+        return "succeed, loaded all shifts jobs data";
+
+    }
 
     public void startPlacement(LocalDate date, boolean is_morning, Location location){
         Shift shift = new Shift(date, is_morning, location);
