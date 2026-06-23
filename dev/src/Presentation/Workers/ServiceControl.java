@@ -25,6 +25,10 @@ public class ServiceControl{
         this.canidates_service = candidates_service;
         this.placement_service = placement_service;
         this.locationService = locationService;
+        this.workers_service.loadAllWorkers();
+        this.jobs_service.loadAllJobs();
+        this.canidates_service.loadAllCanidates();
+        this.placement_service.loadAllPlacement();
     }
 //    public   void main(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service) {
 //        ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);

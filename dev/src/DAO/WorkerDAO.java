@@ -1,12 +1,11 @@
 package DAO;
 
+import DTO.ShiftPlacementJobsWorkersDTO;
 import DTO.WorkerDTO;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkerDAO {
     private final Connection connection;
@@ -148,5 +147,31 @@ public class WorkerDAO {
             stmt.setInt(2, id);
             stmt.executeUpdate();
         }
+    }
+    public List<WorkerDTO> loadAll() {
+        List<WorkerDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM workers";
+
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                // יצירת מופע חדש של WorkerDTO מתוך נתוני ה-ResultSet
+                list.add(new WorkerDTO(
+                        rs.getString("name"),
+                        rs.getInt("id"),
+                        rs.getString("bank_info"),
+                        rs.getDouble("salary"),
+                        rs.getString("salary_condition"),
+                        rs.getString("start_job_date") != null ? java.time.LocalDate.parse(rs.getString("start_job_date")) : null,
+                        rs.getBoolean("is_shift_manager"),
+                        rs.getBoolean("isDriver"),
+                        rs.getInt("license")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
     }
 }

@@ -1,7 +1,12 @@
 package Domain.Workers;
 
+import DAO.WorkerDAO;
+import DTO.ShiftPlacementDTO;
+import DTO.ShiftPlacementJobsWorkersDTO;
+import DTO.WorkerDTO;
+import Domain.Transportation.Location;
 import Domain.Workers.Worker;
-
+import DatabaseManager;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +14,10 @@ import java.util.Map;
 
 public class WorkersFacade {
     private HashMap<Integer, Worker> workers;
-
+    private WorkerDAO workers_dao;
     public WorkersFacade() {
-        workers = new HashMap<>(); 
+        workers_dao = new WorkerDAO(DatabaseManager.getConnection());
+        workers = new HashMap<>();
     }
     public boolean hasWorker(int id){
         return this.workers.containsKey(id);
@@ -139,6 +145,22 @@ public class WorkersFacade {
         if(workers.get(id) instanceof Driver){return workers.get(id).toString();}
         else{return "failed, "+id+" is not a driver";}
     }
+    public String loadAllJobs(){
+        List<WorkerDTO> list = workers_dao.loadAll();
+        for ( int i=0;i<list.size(); i++){
+            if(list.get(i).isDriver()){
+                Worker worker = new Driver(list.get(i).name(),list.get(i).id(),list.get(i).bank_info(),list.get(i).salary(), list.get(i).salary_condition(), list.get(i).start_job_date(), list.get(i).is_shift_manager(), list.get(i).license());
+                workers.put(worker.getId(),worker);
+            }
+            else{
+                Worker worker = new Worker(list.get(i).name(),list.get(i).id(),list.get(i).bank_info(),list.get(i).salary(), list.get(i).salary_condition(), list.get(i).start_job_date(), list.get(i).is_shift_manager());
+                workers.put(worker.getId(),worker);
 
+            }
+        }
+
+        return "succeed, loaded all placement data";
+
+    }
 
 }
