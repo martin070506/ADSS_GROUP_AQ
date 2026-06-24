@@ -54,7 +54,7 @@ public class ShiftJobs{
         if(job == 0){
             int currentCount = jobs.getOrDefault(Jobs.CASHEER, 0);
             if( currentCount == 0 ){
-                return "faild to lower casheer jobs, because it already 0";
+                return "failed to lower casheer jobs, because it already 0";
             }
             jobs.put(Jobs.CASHEER, currentCount - 1);
             return "succeed, removed job casheer from shift";
@@ -62,7 +62,7 @@ public class ShiftJobs{
         else if(job ==1){
             int currentCount = jobs.getOrDefault(Jobs.SHOPKEEPER, 0);
             if( currentCount == 0 ){
-                return "faild to lower shop keeper jobs, because it already 0";
+                return "failed to lower shop keeper jobs, because it already 0";
             }
             jobs.put(Jobs.SHOPKEEPER, currentCount - 1);
             return "succeed, removed job shop keeper from shift";
@@ -70,12 +70,12 @@ public class ShiftJobs{
         else if(job ==2){
             int currentCount = jobs.getOrDefault(Jobs.DRIVER, 0);
             if( currentCount == 0 ){
-                return "faild to lower driver jobs, because it already 0";
+                return "failed to lower driver jobs, because it already 0";
             }
             jobs.put(Jobs.SHOPKEEPER, currentCount - 1);
             return "succeed, removed job driver from shift";
         }
-        return "faild, job not founded";
+        return "failed, job not founded";
     }
     public Shift getShift(){
         return shift;
@@ -89,7 +89,21 @@ public class ShiftJobs{
 
         return new_shift.mapEquals(this.jobs);
     }
+    public int getJobCount(int job){
+        if(job == 0){
+            return jobs.get(Jobs.CASHEER);
+        }
+        else if(job ==1){
+            return jobs.get(Jobs.SHOPKEEPER);
 
+        }
+        else if(job ==2){
+            return jobs.get(Jobs.DRIVER);
+        }
+        else{
+            return -1;
+        }
+    }
     public boolean mapEquals(HashMap<Jobs, Integer> others){
         for (Map.Entry<Jobs, Integer> entry : jobs.entrySet()) {
             if(!others.containsKey(entry.getKey())){

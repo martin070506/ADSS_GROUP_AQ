@@ -1,7 +1,8 @@
+package DB;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class DatabaseManager {
 
@@ -14,5 +15,12 @@ public class DatabaseManager {
      */
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL);
+    }
+    public static Connection getConnectionWrapper() {
+        try {
+            return DatabaseManager.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection failed", e);
+        }
     }
 }
