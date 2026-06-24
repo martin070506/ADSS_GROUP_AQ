@@ -19,6 +19,7 @@ public class ProductCatalogService {
         this.products = new ArrayList<>();
         this.productDAO = productDAO;
         try {
+            // תוקן: התחלה מהמזהה הפנוי הבא
             this.productCounter = productDAO.getHighestProductID() + 1;
         } catch (SQLException e) {
             throw new RuntimeException(e);

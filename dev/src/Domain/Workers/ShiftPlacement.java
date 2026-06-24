@@ -40,6 +40,7 @@ public class ShiftPlacement{
             return -1;
         }
     }
+
     public Shift getShift() {
         return shift;
     }

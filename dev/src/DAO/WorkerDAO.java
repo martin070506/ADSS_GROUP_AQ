@@ -150,22 +150,34 @@ public class WorkerDAO {
     }
     public List<WorkerDTO> loadAll() {
         List<WorkerDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Worker";
+        String sql = "SELECT * FROM workers";
 
         try (Statement st = connection.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                // יצירת מופע חדש של WorkerDTO מתוך נתוני ה-ResultSet
+                String dateStr = rs.getString("start_job_date");
+                java.time.LocalDate localDate = null;
+
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    try {
+                        long millis = Long.parseLong(dateStr);
+                        localDate = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate();
+                    } catch (NumberFormatException e) {
+                        localDate = java.time.LocalDate.parse(dateStr);
+                    }
+                }
                 list.add(new WorkerDTO(
                         rs.getString("name"),
                         rs.getInt("id"),
                         rs.getString("bank_info"),
                         rs.getDouble("salary"),
                         rs.getString("salary_condition"),
-                        rs.getString("start_job_date") != null ? java.time.LocalDate.parse(rs.getString("start_job_date")) : null,
+                        localDate,
                         rs.getBoolean("is_shift_manager"),
-                        rs.getBoolean("isDriver"),
+                        rs.getBoolean("is_driver"),
                         rs.getInt("license")
                 ));
             }

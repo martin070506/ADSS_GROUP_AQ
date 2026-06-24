@@ -20,19 +20,6 @@ public class RequestDAO {
         this.connection = connection;
     }
 
-    public int getMaxFileNumber() throws SQLException {
-        String sql = "SELECT MAX(file_number) AS max_id FROM ProductFile";
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            if (rs.next()) {
-                // מביא את המספר הגדול ביותר. אם הטבלה ריקה, זה יחזיר 0.
-                return rs.getInt("max_id");
-            }
-        }
-        return 0; // במקרה חריג שהטבלה לא קיימת או אין תוצאה
-    }
-
     public int getActiveFileNumber(int locationId) throws SQLException {
         String sql = "SELECT file_number FROM Request WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -50,12 +37,25 @@ public class RequestDAO {
         return getActiveFileNumber(locationId) != -1;
     }
 
+    public boolean exists(int locationId, int productId) throws SQLException {
+        int fileNumber = getActiveFileNumber(locationId);
+        if (fileNumber == -1) return false;
+
+        String sql = "SELECT 1 FROM ProductFile_Items WHERE file_number = ? AND product_id = ? LIMIT 1";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, fileNumber);
+            stmt.setInt(2, productId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public void addProductFile(ProductFileDTO fileDto) throws SQLException {
-        String sql = "INSERT INTO ProductFile (file_number, location_id, status) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO ProductFile (file_number, location_id) VALUES (?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, fileDto.fileNumber());
             stmt.setInt(2, fileDto.locationId());
-            stmt.setString(3, fileDto.status());
             stmt.executeUpdate();
         }
     }
@@ -152,35 +152,5 @@ public class RequestDAO {
             }
         }
         return requestsMap;
-    }
-
-    public void removeProductFileItems(int fileNumber) throws SQLException {
-        String sql = "DELETE FROM ProductFile_Items WHERE file_number = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, fileNumber);
-            stmt.executeUpdate();
-        }
-    }
-
-    public void removeProductFile(int fileNumber) throws SQLException {
-        String sql = "DELETE FROM ProductFile WHERE file_number = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, fileNumber);
-            stmt.executeUpdate();
-        }
-    }
-
-    public void setRequestInactive(int locationId, int fileNumber) throws SQLException {
-        String sql1 = "DELETE FROM Request WHERE location_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql1)) {
-            stmt.setInt(1, locationId);
-            stmt.executeUpdate();
-        }
-
-        String sql2 = "UPDATE ProductFile SET status = 'Inactive' WHERE file_number = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql2)) {
-            stmt.setInt(1, fileNumber);
-            stmt.executeUpdate();
-        }
     }
 }
