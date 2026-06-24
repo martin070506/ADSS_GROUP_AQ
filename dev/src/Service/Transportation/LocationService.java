@@ -11,7 +11,7 @@ import java.util.List;
 public class LocationService {
     private final List<Location> locations = new ArrayList<>();
     private int counter = 0;
-    private final LocationDAO locationDAO;
+    private final LocationDAO locationDAO; 
 
     public LocationService(LocationDAO locationDAO) {
         this.locationDAO = locationDAO;
