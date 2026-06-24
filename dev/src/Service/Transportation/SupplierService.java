@@ -20,7 +20,6 @@ public class SupplierService {
         this.locationService = locationService;
         this.allocationDAO = allocationDAO;
         this.suppliers = new ArrayList<>();
-        loadSuppliersFromDB();
     }
 
     public void loadSuppliersFromDB() {
@@ -95,7 +94,7 @@ public class SupplierService {
                 try {
                     for (Map.Entry<Integer, Integer> entry : itemsToLoad.entrySet()) {
                         int updatedStock = supplier.getProductStock(entry.getKey());
-                        // המרה ל-DTO לפני עדכון ה-DB.DB
+                        // המרה ל-DTO לפני עדכון ה-DB
                         allocationDAO.updateAllocation(new SupplierAllocationDTO(supplierId, entry.getKey(), updatedStock));
                     }
                 } catch (SQLException e) {
@@ -130,7 +129,7 @@ public class SupplierService {
             if (supplier.getLocationId() == locationId) {
                 supplier.addStock(productId, amount);
                 try {
-                    // המרה ל-DTO לפני עדכון ה-DB.DB
+                    // המרה ל-DTO לפני עדכון ה-DB
                     int updatedStock = supplier.getProductStock(productId);
                     allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, productId, updatedStock));
                 } catch (SQLException e) {

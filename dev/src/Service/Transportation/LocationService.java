@@ -20,7 +20,6 @@ public class LocationService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        loadLocationsFromDB();
     }
 
     public void loadLocationsFromDB() {

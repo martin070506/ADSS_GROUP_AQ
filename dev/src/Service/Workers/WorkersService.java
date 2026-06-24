@@ -58,7 +58,7 @@ public class WorkersService{
         return workers.getDriver(id);
     }
 
-    public String loadAllWorkers(){
+    public String loadAllJobs(){
         return workers.loadAllJobs();
     }
 }

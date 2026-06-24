@@ -35,7 +35,7 @@ public class MainConsole {
         this.placement_service = placement_service;
     }
 
-    public void initiateShipment() {
+    public void initiateShipment(List<Integer> requests) {
 
         boolean isMorning = LocalTime.now().isAfter(LocalTime.of(4, 59)) && LocalTime.now().isBefore(LocalTime.of(17, 0));
 
@@ -45,17 +45,15 @@ public class MainConsole {
         int truckId = chooseTruck();
         if (truckId == -1) return;
 
-        int driverId = 0; // chooseDriver(sourceIdx, truckId, isMorning) Todo: Fix
+        int driverId = chooseDriver(sourceIdx, truckId, isMorning);
         if (driverId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
 
-        if (supplierAllocationsIds.isEmpty()) {
-            System.out.println("No suppliers selected.");
-            return;
-        }
+        if (supplierAllocationsIds.isEmpty()) return;
+
         try {
-            transportService.createTransport(truckId, driverId, sourceIdx,
+            transportService.createTransport(truckId, driverId, sourceIdx, requests, 
                     supplierAllocationsIds, truckService.getTruckDisplay(truckId), 
                     locationService.getLocationDisplay(sourceIdx));
             processShipmentFlow(isMorning);
@@ -85,7 +83,7 @@ public class MainConsole {
                 }
             } catch (MissingShopKeeper msk) {
                 System.out.println("ShopKeeper Missing: " + msk.getMessage());
-                transportService.skipRequest("ShopKeeper Missing");
+                transportService.skipRequest();
             } catch (DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
                 break;
@@ -150,7 +148,7 @@ public class MainConsole {
                     transportService.resolveOverweightIssue(choice);
             }
             System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
-            transportService.skipSupplier("No alternative vehicle matches criteria");
+            transportService.skipSupplier();
         } catch (Exception e) { System.out.println("Error handling overweight: " + e.getMessage()); }
     }
 
@@ -216,7 +214,7 @@ public class MainConsole {
 
         System.out.println("\n--- Available Drivers ---");
         for (int index : drivers)
-            System.out.println("fuuuuu"); // "Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index) Todo: Fix
+            System.out.println("Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
 
         while (true) {
             int driverIndex = promptInt("Enter Driver: ")-1;
@@ -296,16 +294,6 @@ public class MainConsole {
                 } catch (NumberFormatException ignored) {}
             }
         }
-
-        int supS = selectedSupplierIndices.size();
-        for (int i = 0; i < selectedSupplierIndices.size(); i++) {
-            if (!supplierIds.contains(selectedSupplierIndices.get(i))) {
-                selectedSupplierIndices.remove(i);
-                i--;
-            }
-        }
-        if (selectedSupplierIndices.size() != supS)
-            System.out.println("Invalid Supplier Indices. Only " + selectedSupplierIndices.size() + " valid.");
 
         for (int supplierId : selectedSupplierIndices) {
             String supplierName = supplierService.getSupplierName(supplierId);

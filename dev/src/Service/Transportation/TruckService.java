@@ -24,7 +24,6 @@ public class TruckService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        loadAllTrucksFromDB();
     }
 
     public void loadAllTrucksFromDB() {
@@ -55,6 +54,7 @@ public class TruckService {
         trucks.add(truck);
 
         try {
+            // ה-Service מכין DTO עבור ה-DAO כדי לשמור על הפרדת שכבות
             TruckDTO dto = new TruckDTO(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
             truckDAO.addTruck(dto);
         } catch (SQLException e) {

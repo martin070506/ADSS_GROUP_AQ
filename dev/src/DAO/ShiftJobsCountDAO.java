@@ -41,22 +41,9 @@ public class ShiftJobsCountDAO {
         String sql = "SELECT * FROM shift_jobs_count";
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                String dateStr = rs.getString("date");
-                java.time.LocalDate localDate = null;
-
-                if (dateStr != null && !dateStr.isEmpty()) {
-                    try {
-                        long millis = Long.parseLong(dateStr);
-                        localDate = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate();
-                    } catch (NumberFormatException e) {
-                        localDate = java.time.LocalDate.parse(dateStr);
-                    }
-                }
                 list.add(new ShiftJobsCountDTO(
                         rs.getInt("job"),
-                        localDate,
+                        rs.getDate("date").toLocalDate(),
                         rs.getBoolean("is_morning_shift"),
                         rs.getInt("location_id"),
                         rs.getInt("count")

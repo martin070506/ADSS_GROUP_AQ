@@ -1,6 +1,5 @@
 package DAO;
 
-import DB.DatabaseManager;
 import DTO.LocationDTO;
 
 import java.sql.Connection;
@@ -63,7 +62,7 @@ public class LocationDAO {
         }
     }
 
-    private static LocationDTO mapRowToLocationDTO(ResultSet rs) throws SQLException {
+    private LocationDTO mapRowToLocationDTO(ResultSet rs) throws SQLException {
         return new LocationDTO(
                 rs.getInt("location_id"),
                 rs.getString("contact_name"),
@@ -89,7 +88,7 @@ public class LocationDAO {
                 return rs.getInt(1);
             }
         }
-        return -1;
+        return 0;
     }
 
     public LocationDTO getLocation(int locationId) throws SQLException {
@@ -128,24 +127,4 @@ public class LocationDAO {
         }
         return locations;
     }
-
-    public static LocationDTO getLocationStatic(int locationId) throws SQLException {
-        String sql = "SELECT * FROM Location WHERE location_id = ?";
-        try (PreparedStatement stmt = DatabaseManager.getConnection().prepareStatement(sql)) {
-            stmt.setInt(1, locationId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRowToLocationDTO(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        throw new SQLException("Location not found: " + locationId);
-    }
-
-
-
-
 }
-

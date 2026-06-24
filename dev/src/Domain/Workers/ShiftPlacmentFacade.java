@@ -1,16 +1,23 @@
 package Domain.Workers;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import DB.DatabaseManager;
 import DTO.ShiftPlacementDTO;
 import DTO.ShiftPlacementJobsWorkersDTO;
+import DatabaseManager;
+import DAO.ShiftJobsCountDAO;
+import DAO.ShiftJobsDAO;
 import DAO.ShiftPlacementDAO;
 import DAO.ShiftPlacementJobsWorkersDAO;
+import DTO.ShiftJobsCountDTO;
+import DTO.ShiftJobsDTO;
+import Domain.Workers.Shift;
+import Domain.Workers.ShiftCanidatesWorkersFacade;
+import Domain.Workers.ShiftJobsFacade;
+import Domain.Workers.ShiftPlacement;
 import Domain.Transportation.Location;
 
 public class ShiftPlacmentFacade {
@@ -20,7 +27,7 @@ public class ShiftPlacmentFacade {
         private ShiftCanidatesWorkersFacade canidates;
         private ShiftPlacementJobsWorkersDAO placement_job_worker;
         private ShiftPlacementDAO placement_dao;
-        public ShiftPlacmentFacade(WorkersFacade workers, ShiftJobsFacade allJobs, ShiftCanidatesWorkersFacade canidates) throws SQLException {
+        public ShiftPlacmentFacade(WorkersFacade workers, ShiftJobsFacade allJobs, ShiftCanidatesWorkersFacade canidates){
             shifts = new ArrayList<>();
             this.workers=workers;
             this.allJobs=allJobs;
@@ -32,14 +39,14 @@ public class ShiftPlacmentFacade {
     public String loadAllJobs(){
         List<ShiftPlacementDTO> list = placement_dao.loadAll();
         for ( int i=0;i<list.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = Location.getLocation(list.get(i).locationId());
             ShiftPlacement shift = new ShiftPlacement(list.get(i).date(), list.get(i).is_morning_shift(), location);
             shift.setShiftManager(list.get(i).shift_manager_id());
             shifts.add(shift);
         }
         List<ShiftPlacementJobsWorkersDTO> list_count = placement_job_worker.loadAll();
         for( int i=0; i< list_count.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = Location.getLocation(list_count.get(i).locationId());
             Shift shift = new Shift(list_count.get(i).date(), list_count.get(i).is_morning_shift(), location);
             for (ShiftPlacement shift_placement : shifts) {
                 if(shift_placement.getShift().equals(shift)){

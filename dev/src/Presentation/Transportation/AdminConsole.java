@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
-
 public class AdminConsole {
     private final Scanner scanner = new Scanner(System.in);
     private final ProductCatalogService productService;
@@ -43,47 +42,37 @@ public class AdminConsole {
     }
 
     public void start() {
-        boolean exit = false;
-        while (!exit) {
-            System.out.println("\n=== LOGISTICS MANAGEMENT SYSTEM ===");
-            System.out.println("1. Load Automatic Demo Data (Full Ecosystem)");
-            System.out.println("2. Manual Data Entry");
-            System.out.println("3. Return to Main Menu");
-            System.out.print("Choice: ");
+        System.out.println("=== LOGISTICS MANAGEMENT SYSTEM ===");
+        System.out.println("1. Load Automatic Demo Data");
+        System.out.println("2. Manual Data Entry");
+        System.out.print("Choice: ");
 
-            String choice1 = scanner.nextLine().trim();
+        if (scanner.nextLine().trim().equals("1")) {
+            //TODO make sql load the data at the beginning of the program, the comment made was to always fetch from SQL
+            //TODO so the SQL load is not neccessiraly here, but at the Main Class.
+            System.out.println("Demo Data Loaded Successfully.");
+        } else { manualSetup(); }
 
-            if (choice1.equals("1")) {
-                loadRichDemoData();
-                System.out.println("\n✅ Full Demo Ecosystem Loaded Successfully.");
-            } else if (choice1.equals("2")) {
-                manualSetup();
-            } else if (choice1.equals("3")) {
-                exit = true;
-            } else {
-                System.out.println("Invalid choice. Try again.");
-            }
+        boolean running = true;
+        while (running) {
+            displayMenu();
 
-            while (!exit) {
-                displayMenu();
-
-                String choice = scanner.nextLine().trim();
-                switch (choice) {
-                    case "1" -> addBranchRequest();
-                    case "2" -> resupplySupplier();
-                    case "3" -> manualSupplierSetup();
-                    case "4" -> addManualBranch();
-                    case "5" -> manualDriverSetup();
-                    case "6" -> manualTruckSetup();
-                    case "7" -> runShipmentCycle();
-                    case "8" -> deleteBranchRequest();
-                    case "9" -> updateBranchRequest();
-                    case "0" -> {
-                        System.out.println("Exiting system... Goodbye!");
-                        exit = true;
-                    }
-                    default -> System.out.println("Invalid choice. Try again.");
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1" -> addBranchRequest();
+                case "2" -> resupplySupplier();
+                case "3" -> manualSupplierSetup();
+                case "4" -> addManualBranch();
+                case "5" -> manualDriverSetup();
+                case "6" -> manualTruckSetup();
+                case "7" -> runShipmentCycle();
+                case "8" -> deleteBranchRequest();
+                case "9" -> updateBranchRequest();
+                case "0" -> {
+                    System.out.println("Exiting system... Goodbye!");
+                    running = false;
                 }
+                default -> System.out.println("Invalid choice. Try again.");
             }
         }
     }
@@ -114,7 +103,7 @@ public class AdminConsole {
 
         MainConsole shipmentConsole = new MainConsole(transportService, supplierService, productService,
                 truckService, locationService, workers_service, candidates_service, placement_service);
-        try {shipmentConsole.initiateShipment(); }
+        try {shipmentConsole.initiateShipment(requestService.getActiveRequestLocationIds()); }
         catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
         catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
     }
@@ -153,10 +142,8 @@ public class AdminConsole {
             if (productId == -1)
                 break;
 
-            if (!productIds.contains(productId)) {
+            if (!productIds.contains(productId))
                 System.out.println("Invalid Product ID.");
-                continue;
-            }
 
             int amount = promptInt("Quantity needed: ");
             if (amount > 0)
@@ -232,8 +219,9 @@ public class AdminConsole {
                 break;
             System.out.println("Invalid Branch Index. Please try again.");
         }
+        System.out.println("\nBranch Request:" + activeBranches.get(branchId));
         try {
-            requestService.removeRequest(branchId, true);
+            requestService.removeRequest(branchId);
             System.out.println("Request removed.");
         } catch (Exception e) { System.out.println("Failed to remove request: " + e.getMessage()); }
     }
@@ -460,78 +448,5 @@ public class AdminConsole {
                 return Integer.parseInt(scanner.nextLine().trim());
             } catch (Exception e) { System.out.println("Invalid input. Please enter an integer."); }
         }
-    }
-
-    private void loadRichDemoData() {
-        System.out.println("\n[SYSTEM] Initializing complete logistics ecosystem...");
-
-        // --- 1. Products ---
-        System.out.println("-> Seeding Products...");
-        productService.addProduct("Milk 3% (Carton)", 1);
-        productService.addProduct("Whole Wheat Bread", 2);
-        productService.addProduct("Frozen Entrecote", 10);
-        productService.addProduct("Coca-Cola 1.5L", 2);
-        productService.addProduct("Toilet Paper (32 rolls)", 5);
-        productService.addProduct("Apples (Box)", 15);
-        productService.addProduct("Bamba Peanut Snack", 1);
-        productService.addProduct("Mineral Water (6-pack)", 12);
-
-        // שולפים את המזהים שנוצרו כדי להשתמש בהם בהמשך הקוד ללא ניחושים
-        List<Integer> p = productService.getProductsId();
-
-        // --- 2. Trucks ---
-        System.out.println("-> Seeding Fleet (Trucks)...");
-        truckService.addTruck(10101, "Mercedes Sprinter", 3000, 4500, 2);
-        truckService.addTruck(20202, "Volvo FH16", 8000, 24000, 3);
-        truckService.addTruck(30303, "Isuzu Sumo", 4000, 8000, 2);
-        truckService.addTruck(40404, "Scania R-Series", 7500, 20000, 3);
-
-        // --- 3. Suppliers (With their stock) ---
-        System.out.println("-> Seeding Suppliers & Allocations...");
-        Map<Integer, Integer> tnuvaStock = new HashMap<>();
-        tnuvaStock.put(p.get(0), 1500); // 1500 יחידות חלב
-        tnuvaStock.put(p.get(2), 500);  // 500 יחידות בשר
-        supplierService.addSupplier("Rehovot Industrial Zone", "03-999-1111", "Yossi (Tnuva)", tnuvaStock);
-
-        Map<Integer, Integer> osemStock = new HashMap<>();
-        osemStock.put(p.get(6), 2000);  // 2000 במבה
-        osemStock.put(p.get(1), 800);   // 800 לחם
-        supplierService.addSupplier("Shoham Logistics Park", "03-888-2222", "Gabi (Osem)", osemStock);
-
-        Map<Integer, Integer> colaStock = new HashMap<>();
-        colaStock.put(p.get(3), 3000);  // 3000 קולה
-        colaStock.put(p.get(7), 2500);  // 2500 מים
-        supplierService.addSupplier("Bnei Brak Factory", "03-777-3333", "Rami (Coca-Cola)", colaStock);
-
-        // --- 4. Branches & Requests ---
-        System.out.println("-> Seeding Branches & Active Requests...");
-        branchService.addBranch("Herzl 1, Gedera", "08-123-4567", "Liav Parehi");
-        branchService.addBranch("Dizengoff Center, Tel Aviv", "03-555-8888", "Moti");
-        branchService.addBranch("Carmel Center, Haifa", "04-444-9999", "Erez");
-
-        // שולפים את מזהי הסניפים מהשירות
-        List<Integer> b = branchService.getBranchesId();
-
-        // בקשה ענקית לסניף גדרה
-        Map<Integer, Integer> reqGedera = new HashMap<>();
-        reqGedera.put(p.get(4), 100); // 100 נייר טואלט
-        reqGedera.put(p.get(7), 50);  // 50 מים
-        reqGedera.put(p.get(6), 30);  // 30 במבה
-        requestService.addRequest(b.get(0), reqGedera);
-
-        // בקשה לתל אביב
-        Map<Integer, Integer> reqTlv = new HashMap<>();
-        reqTlv.put(p.get(0), 200); // חלב
-        reqTlv.put(p.get(1), 100); // לחם
-        reqTlv.put(p.get(2), 50);  // בשר
-        reqTlv.put(p.get(3), 150); // קולה
-        requestService.addRequest(b.get(1), reqTlv);
-
-        // בקשה לחיפה
-        Map<Integer, Integer> reqHaifa = new HashMap<>();
-        reqHaifa.put(p.get(2), 100); // בשר
-        reqHaifa.put(p.get(5), 40);  // תפוחים
-        reqHaifa.put(p.get(3), 80);  // קולה
-        requestService.addRequest(b.get(2), reqHaifa);
     }
 }

@@ -29,9 +29,9 @@ public class TransportFile {
         transportLog += "Arrived at Supplier " + supplierName + '\n';
     }
 
-    public void skipSupplier(String supplierName, String reason) {
+    public void skipSupplier(String supplierName) {
 
-        transportLog += "Skipped Supplier " + supplierName + " due to " + reason + '\n';
+        transportLog += "Skipped Supplier " + supplierName + '\n';
     }
 
     public void overWeightAlert(int weight) {
@@ -44,9 +44,9 @@ public class TransportFile {
         trucksLog = " (Swapped)\n" + truckInfo;
     }
 
-    public void skipRequest(String requestName, String reason) {
+    public void skipRequest(String requestName) {
 
-        transportLog += "Skipped Request " + requestName + " due to " + reason + '\n';
+        transportLog += "Skipped Request " + requestName + '\n';
     }
 
     public void arriveAtRequest(String requestName) {
@@ -61,6 +61,8 @@ public class TransportFile {
     public String toString(Map<Product, Integer> itemsLeft) {
 
         StringBuilder sb = new StringBuilder();
+
+        sb.append("Transport File :\n\n");
 
         sb.append("--- TRANSPORT LOG ---\n");
         sb.append(transportLog != null ? transportLog : "").append("\n");

@@ -1,8 +1,12 @@
 package Domain.Workers;
 
 import DAO.WorkerDAO;
-import DB.DatabaseManager;
+import DTO.ShiftPlacementDTO;
+import DTO.ShiftPlacementJobsWorkersDTO;
 import DTO.WorkerDTO;
+import Domain.Transportation.Location;
+import Domain.Workers.Worker;
+import DatabaseManager;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -13,7 +17,7 @@ import java.util.Map;
 public class WorkersFacade {
     private HashMap<Integer, Worker> workers;
     private WorkerDAO workers_dao;
-    public WorkersFacade() throws SQLException {
+    public WorkersFacade() {
         workers_dao = new WorkerDAO(DatabaseManager.getConnection());
         workers = new HashMap<>();
     }

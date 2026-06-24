@@ -16,14 +16,13 @@ import java.util.Map;
 public class RequestService {
     private final LocationService locationService;
     private final List<Request> requests;
-    private int fileNumberCounter;
+    private int fileNumberCounter = 1;
     private final RequestDAO requestDAO;
 
     public RequestService(LocationService locationService, RequestDAO requestDAO) {
         this.locationService = locationService;
         this.requestDAO = requestDAO;
         this.requests = new ArrayList<>();
-        loadRequestsFromDB();
     }
 
     public void loadRequestsFromDB() {
@@ -44,8 +43,11 @@ public class RequestService {
                 }
 
                 requests.add(new Request(location, reqDto.fileNumber(), itemsMap));
+
+                if (reqDto.fileNumber() >= fileNumberCounter) {
+                    fileNumberCounter = reqDto.fileNumber() + 1;
+                }
             }
-            fileNumberCounter = requestDAO.getMaxFileNumber() + 1;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -57,7 +59,7 @@ public class RequestService {
                 if (request.getLocation().id() == locationId) {
                     request.addProducts(neededItems);
 
-                    // סנכרון ל-DB.DB: עדכון הפריטים שהתווספו/עודכנו
+                    // סנכרון ל-DB: עדכון הפריטים שהתווספו/עודכנו
                     for (Map.Entry<Integer, Integer> entry : neededItems.entrySet()) {
                         int pId = entry.getKey();
                         int newTotalAmount = request.getProducts().get(pId);
@@ -71,8 +73,8 @@ public class RequestService {
             Request newRequest = new Request(locationService.getLocation(locationId), fileNumberCounter++, neededItems);
             requests.add(newRequest);
 
-            // שמירת הבקשה החדשה ב-DB.DB דרך ה-DTOs
-            requestDAO.addProductFile(new ProductFileDTO(newRequest.getFileNumber(), locationId, "Active"));
+            // שמירת הבקשה החדשה ב-DB דרך ה-DTOs
+            requestDAO.addProductFile(new ProductFileDTO(newRequest.getFileNumber(), locationId));
             requestDAO.addRequest(new RequestDTO(locationId, newRequest.getFileNumber()));
 
             for (Map.Entry<Integer, Integer> entry : neededItems.entrySet()) {
@@ -85,49 +87,19 @@ public class RequestService {
 
     public List<Integer> getActiveRequestLocationIds() {
         List<Integer> activeRequestLocationIds = new ArrayList<>();
-        for (Request request : requests)
+        for (Request request : requests) {
             activeRequestLocationIds.add(request.getLocation().id());
-
+        }
         return activeRequestLocationIds;
     }
 
-    public void removeRequest(int locationId, boolean isCancelled) {
-        if (isCancelled) {
-            try {
-                int fileNumber = requestDAO.getActiveFileNumber(locationId);
-
-                if (fileNumber != -1) {
-                    // 2. מוחקים מהסוף להתחלה (Items -> File -> Request)
-                    requestDAO.removeProductFileItems(fileNumber);
-                    requestDAO.removeProductFile(fileNumber);
-                }
-
-                // 3. מוחקים את הבקשה הפעילה מה-DB
-                requestDAO.removeAllRequestsForLocationID(locationId);
-
-                // 4. מסירים מהזיכרון
-                requests.removeIf(request -> request.getLocation().id() == locationId);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    public void removeRequest(int locationId) {
+        try {
+            requestDAO.removeAllRequestsForLocationID(locationId); // מסיר מה-DB
+            requests.removeIf(request -> request.getLocation().id() == locationId); // מסיר מהזיכרון
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        else {
-            try {
-                requestDAO.setRequestInactive(locationId, getRequest(locationId).getFileNumber());
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            requests.removeIf(request -> request.getLocation().id() == locationId);
-        }
-    }
-
-    private Request getRequest(int locationId) {
-        for (Request request : requests) {
-            if (request.getLocation().id() == locationId) {
-                return request;
-            }
-        }
-        throw new IllegalArgumentException("Request not found at location: " + locationId);
     }
 
     public List<Integer> getAllRequests() {
@@ -171,7 +143,7 @@ public class RequestService {
             if (request.getLocationId() == branchId) {
                 request.addProduct(pId, qty);
                 try {
-                    // מעדכנים את הכמות החדשה ב-DB.DB
+                    // מעדכנים את הכמות החדשה ב-DB
                     int updatedAmount = request.getProducts().get(pId);
                     requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, updatedAmount));
                 } catch (SQLException e) {
@@ -190,10 +162,10 @@ public class RequestService {
                 try {
                     Integer remainingAmount = request.getProducts().get(pId);
                     if (remainingAmount == null || remainingAmount <= 0) {
-                        // אם הכמות ירדה ל-0, מוחקים את השורה מה-DB.DB
+                        // אם הכמות ירדה ל-0, מוחקים את השורה מה-DB
                         requestDAO.removeRequestPair(branchId, pId);
                     } else {
-                        // אחרת, מעדכנים לכמות החדשה (המוקטנת) ב-DB.DB
+                        // אחרת, מעדכנים לכמות החדשה (המוקטנת) ב-DB
                         requestDAO.addProductFileItem(new ProductFile_ItemsDTO(request.getFileNumber(), pId, remainingAmount));
                     }
                 } catch (SQLException e) {
@@ -210,7 +182,7 @@ public class RequestService {
             if (request.getLocationId() == requestId) {
                 request.handleShipment(truckProducts); // מוריד את הפריטים שסופקו
                 try {
-                    // סנכרון כל הפריטים שהיו על המשאית מול ה-DB.DB (הקטנת כמות או מחיקה)
+                    // סנכרון כל הפריטים שהיו על המשאית מול ה-DB (הקטנת כמות או מחיקה)
                     for (Integer pId : truckProducts.keySet()) {
                         Integer remainingAmount = request.getProducts().get(pId);
                         if (remainingAmount == null || remainingAmount <= 0) {
@@ -243,22 +215,5 @@ public class RequestService {
             }
         }
         throw new IllegalArgumentException("Request not found at location: " + requestId);
-    }
-
-    public boolean hasRequests() {
-        return !requests.isEmpty();
-    }
-
-    public int getFirstRequestId() {
-        return requests.getFirst().getLocationId();
-    }
-
-    public void setUnactive(int requestId) {
-        try {
-            requestDAO.setRequestInactive(requestId, getRequest(requestId).getFileNumber());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        requests.removeIf(request -> request.getLocationId() == requestId);
     }
 }

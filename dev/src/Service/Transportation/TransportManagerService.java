@@ -3,11 +3,13 @@ package Service.Transportation;
 import DAO.TransportFileDAO;
 import DTO.TransportFileDTO;
 import Domain.Transportation.Transport;
+import Domain.Transportation.TransportFile;
 import Exceptions.*;
 import Service.Workers.ShiftJobsService;
 import Service.Workers.WorkersService;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public class TransportManagerService {
@@ -29,11 +31,11 @@ public class TransportManagerService {
         this.shiftJobsService = shiftJobsService; // תוקן לאות קטנה
         this.transportFileDAO = transportFileDAO;
         this.transport = null;
-        this.transportIdCounter = -1;
+        this.transportIdCounter = 1;
         this.workers_service = workersService;
     }
 
-    public void createTransport(int truckId, int driverId, int sourceId,
+    public void createTransport(int truckId, int driverId, int sourceId, List<Integer> requests,
                                 Map<Integer, Map<Integer, Integer>> supplierAllocations,
                                 String truckInfo, String sourceInfo) {
         transport = new Transport(
@@ -42,14 +44,11 @@ public class TransportManagerService {
                 truckId,
                 driverId,
                 sourceId,
+                requests,
                 supplierAllocations,
                 truckInfo,
-                "Fuck hom", // "Driver: " + workers_service.getName(driverId) + ", License: " + workers_service.getLicense(driverId) Todo: Fix
+                "Driver: " + workers_service.getName(driverId) + ", License: " + workers_service.getLicense(driverId),
                 sourceInfo);
-    }
-
-    public void loadCountFromDB() {
-        transportIdCounter = transportFileDAO.getMaxFileNumber() + 1;
     }
 
     public void finishShipment() {
@@ -74,26 +73,26 @@ public class TransportManagerService {
             int supplierId = transport.getFirstSupplierId();
             Map<Integer, Integer> itemsToLoad = transport.getSupplierAllocationIds().get(supplierId);
 
-            transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
             supplierService.handleShipment(supplierId, itemsToLoad);
-            leaveSupplierFileChange(supplierId);
+            handleSupplierFileChange(supplierId);
         }
 
         // 2. Process Branch Delivery Drops Loop
-        while (requestService.hasRequests()) {
-            int requestId = requestService.getFirstRequestId();
+        while (!transport.getRequestIds().isEmpty()) {
+            int requestId = transport.getRequestIds().getFirst();
             transport.UpdateArriveAtRequest(requestService.getRequestContactName(requestId));
-            if (true) // shiftJobsService.hashShopKeeper(transport.getDepartureTime(), isMorning, requestService.getRequestLocation(requestId)) Todo: Fix
+            if (shiftJobsService.hashShopKeeper(transport.getDepartureTime(), isMorning, requestService.getRequestLocation(requestId)))
                 handleRequestLeaveFileChange(requestId);
             else
                 throw new MissingShopKeeper(requestService.getRequestContactName(requestId));
         }
     }
 
-    private void leaveSupplierFileChange(int supplierId) {
+    private void handleSupplierFileChange(int supplierId) {
         if (transport == null)
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
 
+        transport.UpdateArriveAtSupplier(supplierService.getSupplierName(supplierId));
         transport.UpdateLeaveSupplier(supplierService.getSupplierName(supplierId), supplierService.getSupplierDisplay(supplierId), truckService.getTruckWeight(transport.getTruckId()));
         transport.removeSupplier(supplierId);
     }
@@ -104,14 +103,14 @@ public class TransportManagerService {
 
         truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
         transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId), requestService.getRequestDisplay(requestId));
-        requestService.setUnactive(requestId);
+        transport.removeRequest(requestId);
     }
 
     public void handleStockException(DomainException ise) {
         if (ise instanceof InsufficientSupplierStockException) {
-            skipSupplier("Insufficient Supplier Stock");
+            skipSupplier();
         } else if (ise instanceof InsufficientTruckStockException) {
-            skipRequest("Insufficient Truck Stock");
+            skipRequest();
         }
     }
 
@@ -120,7 +119,7 @@ public class TransportManagerService {
             performEmergencyDropOff();
             finalizeCurrentSupplierLoading();
         } else
-            skipSupplier("Overweight default");
+            skipSupplier();
     }
 
     public void resolveOverweightWithFineTuning(int productId, int amountToRemove) {
@@ -128,7 +127,7 @@ public class TransportManagerService {
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
 
         if (transport.getSupplierAllocationIds().isEmpty()) {
-            skipSupplier("Overweight with Fine Tuning");
+            skipSupplier();
         } else {
             int truckId = transport.getTruckId();
             Map<Integer, Integer> itemsToRemove = Map.of(productId, amountToRemove);
@@ -152,14 +151,14 @@ public class TransportManagerService {
     }
 
     // === CORE LOGISTICS MUTATORS ===
-    public void skipSupplier(String reason){
+    public void skipSupplier(){
         if (transport == null)
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
         if (transport.getSupplierAllocationIds().isEmpty())
             return;
 
         int supplierId = transport.getFirstSupplierId();
-        transport.UpdateSkipSupplier(supplierService.getSupplierName(supplierId), reason);
+        transport.UpdateSkipSupplier(supplierService.getSupplierName(supplierId));
         Map<Integer, Integer> thingsToRemove = transport.getSupplierAllocationIds().get(supplierId);
 
         try {
@@ -173,31 +172,31 @@ public class TransportManagerService {
         transport.getSupplierAllocationIds().remove(supplierId);
     }
 
-    public void skipRequest(String reason) {
+    public void skipRequest() {
         if (transport == null)
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
 
-        if (!requestService.hasRequests())
+        if (transport.getRequestIds().isEmpty())
             return;
-        int requestId = requestService.getFirstRequestId();
-        transport.UpdateSkipRequest(requestService.getRequestContactName(requestId), reason);
-        requestService.setUnactive(requestId);
+        int requestId = transport.getRequestIds().getFirst();
+        transport.UpdateSkipSupplier(requestService.getRequestContactName(requestId));
+        transport.removeRequest(requestId);
     }
 
     public void performEmergencyDropOff() {
         if (transport == null)
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
 
-        if (!requestService.hasRequests()) {
+        if (transport.getRequestIds().isEmpty()) {
             throw new NoDestinationForEmergencyDropOffException();
         }
-        int requestId = requestService.getFirstRequestId();
+        int requestId = transport.getRequestIds().getFirst();
         transport.UpdateArriveAtRequest(requestService.getRequestContactName(requestId));
         requestService.handleShipment(requestId, truckService.getTruckProducts(transport.getTruckId()));
         truckService.removeProducts(requestService.getProducts(requestId), transport.getTruckId());
         transport.UpdateLeaveRequest(requestService.getRequestContactName(requestId),
                 requestService.getRequestDisplay(requestId));
-        requestService.setUnactive(requestId);
+        transport.removeRequest(requestId);
     }
 
     public void replaceTruck(int newTruckId) {
@@ -241,6 +240,6 @@ public class TransportManagerService {
         if (transport == null)
             throw new IllegalArgumentException("No Transport is Currently in Progress.");
 
-        return transport.getTransportFile().toString();
+        return transport.toString();
     }
 }
