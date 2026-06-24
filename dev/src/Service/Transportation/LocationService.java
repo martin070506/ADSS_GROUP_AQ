@@ -38,7 +38,7 @@ public class LocationService {
     public int addLocation(String addr, String phone, String contact) {
         int newId = counter++;
         Location location = new Location(newId, addr, phone, contact);
-        locations.add(location);    
+        locations.add(location);
 
         try {
             LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
