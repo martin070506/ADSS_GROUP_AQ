@@ -34,7 +34,7 @@ public class TruckDAO {
                 return rs.getInt(1);
             }
         }
-        return 0;
+        return -1;
     }
 
     public void addTruck(TruckDTO truckDTO) throws SQLException {

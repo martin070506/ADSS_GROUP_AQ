@@ -34,7 +34,7 @@ public class ProductDAO {
                 return rs.getInt(1);
             }
         }
-        return 0;
+        return -1;
     }
 
     public void addProduct(ProductDTO productDTO) throws SQLException {

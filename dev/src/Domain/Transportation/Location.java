@@ -5,8 +5,8 @@ public record Location(int id, String address, String phoneNumber, String contac
 
     @Override
     public String toString() {
-        return "ID: " +id()+
-                "Name: " + contactName() +
+        return "ID: " + id() +
+                " | Name: " + contactName() +
                 " | Address: " + address() +
                 " | Phone: " + phoneNumber();
     }

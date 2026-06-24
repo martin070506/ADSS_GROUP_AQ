@@ -150,7 +150,7 @@ public class WorkerDAO {
     }
     public List<WorkerDTO> loadAll() {
         List<WorkerDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM workers";
+        String sql = "SELECT * FROM Worker";
 
         try (Statement st = connection.createStatement();
              ResultSet rs = st.executeQuery(sql)) {

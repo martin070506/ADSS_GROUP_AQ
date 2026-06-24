@@ -14,6 +14,7 @@ public class BranchService {
     public BranchService(LocationService locationService) {
         this.locationService = locationService;
         this.branches = new ArrayList<>();
+        loadBranchesFromDB();
     }
 
     public void loadBranchesFromDB() {
@@ -41,9 +42,9 @@ public class BranchService {
 
     public List<Integer> getBranchesId() {
         List<Integer> branchesId = new ArrayList<>();
-        for (BranchManager branch : branches) {
+        for (BranchManager branch : branches)
             branchesId.add(branch.getLocation().id());
-        }
+
         return branchesId;
     }
 

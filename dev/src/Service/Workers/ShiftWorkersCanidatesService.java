@@ -27,7 +27,7 @@ public class ShiftWorkersCanidatesService {
         return canidates.getAllAvialableDrivers(date,is_morning, location);
     }
 
-    public String loadAllJobs(){
+    public String loadAllCanidates(){
         return canidates.loadAllJobs();
     }
 }
