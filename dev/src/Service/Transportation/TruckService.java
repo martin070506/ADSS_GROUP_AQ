@@ -1,7 +1,7 @@
 package Service.Transportation;
 
-import DAO.TruckDAO;
-import DTO.TruckDTO;
+import DAO.Transportation.TruckDAO;
+import DTO.Transportation.TruckDTO;
 import Domain.Transportation.Truck;
 
 import java.sql.SQLException;

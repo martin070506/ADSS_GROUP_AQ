@@ -1,4 +1,4 @@
-package DTO;
+package DTO.Transportation;
 
 public record RequestDTO(
         int locationID,

@@ -1,7 +1,9 @@
-import DAO.*;
+import DAO.Transportation.*;
 import DB.DatabaseManager;
-import DTO.SupplierAllocationDTO;
-import Exceptions.DomainException;
+import Domain.Workers.ShiftCanidatesWorkersFacade;
+import Domain.Workers.ShiftJobsFacade;
+import Domain.Workers.ShiftPlacmentFacade;
+import Domain.Workers.WorkersFacade;
 import Presentation.Transportation.AdminConsole;
 import Presentation.Workers.ServiceControl;
 import Service.Transportation.*;
@@ -10,8 +12,6 @@ import Service.Workers.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -47,10 +47,15 @@ public class Main {
         TransportFileDAO transportFileDAO = new TransportFileDAO(dbConnection);
 
         // תשתית עובדים (בהנחה והמחלקות קיימות בפרויקט שלך)
-        WorkersService workers_service = new WorkersService(new Domain.Workers.WorkersFacade());
-        ShiftJobsService jobs_service = new ShiftJobsService(new Domain.Workers.ShiftJobsFacade());
-        ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(new Domain.Workers.ShiftCanidatesWorkersFacade(new Domain.Workers.WorkersFacade()));
-        ShiftPlacementService placement_service = new ShiftPlacementService(new Domain.Workers.ShiftPlacmentFacade(new Domain.Workers.WorkersFacade(), new Domain.Workers.ShiftJobsFacade(), new Domain.Workers.ShiftCanidatesWorkersFacade(new Domain.Workers.WorkersFacade())));
+        WorkersFacade workers_facade = new WorkersFacade();
+        ShiftJobsFacade jobs_facade = new ShiftJobsFacade(locationService);
+        ShiftCanidatesWorkersFacade candidates_facade = new ShiftCanidatesWorkersFacade(workers_facade, locationService);
+        ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, candidates_facade, locationService);
+
+        WorkersService workers_service = new WorkersService(workers_facade);
+        ShiftJobsService jobs_service = new ShiftJobsService(jobs_facade);
+        ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(candidates_facade);
+        ShiftPlacementService placement_service = new ShiftPlacementService(placement_facade);
 
         TransportManagerService transportManagerService = new TransportManagerService(truckService, supplierService, requestService, workers_service, jobs_service, transportFileDAO);
 //
@@ -75,6 +80,7 @@ public class Main {
             // 4. בקשות והובלות (הכי מורכבים, תלויים בסניפים ובמוצרים)
             requestService.loadRequestsFromDB();
             transportManagerService.loadCountFromDB();
+
 
             // הערה: אם יש לך Service שצריך לטעון הובלות פעילות שנקטעו באמצע, זה הזמן לטעון גם אותו.
 

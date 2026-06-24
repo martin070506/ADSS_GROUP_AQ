@@ -1,17 +1,17 @@
 package Domain.Workers;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import DTO.Workers.ShiftPlacementDTO;
+import DTO.Workers.ShiftPlacementJobsWorkersDTO;
 import DB.DatabaseManager;
-import DTO.ShiftPlacementDTO;
-import DTO.ShiftPlacementJobsWorkersDTO;
-import DAO.ShiftPlacementDAO;
-import DAO.ShiftPlacementJobsWorkersDAO;
+import DAO.Workers.ShiftPlacementDAO;
+import DAO.Workers.ShiftPlacementJobsWorkersDAO;
 import Domain.Transportation.Location;
+import Service.Transportation.LocationService;
 
 public class ShiftPlacmentFacade {
         private List<ShiftPlacement> shifts;
@@ -20,8 +20,10 @@ public class ShiftPlacmentFacade {
         private ShiftCanidatesWorkersFacade canidates;
         private ShiftPlacementJobsWorkersDAO placement_job_worker;
         private ShiftPlacementDAO placement_dao;
-        public ShiftPlacmentFacade(WorkersFacade workers, ShiftJobsFacade allJobs, ShiftCanidatesWorkersFacade canidates) throws SQLException {
+        private LocationService locationService;
+        public ShiftPlacmentFacade(WorkersFacade workers, ShiftJobsFacade allJobs, ShiftCanidatesWorkersFacade canidates, LocationService locationService){
             shifts = new ArrayList<>();
+            this.locationService=locationService;
             this.workers=workers;
             this.allJobs=allJobs;
             this.canidates=canidates;
@@ -32,14 +34,14 @@ public class ShiftPlacmentFacade {
     public String loadAllJobs(){
         List<ShiftPlacementDTO> list = placement_dao.loadAll();
         for ( int i=0;i<list.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list.get(i).locationId());
             ShiftPlacement shift = new ShiftPlacement(list.get(i).date(), list.get(i).is_morning_shift(), location);
             shift.setShiftManager(list.get(i).shift_manager_id());
             shifts.add(shift);
         }
         List<ShiftPlacementJobsWorkersDTO> list_count = placement_job_worker.loadAll();
         for( int i=0; i< list_count.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list_count.get(i).locationId());
             Shift shift = new Shift(list_count.get(i).date(), list_count.get(i).is_morning_shift(), location);
             for (ShiftPlacement shift_placement : shifts) {
                 if(shift_placement.getShift().equals(shift)){
@@ -188,19 +190,18 @@ public class ShiftPlacmentFacade {
                         shiftPlacement.setShiftManager(id_to_in);
 
                     }
+                    String result =  shiftPlacement.changePlacment(id_to_out, id_to_in);
+                    try{
+                        ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(shiftPlacement.getJob(id_to_in),date,is_morning,location.id(), id_to_out);
+                        placement_job_worker.updateWorkerInShift(place_dto_iw,id_to_in);
+                    }
+                    catch (Exception e){
+                        return "failed, did not palced driver in the data base";
+                    }
+                    return result;
+                }
 
-                }
-                //updateWorkerInShift
 
-                String result =  shiftPlacement.changePlacment(id_to_out, id_to_in);
-                try{
-                    ShiftPlacementJobsWorkersDTO place_dto_iw = new ShiftPlacementJobsWorkersDTO(shiftPlacement.getJob(id_to_out),date,is_morning,location.id(), id_to_out);
-                    placement_job_worker.updateWorkerInShift(place_dto_iw,id_to_in);
-                }
-                catch (Exception e){
-                    return "failed, did not palced driver in the data base";
-                }
-                return result;
             }
             return "failed, shift not found";
     }

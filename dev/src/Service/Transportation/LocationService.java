@@ -1,7 +1,7 @@
 package Service.Transportation;
 
-import DAO.LocationDAO;
-import DTO.LocationDTO;
+import DAO.Transportation.LocationDAO;
+import DTO.Transportation.LocationDTO;
 import Domain.Transportation.Location;
 
 import java.sql.SQLException;
@@ -20,7 +20,6 @@ public class LocationService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        loadLocationsFromDB();
     }
 
     public void loadLocationsFromDB() {

@@ -1,7 +1,7 @@
-package DAO;
+package DAO.Transportation;
 
 import DB.DatabaseManager;
-import DTO.LocationDTO;
+import DTO.Transportation.LocationDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

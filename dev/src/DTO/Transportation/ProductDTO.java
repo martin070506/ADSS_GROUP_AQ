@@ -1,6 +1,4 @@
-package DTO;
-
-import Domain.Transportation.Product;
+package DTO.Transportation;
 
 public record ProductDTO(
         int id,

@@ -1,30 +1,27 @@
 package Domain.Workers;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import DAO.ShiftJobsCountDAO;
-import DAO.ShiftJobsDAO;
-import DB.DatabaseManager;
-import DTO.ShiftJobsCountDTO;
-import DTO.ShiftJobsDTO;
-import Domain.Workers.Shift;
-import Domain.Workers.ShiftJobs;
+import DAO.Workers.ShiftJobsCountDAO;
+import DAO.Workers.ShiftJobsDAO;
+import DTO.Workers.ShiftJobsCountDTO;
+import DTO.Workers.ShiftJobsDTO;
 import Domain.Transportation.Location;
-import Domain.Workers.Worker;
+import DB.DatabaseManager;
 import Service.Transportation.LocationService;
 
 public class ShiftJobsFacade {
     private final List<ShiftJobs> shifts;
     private ShiftJobsCountDAO jobs_count_dao;
     private ShiftJobsDAO jobs_dao;
-
-    public ShiftJobsFacade() throws SQLException {
+    private LocationService locationService;
+    public ShiftJobsFacade(LocationService locationService){
         Connection dbConnection = DatabaseManager.getConnection();
         jobs_count_dao = new ShiftJobsCountDAO(dbConnection);
         jobs_dao = new ShiftJobsDAO(dbConnection);
         shifts= new ArrayList<>();
+        this.locationService=locationService;
     }
     public String addJob(LocalDate date, boolean is_morning, Location location, int job){
         if(!LocalDate.now().isBefore(date)){
@@ -61,13 +58,13 @@ public class ShiftJobsFacade {
     public String loadAllJobs(){
         List<ShiftJobsDTO> list = jobs_dao.loadAll();
         for ( int i=0;i<list.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list.get(i).locationId());
             ShiftJobs shift = new ShiftJobs(list.get(i).date(), list.get(i).is_morning_shift(), location);
             shifts.add(shift);
         }
         List<ShiftJobsCountDTO> list_count = jobs_count_dao.loadAll();
         for( int i=0; i< list_count.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list_count.get(i).locationId());
             Shift shift = new Shift(list_count.get(i).date(), list_count.get(i).is_morning_shift(), location);
             for (ShiftJobs shiftJobs : shifts) {
                 if(shiftJobs.getShift().equals(shift)){
@@ -95,7 +92,12 @@ public class ShiftJobsFacade {
         }
         for (ShiftJobs shiftJobs : shifts) {
             if(shiftJobs.getShift().equals(new Shift(date, is_morning, location ))){
-                return shiftJobs.removeJob(job);
+                String result=  shiftJobs.removeJob(job);
+                if(result.startsWith("failed")){
+                    return "failed, could not removed this job";
+                }
+                ShiftJobsCountDTO job_count = new ShiftJobsCountDTO(job, date,is_morning, location.id(), shiftJobs.getJobCount(job)-1);
+                jobs_count_dao.update(job_count);
             }
         }
         return "we did not found such shift, so we could not removed the job";

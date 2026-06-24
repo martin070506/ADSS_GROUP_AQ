@@ -1,7 +1,7 @@
 package Service.Transportation;
 
-import DAO.SupplierAllocationDAO;
-import DTO.SupplierAllocationDTO;
+import DAO.Transportation.SupplierAllocationDAO;
+import DTO.Transportation.SupplierAllocationDTO;
 import Domain.Transportation.Location;
 import Domain.Transportation.Supplier;
 

@@ -16,18 +16,18 @@ public class ServiceControl{
     private  final WorkersService workers_service;
     private  final ShiftJobsService jobs_service;
     private  final ShiftPlacementService placement_service;
-    private  final ShiftWorkersCanidatesService candidates_service;
+    private  final ShiftWorkersCanidatesService canidates_service;
     private  final LocationService locationService;
 
     public ServiceControl(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service){
         this.workers_service= workers_service;
         this.jobs_service = jobs_service;
-        this.candidates_service = candidates_service;
+        this.canidates_service = candidates_service;
         this.placement_service = placement_service;
         this.locationService = locationService;
         this.workers_service.loadAllJobs();
         this.jobs_service.loadAllJobs();
-        this.candidates_service.loadAllJobs();
+        this.canidates_service.loadAllJobs();
         this.placement_service.loadAllJobs();
     }
 //    public   void main(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service) {
@@ -37,11 +37,13 @@ public class ServiceControl{
     public void run(){
         boolean exit=false;
         System.out.println("system woke up... \nsystem initialize");
+        //-------
 //        System.out.println("Enter true to load preset data and false to enter without");
 //        boolean data  = scanner.nextBoolean();
 //        if(data)
 //            load_data();
 //        scanner.nextLine();
+        //-----------
         while (!exit) {
             System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placement' for placement service \n 4) 'canidate' for shift canidates service \n 5) 'exit' for exit: ");
             String command = scanner.nextLine();
@@ -66,33 +68,25 @@ public class ServiceControl{
             }
         }
     }
-//    public   void load_data(){
-//        workers_service.addWorker("Mark", 0, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
-//        workers_service.addWorker("Pam", 1, "hapoalim", 31.4, "no extra hours",  LocalDate.parse("2015-05-05"), false);
-//        workers_service.addWorker("Elon", 2, "mizrachi", 38.7, "manager terms",  LocalDate.parse("2009-11-11"), true);
-//        workers_service.addWorker("Tim", 3, "leomi", 29.9, "trying term",  LocalDate.parse("2021-09-12"), false);
+    //-------------
+ //   public   void load_data(){
+//        workers_service.addDriver("Marko", 10, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false,1);
+//        workers_service.addWorker("Mark11", 11, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false);
+//        workers_service.addWorker("Mark12", 12, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
 //
-//        candidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),0);
-//        candidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),1);
-//        candidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),2);
-//        candidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),3);
+//        workers_service.removeWorker(1);
+
+//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),10));
+//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),11));
+//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),12));
 //
-//        candidates_service.addCandidate(LocalDate.parse("2028-01-02"),true, new Location(),0);
-//        candidates_service.addCandidate(LocalDate.parse("2028-01-02"),false, new Location(),1);
-//
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-//
-//
-//        jobs_service.addJob(LocalDate.parse("2028-01-02"),false,new Location(),0);
-//
-//        placement_service.addPlacement(LocalDate.parse("2027-01-01"), true, new Location(), 0, List.of(0, 1, 2, 3), List.of(0, 1, 0, 1));
-//        placement_service.addPlacement(LocalDate.parse("2028-01-02"), false, new Location(), 0, List.of(1), List.of(0));
-//
-//
-//    }
+//        System.out.println(jobs_service.addJob(LocalDate.parse("2027-01-02"),true,locationService.getLocation(1),0));
+
+    //    System.out.println(placement_service.addPlacement(LocalDate.parse("2027-01-02"), true, locationService.getLocation(1), 12, List.of(10), List.of(0)));
+   //     System.out.println(placement_service.changePlacment(LocalDate.parse("2027-01-02"), true, locationService.getLocation(1),10,11));
+
+  //  }
+    //----------
     public void runCanidateService(){
         boolean exit=false;
         while (!exit) {
@@ -135,7 +129,7 @@ public class ServiceControl{
             worker = scanner.nextInt();
             scanner.nextLine();
 
-            System.out.println(candidates_service.removeCandidate(date,is_morning,location, worker));
+            System.out.println(canidates_service.removeCandidate(date,is_morning,location, worker));
 
         }
         catch(Exception e){
@@ -163,7 +157,7 @@ public class ServiceControl{
             worker = scanner.nextInt();
             scanner.nextLine();
 
-            System.out.println(candidates_service.addCandidate(date,is_morning,location,worker));
+            System.out.println(canidates_service.addCandidate(date,is_morning,location,worker));
 
         }
         catch(Exception e){
@@ -187,7 +181,7 @@ public class ServiceControl{
             Location location = getLocation();
 
 
-            System.out.println(candidates_service.getCandidatesForShift(date,is_morning, location));
+            System.out.println(canidates_service.getCandidatesForShift(date,is_morning, location));
 
         }
         catch(Exception e){

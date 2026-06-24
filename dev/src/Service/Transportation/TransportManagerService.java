@@ -1,7 +1,7 @@
 package Service.Transportation;
 
-import DAO.TransportFileDAO;
-import DTO.TransportFileDTO;
+import DAO.Transportation.TransportFileDAO;
+import DTO.Transportation.TransportFileDTO;
 import Domain.Transportation.Transport;
 import Exceptions.*;
 import Service.Workers.ShiftJobsService;

@@ -1,30 +1,29 @@
 package Domain.Workers;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import DAO.ShiftCandidateIdDAO;
-import DAO.ShiftCandidatesDAO;
-import DB.DatabaseManager;
-import DTO.ShiftCandidateIdDTO;
-import DTO.ShiftCandidatesDTO;
-import Domain.Workers.Shift;
-import Domain.Workers.ShiftCanidates;
+import DAO.Workers.ShiftCandidateIdDAO;
+import DAO.Workers.ShiftCandidatesDAO;
+import DTO.Workers.ShiftCandidateIdDTO;
+import DTO.Workers.ShiftCandidatesDTO;
 import Domain.Transportation.Location;
+import DB.DatabaseManager;
+import Service.Transportation.LocationService;
 
 public class ShiftCanidatesWorkersFacade {
     private List<ShiftCanidates> canidates_list;
     private WorkersFacade workers;
     private ShiftCandidatesDAO shift_candidates_dao;
     private ShiftCandidateIdDAO shift_candidate_id_dao;
-
-    public ShiftCanidatesWorkersFacade(WorkersFacade workers) throws SQLException {
+    private LocationService locationService;
+    public ShiftCanidatesWorkersFacade(WorkersFacade workers, LocationService locationService) {
         this.canidates_list = new ArrayList<>();
         this.workers= workers;
-        this.shift_candidates_dao = new ShiftCandidatesDAO(DatabaseManager.getConnection());
-        this.shift_candidate_id_dao = new ShiftCandidateIdDAO(DatabaseManager.getConnection());
+        this.shift_candidates_dao = new ShiftCandidatesDAO(DatabaseManager.getConnectionWrapper());
+        this.shift_candidate_id_dao = new ShiftCandidateIdDAO(DatabaseManager.getConnectionWrapper());
+        this.locationService=locationService;
     }
     public boolean containWorker(LocalDate date, boolean is_morning, Location location, int id){
         Shift shift = new Shift(date, is_morning, location);
@@ -142,14 +141,14 @@ public class ShiftCanidatesWorkersFacade {
     public String loadAllJobs(){
         List<ShiftCandidatesDTO> list = shift_candidates_dao.loadAll();
         for ( int i=0;i<list.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list.get(i).locationId());
             Shift shift = new Shift(list.get(i).date(), list.get(i).is_morning_shift(), location);
             ShiftCanidates shiftCanidates = new ShiftCanidates(shift, new ArrayList<Integer>());
             canidates_list.add(shiftCanidates);
         }
         List<ShiftCandidateIdDTO> list_count = shift_candidate_id_dao.loadAll();
         for( int i=0; i< list_count.size(); i++){
-            Location location = new Location(0, null, null, null); // Todo: Fix this
+            Location location = locationService.getLocation(list_count.get(i).locationId());
             Shift shift = new Shift(list_count.get(i).date(), list_count.get(i).is_morning_shift(), location);
             for (ShiftCanidates shiftCanidates : canidates_list) {
                 if(shiftCanidates.getShift().equals(shift)){

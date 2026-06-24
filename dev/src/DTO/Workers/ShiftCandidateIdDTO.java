@@ -1,4 +1,4 @@
-package DTO;
+package DTO.Workers;
 import java.time.LocalDate;
 
 public record ShiftCandidateIdDTO(

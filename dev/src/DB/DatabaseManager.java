@@ -13,7 +13,11 @@ public class DatabaseManager {
      * This method opens a connection to your SQLite database.
      * Your DAO builders will call this to get their connection.
      */
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL);
+    public static Connection getConnection() {
+        try {
+            return DriverManager.getConnection(URL);
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection failed", e);
+        }
     }
 }

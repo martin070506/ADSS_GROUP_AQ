@@ -1,6 +1,6 @@
-package DAO;
+package DAO.Workers;
 
-import DTO.ShiftJobsCountDTO;
+import DTO.Workers.ShiftJobsCountDTO;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,7 +24,17 @@ public class ShiftJobsCountDAO {
             ps.executeUpdate();
         } catch (SQLException e) { throw new RuntimeException(e); }
     }
-
+    public void update(ShiftJobsCountDTO dto){
+        String sql = "UPDATE shift_jobs_count SET count = ? WHERE job = ? AND date = ? AND is_morning_shift = ? AND location_id = ? ";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1,dto.count());
+            ps.setInt(2, dto.job());
+            ps.setDate(3, Date.valueOf(dto.date()));
+            ps.setBoolean(4, dto.is_morning_shift());
+            ps.setInt(5, dto.locationId());
+            ps.executeUpdate();
+        } catch (SQLException e) { throw new RuntimeException(e); }
+    }
     public void remove(ShiftJobsCountDTO dto) {
         String sql = "DELETE FROM shift_jobs_count WHERE job = ? AND date = ? AND is_morning_shift = ? AND location_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -41,9 +51,22 @@ public class ShiftJobsCountDAO {
         String sql = "SELECT * FROM shift_jobs_count";
         try (Statement st = connection.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
+                String dateStr = rs.getString("date");
+                java.time.LocalDate localDate = null;
+
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    try {
+                        long millis = Long.parseLong(dateStr);
+                        localDate = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate();
+                    } catch (NumberFormatException e) {
+                        localDate = java.time.LocalDate.parse(dateStr);
+                    }
+                }
                 list.add(new ShiftJobsCountDTO(
                         rs.getInt("job"),
-                        rs.getDate("date").toLocalDate(),
+                        localDate,
                         rs.getBoolean("is_morning_shift"),
                         rs.getInt("location_id"),
                         rs.getInt("count")

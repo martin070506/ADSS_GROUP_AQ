@@ -1,8 +1,8 @@
 package Domain.Workers;
 
-import DAO.WorkerDAO;
+import DAO.Workers.WorkerDAO;
+import DTO.Workers.WorkerDTO;
 import DB.DatabaseManager;
-import DTO.WorkerDTO;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class WorkersFacade {
     private HashMap<Integer, Worker> workers;
     private WorkerDAO workers_dao;
-    public WorkersFacade() throws SQLException {
+    public WorkersFacade() {
         workers_dao = new WorkerDAO(DatabaseManager.getConnection());
         workers = new HashMap<>();
     }
@@ -43,6 +43,9 @@ public class WorkersFacade {
         try{
             Worker worker = new Driver(name, id, bankAccount, salary, salaryCondition, startDate, isShiftManager, license);
             workers.put(id, worker);
+            WorkerDTO workerDTO = new WorkerDTO(name, id, bankAccount, salary, salaryCondition, startDate, isShiftManager, true, license);
+            workers_dao.addWorker(workerDTO);
+
 
         }
         catch (Exception e){

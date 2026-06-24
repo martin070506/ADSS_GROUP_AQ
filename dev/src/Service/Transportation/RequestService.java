@@ -1,9 +1,9 @@
 package Service.Transportation;
 
-import DAO.RequestDAO;
-import DTO.ProductFileDTO;
-import DTO.ProductFile_ItemsDTO;
-import DTO.RequestDTO;
+import DAO.Transportation.RequestDAO;
+import DTO.Transportation.ProductFileDTO;
+import DTO.Transportation.ProductFile_ItemsDTO;
+import DTO.Transportation.RequestDTO;
 import Domain.Transportation.Location;
 import Domain.Transportation.Request;
 

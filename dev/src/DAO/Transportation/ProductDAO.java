@@ -1,6 +1,6 @@
-package DAO;
+package DAO.Transportation;
 
-import DTO.ProductDTO;
+import DTO.Transportation.ProductDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,4 +1,4 @@
-package DTO;
+package DTO.Transportation;
 
 import Domain.Transportation.Truck;
 

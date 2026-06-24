@@ -1,8 +1,8 @@
-package DAO;
+package DAO.Transportation;
 
-import DTO.ProductFileDTO;
-import DTO.ProductFile_ItemsDTO;
-import DTO.RequestDTO;
+import DTO.Transportation.ProductFileDTO;
+import DTO.Transportation.ProductFile_ItemsDTO;
+import DTO.Transportation.RequestDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

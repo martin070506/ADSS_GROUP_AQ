@@ -1,10 +1,11 @@
-package DTO;
+package DTO.Workers;
 
 import java.time.LocalDate;
 
-public record ShiftPlacementDTO(
+public record ShiftPlacementJobsWorkersDTO(
+        int job,
         LocalDate date,
         boolean is_morning_shift,
         int locationId,
-        int shift_manager_id
+        int worker_id
 ) {}
