@@ -1,22 +1,16 @@
 import DAO.*;
-import Domain.Transportation.*;
-import Domain.Workers.ShiftCanidatesWorkersFacade;
-import Domain.Workers.ShiftJobsFacade;
-import Domain.Workers.ShiftPlacmentFacade;
-import Domain.Workers.WorkersFacade;
+import DB.DatabaseManager;
+import DTO.SupplierAllocationDTO;
+import Exceptions.DomainException;
 import Presentation.Transportation.AdminConsole;
 import Presentation.Workers.ServiceControl;
 import Service.Transportation.*;
-import Service.Workers.ShiftJobsService;
-import Service.Workers.ShiftPlacementService;
-import Service.Workers.ShiftWorkersCanidatesService;
-import Service.Workers.WorkersService;
+import Service.Workers.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.sql.Statement;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -24,177 +18,152 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
         Scanner scanner = new Scanner(System.in);
-
         Connection dbConnection = DatabaseManager.getConnection();
 
-        // ==========================================
-        // 1. PRODUCTS TEST
-        // ==========================================
+        // ============================================================
+        // שלב 1: ניקוי בסיס הנתונים (מתבצע בכל הרצה מחדש)
+        // ============================================================
+
+        // ============================================================
+        // שלב 2: אתחול כל ה-DAOs וה-Services
+        // ============================================================
+        // תשתית הובלה
         ProductDAO productDB = new ProductDAO(dbConnection);
         ProductCatalogService productCatalogService = new ProductCatalogService(productDB);
-        productCatalogService.loadAllProductsFromDB();
-        System.out.println("--- CHECKING PRODUCTS ---");
-        List<Integer> l0 = productCatalogService.getProductsId();
-        for(Integer i : l0){
-            System.out.println(productCatalogService.getProductDisplay(i));
-        }
 
-        // ==========================================
-        // 2. TRUCKS TEST
-        // ==========================================
         TruckDAO truckDB = new TruckDAO(dbConnection);
         TruckService truckService = new TruckService(productCatalogService, truckDB);
-        truckService.loadAllTrucksFromDB();
-        System.out.println("\n--- CHECKING TRUCKS ---");
-        List<Integer> l1 = truckService.getAvailableTruckIds();
-        for(Integer i : l1){
-            System.out.println(truckService.getTruckDisplay(i));
-        }
 
-        // ==========================================
-        // 3. LOCATIONS TEST
-        // ==========================================
         LocationDAO locationDB = new LocationDAO(dbConnection);
         LocationService locationService = new LocationService(locationDB);
-        locationService.loadLocationsFromDB();
-        System.out.println("\n--- CHECKING LOCATIONS ---");
-        List<Integer> l2 = locationService.getLocationIds();
-        for(Integer i : l2){
-            System.out.println(locationService.getLocation(i).toString());
-        }
 
-        // ==========================================
-        // 4. BRANCHES TEST
-        // ==========================================
         BranchService branchService = new BranchService(locationService);
-        branchService.loadBranchesFromDB();
-        branchService.addBranch("New Branch St", "050-123", "Dani");
-        System.out.println("\n--- CHECKING BRANCHES ---");
-        List<Integer> l3 = branchService.getBranchesId();
-        for(Integer i : l3){
-            System.out.println(branchService.getBranchDisplay(i));
-        }
-
-        // ==========================================
-        // 5. SUPPLIERS TEST
-        // ==========================================
-        SupplierService supplierService = new SupplierService(locationService, new SupplierAllocationDAO(dbConnection));
-        supplierService.loadSuppliersFromDB();
-        supplierService.addSupplier("Supplier St", "052-456", "Avi", new HashMap<>());
-        System.out.println("\n--- CHECKING SUPPLIERS ---");
-        List<Integer> l4 = supplierService.getSupplierIds();
-        for(Integer i : l4){
-            System.out.println(supplierService.getSupplierDisplay(i));
-        }
-
-        // ==========================================
-        // 6. REQUESTS TEST (3 TABLES DB)
-        // ==========================================
-        System.out.println("\n=================================");
-        System.out.println("   TESTING REQUESTS (3 TABLES)   ");
-        System.out.println("=================================");
+        SupplierAllocationDAO allocationDAO = new SupplierAllocationDAO(dbConnection);
+        SupplierService supplierService = new SupplierService(locationService, allocationDAO);
 
         RequestDAO requestDB = new RequestDAO(dbConnection);
         RequestService requestService = new RequestService(locationService, requestDB);
 
-        // שלב 1: טעינה והצגה של הבקשות הפעילות כרגע
-        requestService.loadRequestsFromDB();
-        System.out.println("1. Current ACTIVE Requests Loaded From DB:");
-        List<Integer> activeRequestIds = requestService.getRequestsIds();
-        if (activeRequestIds.isEmpty()) {
-            System.out.println("   No active requests found in DB.");
-        } else {
-            for(Integer locId : activeRequestIds){
-                System.out.println("   " + requestService.getRequestDisplay(locId));
+        TransportFileDAO transportFileDAO = new TransportFileDAO(dbConnection);
+
+        // תשתית עובדים (בהנחה והמחלקות קיימות בפרויקט שלך)
+        WorkersService workers_service = new WorkersService(new Domain.Workers.WorkersFacade());
+        ShiftJobsService jobs_service = new ShiftJobsService(new Domain.Workers.ShiftJobsFacade());
+        ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(new Domain.Workers.ShiftCanidatesWorkersFacade(new Domain.Workers.WorkersFacade()));
+        ShiftPlacementService placement_service = new ShiftPlacementService(new Domain.Workers.ShiftPlacmentFacade(new Domain.Workers.WorkersFacade(), new Domain.Workers.ShiftJobsFacade(), new Domain.Workers.ShiftCanidatesWorkersFacade(new Domain.Workers.WorkersFacade())));
+
+        TransportManagerService transportManagerService = new TransportManagerService(truckService, supplierService, requestService, workers_service, jobs_service, transportFileDAO);
+//
+
+        // ============================================================
+        // Boot Sequence: טעינת כל הנתונים מה-DB לזיכרון של המערכת
+        // ============================================================
+        System.out.println("\n[SYSTEM BOOT] Loading existing data from Database...");
+
+        try {
+            // 1. קודם כל דברים עצמאיים שלא תלויים באף אחד
+            productCatalogService.loadAllProductsFromDB();
+            locationService.loadLocationsFromDB();
+
+            // 2. משאיות (תלויות במוצרים כדי לחשב משקל)
+            truckService.loadAllTrucksFromDB();
+
+            // 3. סניפים וספקים (תלויים במיקומים ובמוצרים)
+            branchService.loadBranchesFromDB();
+            supplierService.loadSuppliersFromDB();
+
+            // 4. בקשות והובלות (הכי מורכבים, תלויים בסניפים ובמוצרים)
+            requestService.loadRequestsFromDB();
+            transportManagerService.loadCountFromDB();
+
+            // הערה: אם יש לך Service שצריך לטעון הובלות פעילות שנקטעו באמצע, זה הזמן לטעון גם אותו.
+
+            System.out.println("[SYSTEM BOOT] All data loaded successfully into memory. Ready to go!");
+        } catch (Exception e) {
+            System.err.println("[SYSTEM BOOT] CRITICAL ERROR loading data from DB: " + e.getMessage());
+            e.printStackTrace();
+            return; // עוצרים את התוכנית אם אי אפשר לטעון נתונים
+        }
+
+
+        // ============================================================
+        // שלב 4: ניתוב למערכות (UI Main Loop)
+        // ============================================================
+        AdminConsole transportUI = new AdminConsole(productCatalogService, transportManagerService, supplierService,
+                requestService, truckService, branchService, locationService, workers_service, candidates_service,
+                placement_service, jobs_service);
+
+        ServiceControl workersUI = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
+
+        boolean exit = false;
+        System.out.println("\n========================================");
+        System.out.println("   WELCOME TO ADSS LOGISTICS SYSTEM   ");
+        System.out.println("========================================");
+
+        while (!exit) {
+            System.out.println("\nMain Menu:");
+            System.out.println("1. Transport & Logistics System");
+            System.out.println("2. Employee & Shift Management System");
+            System.out.println("3. ADMIN: Delete All System Data (Wipe DB)");
+            System.out.println("4. Exit Program");
+            System.out.print("Please enter your choice (1-4): ");
+
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1" -> transportUI.start();
+                case "2" -> workersUI.run();
+                case "3" -> {
+                    System.out.println("\n⚠️ WARNING: This will permanently delete ALL data in the database! ⚠️");
+                    System.out.print("Are you absolutely sure? (y/n): ");
+                    String confirm = scanner.nextLine().trim().toLowerCase();
+
+                    if (confirm.equals("y") || confirm.equals("yes")) {
+                        clearDatabase(dbConnection);
+                        System.out.println("✅ Database completely wiped!");
+                        System.out.println("🔄 PLEASE RESTART THE PROGRAM to clear the in-memory cache.");
+                        exit = true; // יוצאים מהתוכנית כדי להכריח איפוס זיכרון נקי
+                    } else {
+                        System.out.println("Aborted. Data is safe.");
+                    }
+                }
+                case "4" -> {
+                    System.out.println("Exiting System. Goodbye!");
+                    exit = true;
+                }
+                default -> System.out.println("Invalid choice. Please try again.");
             }
         }
 
-        // קוד טסט: יצירת בקשה חדשה לגמרי דרך ה-Service
-        System.out.println("\n2. Simulating: Creating a new Active Request through Service...");
-
-        int testLocationId = 1; // ודאו שסניף מספר 1 קיים אצלכם!
-
-        // יצירת מילון מוצרים לבקשה (למשל מוצר 0 ומוצר 1)
-        Map<Integer, Integer> testItems = new HashMap<>();
-        testItems.put(0, 100);
-        testItems.put(1, 250);
-
-        // הוספת הבקשה למערכת (זה ייצר את הקובץ וישמור ב-3 הטבלאות ב-DB אוטומטית)
-        requestService.addRequest(testLocationId, testItems);
-        System.out.println("   -> Success! Request added for Location " + testLocationId);
-
-        // טעינה מחדש כדי לראות שהמערכת באמת קולטת את זה מה-DB
-        System.out.println("\n3. Reloading Active Requests from DB to verify:");
-        requestService.loadRequestsFromDB();
-        for(Integer locId : requestService.getRequestsIds()){
-            System.out.println("   " + requestService.getRequestDisplay(locId));
-        }
-
-        /*
-        // שלב 4: סימולציית סיום הובלה (מחיקה רק מטבלת Active_Requests)
-        System.out.println("\n4. Simulating: Transport Completed...");
-        requestService.removeRequest(testLocationId);
-        System.out.println("   -> Request completed and removed from active view, history preserved in DB.");
-        */
-
-
-
-
-
-
-//        WorkersFacade workers_facade = new WorkersFacade();
-//        ShiftJobsFacade jobs_facade = new ShiftJobsFacade();
-//        ShiftCanidatesWorkersFacade candidates_facade = new ShiftCanidatesWorkersFacade(workers_facade);
-//        ShiftPlacmentFacade placement_facade = new ShiftPlacmentFacade(workers_facade, jobs_facade, candidates_facade);
-//
-//        WorkersService workers_service = new WorkersService(workers_facade);
-//        ShiftJobsService jobs_service = new ShiftJobsService(jobs_facade);
-//        ShiftWorkersCanidatesService candidates_service = new ShiftWorkersCanidatesService(candidates_facade);
-//        ShiftPlacementService placement_service = new ShiftPlacementService(placement_facade);
-//
-
-//        RequestService requestService = new RequestService(locationService);
-
-//        TransportManagerService transportService = new TransportManagerService(truckService, supplierService, requestService, workers_service);
-
-
-
-
-
-
-        //truckService.addTruck(800,"MERCEDES",1000,3000,2);
-
-//        AdminConsole appUI = new AdminConsole(productService, transportService, supplierService,
-//                requestService, truckService, branchService, locationService, workers_service, candidates_service,
-//                placement_service, jobs_service);
-//
-//        ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
-//
-//
-//
-//
-//        boolean exit = false;
-//        while(!exit){
-//            System.out.println("Which system would you like to enter?");
-//            System.out.println("1. Transport System");
-//            System.out.println("2. Employee System");
-//            System.out.println("3. Exit Program");
-//            System.out.print("Please enter your choice (1 or 2 or 3): ");
-//
-//            String choice = scanner.nextLine();
-//
-//            switch (choice) {
-//                case "1" -> {
-//                    appUI.start();
-//                }
-//                case "2" -> {
-//                    service.run();
-//                }
-//                case "3" -> exit = true;
-//                default -> System.out.println("Invalid choice. trying again.");
-//            }
-//        }
-
         scanner.close();
+    }
+
+    private static void clearDatabase(Connection conn) {
+        String[] tables = {
+                "SupplierAllocation",
+                "ProductFile_Items",
+                "Request",
+                "ProductFile",
+                "Location",
+                "Truck",
+                "Product",
+                "TransportFile" // וודאי שזה השם המדויק אצלך ב-DB
+        };
+
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("PRAGMA foreign_keys = OFF;");
+            for (String table : tables) {
+                try {
+                    stmt.executeUpdate("DELETE FROM " + table);
+                } catch (SQLException e) {
+                    System.err.println("Note: Table " + table + " skip/error: " + e.getMessage());
+                }
+            }
+            // איפוס מונים אוטומטיים של SQLite
+            stmt.executeUpdate("DELETE FROM sqlite_sequence;");
+            stmt.executeUpdate("PRAGMA foreign_keys = ON;");
+        } catch (SQLException e) {
+            throw new RuntimeException("Error wiping database: " + e.getMessage());
+        }
     }
 }

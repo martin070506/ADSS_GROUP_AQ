@@ -15,13 +15,13 @@ public class Driver extends Worker {
 
     @Override
     public int getLicense() {
-        return license;
-    }
+        return 10;
+    } // license Todo: Fix
     @Override
     public boolean isDriver(){return true;}
 
     @Override
     public String toString() {
-        return String.format("Driver: "+ super.toString() +" driver license: "+ license);
+        return String.format("Gever"); // "Driver: "+ super.toString() +" driver license: "+ license Todo: Fix
     }
 }
