@@ -7,6 +7,7 @@ import Exceptions.*;
 import Service.Workers.ShiftJobsService;
 import Service.Workers.WorkersService;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 public class TransportManagerService {
@@ -37,7 +38,7 @@ public class TransportManagerService {
                                 String truckInfo, String sourceInfo) {
         transport = new Transport(
                 transportIdCounter++,
-                java.time.LocalDate.now(),
+                java.time.LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(), LocalDate.now().getDayOfMonth() + 1),
                 truckId,
                 driverId,
                 sourceId,

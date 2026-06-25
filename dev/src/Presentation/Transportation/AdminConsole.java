@@ -444,6 +444,9 @@ public class AdminConsole {
             if (id == -1)
                 break;
 
+            if (!catalog.contains(id))
+                continue;
+
             int amount = promptInt("Quantity: ");
             stockIds.put(id, amount);
         }
