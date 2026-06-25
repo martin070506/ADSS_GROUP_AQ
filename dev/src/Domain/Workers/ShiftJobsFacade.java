@@ -57,7 +57,7 @@ public class ShiftJobsFacade {
     }
     public String loadAllJobs(){
         List<ShiftJobsDTO> list = jobs_dao.loadAll();
-        for ( int i=0;i<list.size(); i++){
+        for (int i=0;i<list.size(); i++){
             Location location = locationService.getLocation(list.get(i).locationId());
             ShiftJobs shift = new ShiftJobs(list.get(i).date(), list.get(i).is_morning_shift(), location);
             shifts.add(shift);

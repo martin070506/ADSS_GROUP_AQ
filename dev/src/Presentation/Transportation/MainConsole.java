@@ -39,6 +39,7 @@ public class MainConsole {
 
     public void initiateShipment() {
 
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
         boolean isMorning = LocalTime.now().isAfter(LocalTime.of(4, 59)) && LocalTime.now().isBefore(LocalTime.of(17, 0));
 
         int sourceIdx = selectSourceLocation();
@@ -47,7 +48,7 @@ public class MainConsole {
         int truckId = chooseTruck();
         if (truckId == -1) return;
 
-        int driverId = chooseDriver(sourceIdx, truckId, isMorning);
+        int driverId = chooseDriver(sourceIdx, truckId, isMorning, tomorrow);
         if (driverId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
@@ -268,9 +269,8 @@ public class MainConsole {
         }
     }
 
-    private int chooseDriver(int sourceIdx, int truckId, boolean isMorning) {
-        LocalDate today = LocalDate.now();
-        List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocation(sourceIdx));
+    private int chooseDriver(int sourceIdx, int truckId, boolean isMorning, LocalDate day) {
+        List<Integer> drivers = candidates_service.getAllAvialableDrivers(day, isMorning, locationService.getLocation(sourceIdx));
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");
             return -1;
@@ -279,10 +279,10 @@ public class MainConsole {
 
         System.out.println("\n--- Available Drivers ---");
         for (int index : drivers)
-            System.out.println("Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
+            System.out.println("ID :" + index + " Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
 
         while (true) {
-            int driverIndex = promptInt("Enter Driver: ")-1;
+            int driverIndex = promptInt("Enter Driver: ");
             if (driverIndex == -1)
                 return -1;
 
@@ -296,7 +296,7 @@ public class MainConsole {
                 continue;
             }
 
-            String massage = placement_service.PlaceDriver(today, isMorning,
+            String massage = placement_service.PlaceDriver(day, isMorning,
                     locationService.getLocation(sourceIdx), drivers.get(driverIndex));
 
             if (massage.startsWith("failed")) {
