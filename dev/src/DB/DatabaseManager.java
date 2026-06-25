@@ -6,8 +6,15 @@ import java.sql.SQLException;
 
 public class DatabaseManager {
 
+    private static String getDbPath() {
+        String userDir = System.getProperty("user.dir");
+        // If running from inside 'release', step out one folder using "../"
+        // If running from Project Root (IntelliJ), look directly in the root
+        return userDir.endsWith("release") ? "../databaseReference.db" : "databaseReference.db";
+    }
 
-    private static final String URL = "jdbc:sqlite:databaseReference.db";
+    private static final String URL = "jdbc:sqlite:" + getDbPath();
+
 
     /**
      * This method opens a connection to your SQLite database.
