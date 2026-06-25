@@ -17,12 +17,13 @@ public class MainConsole {
     private final ProductCatalogService productService;
     private final TruckService truckService;
     private final LocationService locationService;
+    private final RequestService requestService;
     private final WorkersService workers_service;
     private final ShiftWorkersCanidatesService candidates_service;
     private final ShiftPlacementService placement_service;
 
     public MainConsole(TransportManagerService transportService, SupplierService supplierService,
-                       ProductCatalogService productService, TruckService truckService, LocationService locationService,
+                       ProductCatalogService productService, TruckService truckService, LocationService locationService, RequestService requestService,
                        WorkersService workers_service, ShiftWorkersCanidatesService candidates_service,
                        ShiftPlacementService placement_service) {
         this.transportService = transportService;
@@ -30,6 +31,7 @@ public class MainConsole {
         this.productService = productService;
         this.truckService = truckService;
         this.locationService = locationService;
+        this.requestService = requestService;
         this.workers_service = workers_service;
         this.candidates_service = candidates_service;
         this.placement_service = placement_service;
@@ -45,7 +47,7 @@ public class MainConsole {
         int truckId = chooseTruck();
         if (truckId == -1) return;
 
-        int driverId = 0; // chooseDriver(sourceIdx, truckId, isMorning) Todo: Fix
+        int driverId = chooseDriver(sourceIdx, truckId, isMorning);
         if (driverId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
@@ -89,6 +91,8 @@ public class MainConsole {
             } catch (DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
                 break;
+            } catch (IgnoreException ignore) {
+
             } catch (Exception e) {
                 System.out.println("General Error: " + e.getMessage());
                 break;
@@ -96,7 +100,7 @@ public class MainConsole {
         }
 
         if (shipmentFinish) {
-            System.out.println(transportService.getTransportFileDisplay());
+            System.out.println(transportService.getTransportFileDisplay(productService.getProductsDisplay(truckService.getTruckProducts(transportService.getTruckId()))));
             transportService.finishShipment();
             System.out.println("Shipment finished successfully!");
         }
@@ -123,8 +127,17 @@ public class MainConsole {
 
         try {
             switch (choice) {
+                case 2:
+                    transportService.removeLastSupplierProductsFromTruck();
+                    showTruckProducts();
+                    int requestId = getRequestIdFromUser();
+                    if (requestId == -1)
+                        return;
+                    transportService.performEmergencyDropOff(requestId);
+                    break;
                 case 3:
                     getItemsToRemoveUI();
+                    transportService.leaveFirstSupplier();
                     break;
                 case 4:
                     int driverLicense = workers_service.getLicense(transportService.getDriverId());
@@ -139,7 +152,6 @@ public class MainConsole {
                         int newTruckId = Integer.parseInt(scanner.nextLine().trim());
                         if (truckIds.contains(newTruckId)) {
                             transportService.replaceTruck(newTruckId);
-                            transportService.finalizeCurrentSupplierLoading();
                             return;
                         } else {
                             System.out.println("Invalid Truck ID. Please try again.");
@@ -147,26 +159,62 @@ public class MainConsole {
                     }
                     break;
                 default:
-                    transportService.resolveOverweightIssue(choice);
+                    transportService.skipSupplierAndDropProductsFromTruck("Overweight default");
             }
-            System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
-            transportService.skipSupplier("No alternative vehicle matches criteria");
-        } catch (Exception e) { System.out.println("Error handling overweight: " + e.getMessage()); }
+        } catch (Exception e) {
+            System.out.println("Error handling overweight: " + e.getMessage() + '\n'); }
+    }
+
+    private void showTruckProducts() {
+        Map<Integer, Integer> products = truckService.getTruckProducts(transportService.getTruckId());
+        if (products.isEmpty()) {
+            System.out.println("The truck is empty!\n");
+            return;
+        }
+        System.out.println("Truck Products:");
+        List<Integer> productNames = new ArrayList<>(products.keySet());
+        for (Integer productId : productNames)
+            System.out.println(productService.getProductDisplay(productId) + " (" + products.get(productId) + " units)");
+        System.out.println();
+    }
+
+    private int getRequestIdFromUser() {
+        int requestNeeded;
+        while (true) {
+            System.out.println("Choose a request to drop off:");
+            for (Integer requestId : requestService.getAllRequests()) {
+                System.out.print(requestService.getRequestDisplay(requestId));
+                Map<Integer, Integer> products = requestService.getProducts(requestId);
+                for (Integer productId : products.keySet())
+                    System.out.println(productService.getProductDisplay(productId) + " (" + products.get(productId) + " units)");
+                System.out.println();
+            }
+
+            requestNeeded = promptInt("Enter Request ID (or '-1' to skip'): ") ;
+
+            if (requestService.getAllRequests().contains(requestNeeded) || requestNeeded == -1)
+                break;
+
+            System.out.println("Invalid Branch ID. Please try again.");
+        }
+        return requestNeeded;
     }
 
     private void getItemsToRemoveUI() {
         while (true) {
-            Map<Integer, Integer> currentItemsDisplay = truckService.getTruckProducts(transportService.getTruckId());
-            if (currentItemsDisplay.isEmpty()) {
+            System.out.println();
+            System.out.print("TruckWeight = " + truckService.getTruckWeight(transportService.getTruckId()) + '/' + truckService.getTruckMaxWeight(transportService.getTruckId()) + " kg");
+            Map<Integer, Integer> productPairIds = truckService.getTruckProducts(transportService.getTruckId());
+            if (productPairIds.isEmpty()) {
                 System.out.println("The truck is now empty!");
                 break;
             }
 
             System.out.println("\nCurrent loaded items:");
             int i = 0;
-            List<Integer> productNames = new ArrayList<>(currentItemsDisplay.keySet());
-            for (Integer productId : productNames)
-                System.out.println(productService.getProductDisplay(productId) + " (" + currentItemsDisplay.get(productId) + " units)");
+            List<Integer> productIds = new ArrayList<>(productPairIds.keySet());
+            for (Integer productId : productIds)
+                System.out.println(productService.getProductDisplay(productId) + " (" + productPairIds.get(productId) + " units)");
 
 
             System.out.print("Enter product ID to remove (or type '-1'): ");
@@ -176,15 +224,30 @@ public class MainConsole {
 
             try {
                 int productId = Integer.parseInt(input);
-                if (productId >= 0 && productId < productNames.size()) {
+                if (productId >= 0 && productIds.contains(productId)) {
                     int amt = promptInt("Amount to remove: ");
                     if (amt > 0) {
-                        transportService.resolveOverweightWithFineTuning(productId, amt);
-                        System.out.println("Items removed.");
-                    } else { System.out.println("Invalid amount."); }
-                } else { System.out.println("Product ID not found on truck."); }
-            } catch (NumberFormatException e) { System.out.println("Invalid input. Please enter a number."); }
+                        try {
+                            transportService.resolveOverweightWithFineTuning(productId, amt, productService.getProductName(productId));
+                            System.out.println("Items removed.");
+                        } catch (InsufficientTruckStockException e) {
+                            System.out.println("Insufficient stock on truck.");
+                        }
+                    } else {
+                        System.out.println("Invalid amount.");
+                    }
+                } else {
+                    System.out.println("Product ID not found on truck.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
         }
+        if (truckService.isTruckOverweight(transportService.getTruckId())) {
+            System.out.println("Truck Still on overweight");
+            getItemsToRemoveUI();
+        }
+        System.out.println();
     }
 
     private int chooseTruck() {
@@ -207,7 +270,7 @@ public class MainConsole {
 
     private int chooseDriver(int sourceIdx, int truckId, boolean isMorning) {
         LocalDate today = LocalDate.now();
-        List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocation(sourceIdx)); // TODO: notice break of Domain
+        List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocation(sourceIdx));
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");
             return -1;
@@ -216,7 +279,7 @@ public class MainConsole {
 
         System.out.println("\n--- Available Drivers ---");
         for (int index : drivers)
-            System.out.println("fuuuuu"); // "Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index) Todo: Fix
+            System.out.println("Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
 
         while (true) {
             int driverIndex = promptInt("Enter Driver: ")-1;
@@ -283,10 +346,23 @@ public class MainConsole {
         List<Integer> selectedSupplierIndices = new ArrayList<>();
 
         if (input.equalsIgnoreCase("all")) {
-            for (int i = 0; i < supplierIds.size(); i++) {
-                selectedSupplierIndices.add(i);
+            selectedSupplierIndices.addAll(supplierIds);
+            System.out.println("Selected all Suppliers.");
+            System.out.print("Do you want to select also all Products? (y/n): ");
+
+            if (scanner.nextLine().trim().equals("y")) {
+                System.out.println();
+                for (Integer supplierId : supplierIds) {
+                    Map<Integer, Integer> productsToBuy = new HashMap<>();
+                    for (Integer productId : supplierService.getProductIds(supplierId))
+                        productsToBuy.put(productId, supplierService.getProductStock(supplierId, productId));
+
+                    allocations.put(supplierId, productsToBuy);
+                }
+                return allocations;
             }
-        } else {
+        }
+        else
             for (String part : input.split(",\\s*")) {
                 try {
                     int idx = Integer.parseInt(part);
@@ -295,7 +371,7 @@ public class MainConsole {
                     }
                 } catch (NumberFormatException ignored) {}
             }
-        }
+
 
         int supS = selectedSupplierIndices.size();
         for (int i = 0; i < selectedSupplierIndices.size(); i++) {
@@ -330,7 +406,10 @@ public class MainConsole {
                 System.out.print("Enter Product Index to add (or type 'done'): ");
                 String prodInput = scanner.nextLine().trim();
                 if (prodInput.equalsIgnoreCase("done")) break;
-
+                if (!availableProductIds.contains(Integer.parseInt(prodInput))) {
+                    System.out.println("Invalid Product Index.");
+                    continue;
+                }
                 try {
                     int pIdx = Integer.parseInt(prodInput);
                     if (pIdx >= 0) {

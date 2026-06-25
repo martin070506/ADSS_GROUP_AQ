@@ -17,17 +17,19 @@ public class LocationDAO {
         this.connection = connection;
     }
 
-    public boolean exists(int locationId) throws SQLException {
+    public boolean exists(int locationId) {
         String sql = "SELECT 1 FROM Location WHERE location_id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public List<LocationDTO> loadAllLocations() throws SQLException {
+    public List<LocationDTO> loadAllLocations() {
         List<LocationDTO> locations = new ArrayList<>();
         String sql = "SELECT * FROM Location";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -35,23 +37,25 @@ public class LocationDAO {
             while (rs.next()) {
                 locations.add(mapRowToLocationDTO(rs));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return locations;
     }
 
-    public void addLocation(LocationDTO location) throws SQLException {
+    public void addLocation(LocationDTO location) {
         addLocation(location, null);
     }
 
-    public void addBranch(LocationDTO location) throws SQLException {
+    public void addBranch(LocationDTO location) {
         addLocation(location, "Branch");
     }
 
-    public void addSupplier(LocationDTO location) throws SQLException {
+    public void addSupplier(LocationDTO location) {
         addLocation(location, "Supplier");
     }
 
-    private void addLocation(LocationDTO location, String locationType) throws SQLException {
+    private void addLocation(LocationDTO location, String locationType) {
         String sql = "INSERT INTO Location (location_id, contact_name, address, phone_number, location_type) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, location.locationId());
@@ -60,39 +64,49 @@ public class LocationDAO {
             stmt.setString(4, location.phoneNumber());
             stmt.setString(5, locationType);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static LocationDTO mapRowToLocationDTO(ResultSet rs) throws SQLException {
-        return new LocationDTO(
-                rs.getInt("location_id"),
-                rs.getString("contact_name"),
-                rs.getString("address"),
-                rs.getString("phone_number"),
-                rs.getString("location_type")
-        );
+    private static LocationDTO mapRowToLocationDTO(ResultSet rs) {
+        try {
+            return new LocationDTO(
+                    rs.getInt("location_id"),
+                    rs.getString("contact_name"),
+                    rs.getString("address"),
+                    rs.getString("phone_number"),
+                    rs.getString("location_type")
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void removeLocation(int locationId) throws SQLException {
+    public void removeLocation(int locationId) {
         String sql = "DELETE FROM Location WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public int getHighestLocationID() throws SQLException {
+    public int getHighestLocationID() {
         String sql = "SELECT MAX(location_id) FROM Location";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return -1;
     }
 
-    public LocationDTO getLocation(int locationId) throws SQLException {
+    public LocationDTO getLocation(int locationId) {
         String sql = "SELECT * FROM Location WHERE location_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, locationId);
@@ -101,11 +115,13 @@ public class LocationDAO {
                     return mapRowToLocationDTO(rs);
                 }
             }
+            throw new RuntimeException("Location not found with ID: " + locationId);
+        } catch (SQLException e) {
+            throw new RuntimeException("Location not found with ID: " + e);
         }
-        throw new SQLException("Location not found: " + locationId);
     }
 
-    public List<LocationDTO> loadAllBranches() throws SQLException {
+    public List<LocationDTO> loadAllBranches() {
         List<LocationDTO> locations = new ArrayList<>();
         String sql = "SELECT * FROM Location WHERE location_type = 'Branch'";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -113,11 +129,13 @@ public class LocationDAO {
             while (rs.next()) {
                 locations.add(mapRowToLocationDTO(rs));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return locations;
     }
 
-    public List<LocationDTO> loadAllSuppliers() throws SQLException {
+    public List<LocationDTO> loadAllSuppliers() {
         List<LocationDTO> locations = new ArrayList<>();
         String sql = "SELECT * FROM Location WHERE location_type = 'Supplier'";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -125,27 +143,10 @@ public class LocationDAO {
             while (rs.next()) {
                 locations.add(mapRowToLocationDTO(rs));
             }
-        }
-        return locations;
-    }
-
-    public static LocationDTO getLocationStatic(int locationId) throws SQLException {
-        String sql = "SELECT * FROM Location WHERE location_id = ?";
-        try (PreparedStatement stmt = DatabaseManager.getConnection().prepareStatement(sql)) {
-            stmt.setInt(1, locationId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRowToLocationDTO(rs);
-                }
-            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        throw new SQLException("Location not found: " + locationId);
+        return locations;
     }
-
-
-
-
 }
 

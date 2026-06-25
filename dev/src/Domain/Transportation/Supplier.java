@@ -21,12 +21,7 @@ public class Supplier {
         return location.contactName();
     }
 
-    public void handleShipment(Map<Integer, Integer> supplierAllocationIds) {
-        checkAvailability(supplierAllocationIds);
-        dispatchProducts(supplierAllocationIds);
-    }
-
-    private void checkAvailability(Map<Integer, Integer> supplierAllocationIds) {
+    public void checkAvailability(Map<Integer, Integer> supplierAllocationIds) {
         for (Map.Entry<Integer, Integer> entry : supplierAllocationIds.entrySet()) {
             int productId = entry.getKey();
             int requiredAmount = entry.getValue();
@@ -37,7 +32,7 @@ public class Supplier {
         }
     }
 
-    private void dispatchProducts(Map<Integer, Integer> supplierAllocationIds) {
+    public void handleShipment(Map<Integer, Integer> supplierAllocationIds) {
         for (Map.Entry<Integer, Integer> entry : supplierAllocationIds.entrySet()) {
             int productId = entry.getKey();
             int amount = entry.getValue();

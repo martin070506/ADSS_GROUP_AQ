@@ -16,28 +16,32 @@ public class TruckDAO {
         this.connection = connection;
     }
 
-    public boolean exists(int truckID) throws SQLException {
+    public boolean exists(int truckID) {
         String sql = "SELECT 1 FROM Truck WHERE truck_id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, truckID);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public int getHighestTruckID() throws SQLException {
+    public int getHighestTruckID() {
         String sql = "SELECT MAX(truck_id) FROM Truck";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return -1;
     }
 
-    public void addTruck(TruckDTO truckDTO) throws SQLException {
+    public void addTruck(TruckDTO truckDTO) {
         String sql = "INSERT INTO Truck (truck_id, truck_model, required_license, truck_number, startWeight, maxWeight) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, truckDTO.id());
@@ -47,10 +51,12 @@ public class TruckDAO {
             stmt.setInt(5, truckDTO.startWeight());
             stmt.setInt(6, truckDTO.maxWeight());
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public List<TruckDTO> loadAllTrucks() throws SQLException {
+    public List<TruckDTO> loadAllTrucks() {
         List<TruckDTO> trucks = new ArrayList<>();
         String sql = "SELECT truck_id, truck_model, required_license, truck_number, startWeight, maxWeight FROM Truck";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -58,26 +64,34 @@ public class TruckDAO {
             while (rs.next()) {
                 trucks.add(mapRowToTruckDTO(rs));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return trucks;
     }
 
-    private TruckDTO mapRowToTruckDTO(ResultSet rs) throws SQLException {
-        return new TruckDTO(
-                rs.getInt("truck_id"),
-                rs.getInt("truck_number"),
-                rs.getString("truck_model"),
-                rs.getInt("startWeight"),
-                rs.getInt("maxWeight"),
-                rs.getInt("required_license")
-        );
+    private TruckDTO mapRowToTruckDTO(ResultSet rs) {
+        try {
+            return new TruckDTO(
+                    rs.getInt("truck_id"),
+                    rs.getInt("truck_number"),
+                    rs.getString("truck_model"),
+                    rs.getInt("startWeight"),
+                    rs.getInt("maxWeight"),
+                    rs.getInt("required_license")
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void removeTruck(int truckID) throws SQLException {
+    public void removeTruck(int truckID) {
         String sql = "DELETE FROM Truck WHERE truck_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, truckID);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

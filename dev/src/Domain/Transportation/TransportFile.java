@@ -58,7 +58,11 @@ public class TransportFile {
         requestsLog += requestInfo;
     }
 
-    public String toString(Map<Product, Integer> itemsLeft) {
+    public void UpdateDropOff(String productName, int amountToRemove) {
+        transportLog += "Dropped off " + amountToRemove + " " + productName + ".\n";
+    }
+
+    public String toString(String itemsLeft) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -78,19 +82,8 @@ public class TransportFile {
         sb.append(requestsLog != null ? requestsLog : "").append("\n\n");
 
         sb.append("--- ITEM LEFT ON TRUCK ---\n");
-        if (itemsLeft != null && !itemsLeft.isEmpty()) {
-            for (Map.Entry<Product, Integer> entry : itemsLeft.entrySet()) {
-                sb.append("- ").append(entry.getKey().name()).append(": ").append(entry.getValue()).append(" units\n");
-            }
-        } else {
-            sb.append("No items currently held.\n");
-        }
+        sb.append(itemsLeft != null ? itemsLeft : "No items currently held.").append("\n");
 
         return sb.toString();
-    }
-
-    @Override
-    public String toString() {
-        return toString(null);
     }
 }

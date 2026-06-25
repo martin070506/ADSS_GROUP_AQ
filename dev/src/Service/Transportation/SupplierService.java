@@ -5,7 +5,6 @@ import DTO.Transportation.SupplierAllocationDTO;
 import Domain.Transportation.Location;
 import Domain.Transportation.Supplier;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,125 +19,88 @@ public class SupplierService {
         this.locationService = locationService;
         this.allocationDAO = allocationDAO;
         this.suppliers = new ArrayList<>();
-        loadSuppliersFromDB();
     }
 
     public void loadSuppliersFromDB() {
         suppliers.clear();
         List<Location> supplierLocations = locationService.loadAllSuppliers();
-        try {
-            for (Location loc : supplierLocations) {
-                // 1. קבלת רשימת DTOs מה-DAO
-                List<SupplierAllocationDTO> dtoList = allocationDAO.getAllocations(loc.id());
+        for (Location loc : supplierLocations) {
+            // 1. קבלת רשימת DTOs מה-DAO
+            List<SupplierAllocationDTO> dtoList = allocationDAO.getAllocations(loc.id());
 
-                // 2. המרת הרשימה למפה (Map) עבור ה-Domain Object
-                Map<Integer, Integer> allocations = new HashMap<>();
-                for (SupplierAllocationDTO dto : dtoList) {
-                    allocations.put(dto.productID(), dto.amountOfProduct());
-                }
-
-                suppliers.add(new Supplier(loc, allocations));
+            // 2. המרת הרשימה למפה (Map) עבור ה-Domain Object
+            Map<Integer, Integer> allocations = new HashMap<>();
+            for (SupplierAllocationDTO dto : dtoList) {
+                allocations.put(dto.productID(), dto.amountOfProduct());
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+
+            suppliers.add(new Supplier(loc, allocations));
         }
     }
 
     public void addSupplier(String addr, String phone, String contact, Map<Integer, Integer> productMap) {
-        try {
-            int locationId = locationService.addSupplierLocation(addr, phone, contact);
-            Location newLocation = locationService.getLocation(locationId);
+        int locationId = locationService.addSupplierLocation(addr, phone, contact);
+        Location newLocation = locationService.getLocation(locationId);
 
-            for (Map.Entry<Integer, Integer> entry : productMap.entrySet()) {
-                // המרה ל-DTO לפני שליחה ל-DAO
-                allocationDAO.addAllocation(new SupplierAllocationDTO(locationId, entry.getKey(), entry.getValue()));
-            }
-
-            Supplier supplier = new Supplier(newLocation, productMap);
-            suppliers.add(supplier);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        for (Map.Entry<Integer, Integer> entry : productMap.entrySet()) {
+            allocationDAO.addAllocation(new SupplierAllocationDTO(locationId, entry.getKey(), entry.getValue()));
         }
+
+        Supplier supplier = new Supplier(newLocation, productMap);
+        suppliers.add(supplier);
     }
 
     public List<Integer> getSupplierIds() {
         List<Integer> supplierIds = new ArrayList<>();
-        for (Supplier supplier : suppliers) {
+        for (Supplier supplier : suppliers)
             supplierIds.add(supplier.getLocationId());
-        }
+
         return supplierIds;
     }
 
     public List<Integer> getProductIds(int locationId) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == locationId) {
-                return supplier.getProductIds();
-            }
-        }
-        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+        return getSupplier(locationId).getProductIds();
     }
 
     public int getProductStock(int locationId, int productId) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == locationId) {
-                return supplier.getProductStock(productId);
-            }
-        }
-        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+        return getSupplier(locationId).getProductStock(productId);
     }
 
-    public void handleShipment(int supplierId, Map<Integer, Integer> itemsToLoad) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == supplierId) {
-                supplier.handleShipment(itemsToLoad);
-
-                try {
-                    for (Map.Entry<Integer, Integer> entry : itemsToLoad.entrySet()) {
-                        int updatedStock = supplier.getProductStock(entry.getKey());
-                        // המרה ל-DTO לפני עדכון ה-DB.DB
-                        allocationDAO.updateAllocation(new SupplierAllocationDTO(supplierId, entry.getKey(), updatedStock));
-                    }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                return;
-            }
+    public void handleShipment(int locationId, Map<Integer, Integer> itemsToLoad) {
+        Supplier supplier = getSupplier(locationId);
+        supplier.handleShipment(itemsToLoad);
+        for (Map.Entry<Integer, Integer> entry : itemsToLoad.entrySet()) {
+            int updatedStock = supplier.getProductStock(entry.getKey());
+            allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, entry.getKey(), updatedStock));
         }
-        throw new IllegalArgumentException("Supplier not found at location: " + supplierId);
     }
 
     public String getSupplierName(int locationId) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == locationId) {
-                return supplier.getName();
-            }
-        }
-        throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+        return getSupplier(locationId).getLocation().contactName();
     }
 
     public String getSupplierDisplay(int supplierId) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == supplierId) {
-                return supplier.toString();
-            }
-        }
-        throw new IllegalArgumentException("Supplier not found at location: " + supplierId);
+        return getSupplier(supplierId).toString();
     }
 
     public void resupplySupplier(int locationId, int productId, int amount) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getLocationId() == locationId) {
-                supplier.addStock(productId, amount);
-                try {
-                    // המרה ל-DTO לפני עדכון ה-DB.DB
-                    int updatedStock = supplier.getProductStock(productId);
-                    allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, productId, updatedStock));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                return;
-            }
-        }
+        Supplier supplier = getSupplier(locationId);
+        supplier.addStock(productId, amount);
+        // המרה ל-DTO לפני עדכון ה-DB.DB
+        int updatedStock = supplier.getProductStock(productId);
+        allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, productId, updatedStock));
+    }
+
+
+    private Supplier getSupplier(int locationId) {
+        for (Supplier supplier : suppliers)
+            if (supplier.getLocationId() == locationId)
+                return supplier;
+
         throw new IllegalArgumentException("Supplier not found at location: " + locationId);
+    }
+
+    public void checkAvailability(int supplierId, Map<Integer, Integer> itemsToLoad) {
+        getSupplier(supplierId).checkAvailability(itemsToLoad);
     }
 }

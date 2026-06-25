@@ -74,6 +74,16 @@ public class Truck {
             int amount = entry.getValue();
             loadedProducts.put(productId, loadedProducts.getOrDefault(productId, 0) + amount);
         }
+
+        removeEmptyProducts(newProducts);
+    }
+
+    private void removeEmptyProducts(Map<Integer, Integer> productsToRemove) {
+        for (Map.Entry<Integer, Integer> entry : productsToRemove.entrySet()) {
+            int productId = entry.getKey();
+            if (loadedProducts.get(productId) == 0)
+                loadedProducts.remove(productId);
+        }
     }
 
     public void removeProducts(Map<Integer, Integer> productsToRemove) {
@@ -89,6 +99,8 @@ public class Truck {
             int amount = entry.getValue();
             loadedProducts.put(productId, loadedProducts.get(productId) - amount);
         }
+
+        removeEmptyProducts(productsToRemove);
     }
 
     @Override

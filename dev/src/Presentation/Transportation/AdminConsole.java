@@ -45,23 +45,27 @@ public class AdminConsole {
     public void start() {
         boolean exit = false;
         while (!exit) {
-            System.out.println("\n=== LOGISTICS MANAGEMENT SYSTEM ===");
-            System.out.println("1. Load Automatic Demo Data (Full Ecosystem)");
-            System.out.println("2. Manual Data Entry");
-            System.out.println("3. Return to Main Menu");
-            System.out.print("Choice: ");
+            while (true) {
+                System.out.println("\n=== LOGISTICS MANAGEMENT SYSTEM ===");
+                System.out.println("1. Load Automatic Demo Data (Full Ecosystem)");
+                System.out.println("2. Continue with Existing Data");
+                System.out.println("3. Return to Main Menu");
+                System.out.print("Choice: ");
 
-            String choice1 = scanner.nextLine().trim();
+                String choice1 = scanner.nextLine().trim();
 
-            if (choice1.equals("1")) {
-                loadRichDemoData();
-                System.out.println("\n✅ Full Demo Ecosystem Loaded Successfully.");
-            } else if (choice1.equals("2")) {
-                manualSetup();
-            } else if (choice1.equals("3")) {
-                exit = true;
-            } else {
-                System.out.println("Invalid choice. Try again.");
+                if (choice1.equals("1")) {
+                    loadRichDemoData();
+                    System.out.println("\n✅ Full Demo Ecosystem Loaded Successfully.");
+                    break;
+                } else if (choice1.equals("2")) {
+                    break;
+                } else if (choice1.equals("3")) {
+                    exit = true;
+                    break;
+                } else {
+                    System.out.println("Invalid choice. Try again.");
+                }
             }
 
             while (!exit) {
@@ -113,7 +117,7 @@ public class AdminConsole {
         }
 
         MainConsole shipmentConsole = new MainConsole(transportService, supplierService, productService,
-                truckService, locationService, workers_service, candidates_service, placement_service);
+                truckService, locationService, requestService, workers_service, candidates_service, placement_service);
         try {shipmentConsole.initiateShipment(); }
         catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
         catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
@@ -524,7 +528,6 @@ public class AdminConsole {
         reqTlv.put(p.get(0), 200); // חלב
         reqTlv.put(p.get(1), 100); // לחם
         reqTlv.put(p.get(2), 50);  // בשר
-        reqTlv.put(p.get(3), 150); // קולה
         requestService.addRequest(b.get(1), reqTlv);
 
         // בקשה לחיפה

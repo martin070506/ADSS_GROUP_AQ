@@ -30,10 +30,6 @@ public class Transport {
         return driverId;
     }
 
-    public Map<Integer, Map<Integer, Integer>> getSupplierAllocationIds() {
-        return supplierAllocationIds;
-    }
-
     public int getId() {
         return id;
     }
@@ -55,7 +51,7 @@ public class Transport {
         this.transportFile.changeTruck(truckCapacity, truckInfo);
     }
 
-    public void removeSupplier(int supplierId) {
+    public void removeSupplierAllocations(int supplierId) {
         supplierAllocationIds.remove(supplierId);
     }
 
@@ -83,19 +79,23 @@ public class Transport {
         transportFile.skipSupplier(supplierName, reason);
     }
 
-    public void removeItems(Map<Integer, Integer> thingsToRemove) {
-        for (Map.Entry<Integer, Integer> entry : thingsToRemove.entrySet()) {
-            int productId = entry.getKey();
-            int amount = entry.getValue();
-            supplierAllocationIds.get(productId).put(productId, supplierAllocationIds.get(productId).get(productId) - amount);
-        }
-    }
-
     public TransportFile getTransportFile() {
         return transportFile;
     }
 
     public void UpdateSkipRequest(String requestContactName, String reason) {
         transportFile.skipRequest(requestContactName, reason);
+    }
+
+    public boolean hasSuppliers() {
+        return !supplierAllocationIds.isEmpty();
+    }
+
+    public Map<Integer, Integer> getSupplierAllocations(int supplierId) {
+        return supplierAllocationIds.get(supplierId);
+    }
+
+    public void UpdateDropOff(String productName, int amountToRemove) {
+        transportFile.UpdateDropOff(productName, amountToRemove);
     }
 }

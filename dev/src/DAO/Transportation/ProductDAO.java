@@ -16,38 +16,44 @@ public class ProductDAO {
         this.connection = connection;
     }
 
-    public boolean exists(int id) throws SQLException {
+    public boolean exists(int id) {
         String sql = "SELECT 1 FROM Product WHERE id = ? LIMIT 1";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public int getHighestProductID() throws SQLException {
+    public int getHighestProductID() {
         String sql = "SELECT MAX(id) FROM Product";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return -1;
     }
 
-    public void addProduct(ProductDTO productDTO) throws SQLException {
+    public void addProduct(ProductDTO productDTO) {
         String sql = "INSERT INTO Product (id, name, weight) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, productDTO.id());
             stmt.setString(2, productDTO.name());
             stmt.setInt(3, productDTO.weight());
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public List<ProductDTO> loadAllProducts() throws SQLException {
+    public List<ProductDTO> loadAllProducts() {
         List<ProductDTO> products = new ArrayList<>();
         String sql = "SELECT id, name, weight FROM Product";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
@@ -55,23 +61,31 @@ public class ProductDAO {
             while (rs.next()) {
                 products.add(mapRowToProductDTO(rs));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return products;
     }
 
-    private ProductDTO mapRowToProductDTO(ResultSet rs) throws SQLException {
-        return new ProductDTO(
-                rs.getInt("id"),
-                rs.getString("name"),
-                rs.getInt("weight")
-        );
+    private ProductDTO mapRowToProductDTO(ResultSet rs) {
+        try {
+            return new ProductDTO(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getInt("weight")
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void removeProduct(int id) throws SQLException {
+    public void removeProduct(int id) {
         String sql = "DELETE FROM Product WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

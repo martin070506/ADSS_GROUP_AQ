@@ -14,7 +14,6 @@ public class BranchService {
     public BranchService(LocationService locationService) {
         this.locationService = locationService;
         this.branches = new ArrayList<>();
-        loadBranchesFromDB();
     }
 
     public void loadBranchesFromDB() {

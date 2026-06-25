@@ -15,23 +15,14 @@ public class LocationService {
 
     public LocationService(LocationDAO locationDAO) {
         this.locationDAO = locationDAO;
-        try {
-            this.counter = locationDAO.getHighestLocationID() + 1;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        this.counter = locationDAO.getHighestLocationID() + 1;
     }
 
     public void loadLocationsFromDB() {
-        try {
-            locations.clear(); // מונע כפילויות בטעינה חוזרת
-            List<LocationDTO> dtos = locationDAO.loadAllLocations();
-            for (LocationDTO dto : dtos) {
-                locations.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        locations.clear(); // מונע כפילויות בטעינה חוזרת
+        List<LocationDTO> dtos = locationDAO.loadAllLocations();
+        for (LocationDTO dto : dtos)
+            locations.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
     }
 
     public int addLocation(String addr, String phone, String contact) {
@@ -39,12 +30,8 @@ public class LocationService {
         Location location = new Location(newId, addr, phone, contact);
         locations.add(location);
 
-        try {
-            LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
-            locationDAO.addLocation(dto);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
+        locationDAO.addLocation(dto);
         return newId;
     }
 
@@ -53,12 +40,8 @@ public class LocationService {
         Location location = new Location(newId, addr, phone, contact);
         locations.add(location);
 
-        try {
-            LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
-            locationDAO.addBranch(dto);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
+        locationDAO.addBranch(dto);
         return newId;
     }
 
@@ -67,13 +50,8 @@ public class LocationService {
         Location location = new Location(newId, addr, phone, contact);
         locations.add(location);
 
-        try {
-            // המרה ל-DTO ושליחה ל-DAO
-            LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
-            locationDAO.addSupplier(dto);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        LocationDTO dto = new LocationDTO(newId, contact, addr, phone, null);
+        locationDAO.addSupplier(dto);
         return newId;
     }
 
@@ -104,37 +82,25 @@ public class LocationService {
     }
 
     public List<Location> loadAllBranches() {
-        try {
-            List<LocationDTO> dtos = locationDAO.loadAllBranches();
-            List<Location> branches = new ArrayList<>();
-            for (LocationDTO dto : dtos) {
-                branches.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
-            }
-            return branches;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        List<LocationDTO> dtos = locationDAO.loadAllBranches();
+        List<Location> branches = new ArrayList<>();
+        for (LocationDTO dto : dtos)
+            branches.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
+
+        return branches;
     }
 
     public void removeLocation(int branchId) {
         locations.removeIf(location -> location.id() == branchId);
-        try {
-            locationDAO.removeLocation(branchId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        locationDAO.removeLocation(branchId);
     }
 
     public List<Location> loadAllSuppliers() {
-        try {
-            List<LocationDTO> dtos = locationDAO.loadAllSuppliers();
-            List<Location> suppliers = new ArrayList<>();
-            for (LocationDTO dto : dtos) {
-                suppliers.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
-            }
-            return suppliers;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        List<LocationDTO> dtos = locationDAO.loadAllSuppliers();
+        List<Location> suppliers = new ArrayList<>();
+        for (LocationDTO dto : dtos) {
+            suppliers.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));
         }
+        return suppliers;
     }
 }

@@ -18,97 +18,68 @@ public class ProductCatalogService {
     public ProductCatalogService(ProductDAO productDAO) {
         this.products = new ArrayList<>();
         this.productDAO = productDAO;
-        try {
-            this.productCounter = productDAO.getHighestProductID() + 1;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        this.productCounter = productDAO.getHighestProductID() + 1;
     }
 
     public void loadAllProductsFromDB() {
-        try {
-            products.clear(); // תוקן: מונע כפילויות במקרה של טעינה חוזרת
+        products.clear(); // תוקן: מונע כפילויות במקרה של טעינה חוזרת
 
-            // ה-DAO מחזיר DTOs, ה-Service ממיר ל-Domain
-            List<ProductDTO> dtos = productDAO.loadAllProducts();
-            for (ProductDTO dto : dtos) {
-                products.add(new Product(dto.id(), dto.name(), dto.weight()));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        List<ProductDTO> dtos = productDAO.loadAllProducts();
+        for (ProductDTO dto : dtos)
+            products.add(new Product(dto.id(), dto.name(), dto.weight()));
     }
 
     public void addProduct(String name, int weight) {
         int id = productCounter++;
         Product product = new Product(id, name, weight);
         products.add(product);
-        try {
-            // המרה ל-DTO ושליחה ל-DAO
-            ProductDTO dto = new ProductDTO(id, name, weight);
-            productDAO.addProduct(dto);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+
+        ProductDTO dto = new ProductDTO(id, name, weight);
+        productDAO.addProduct(dto);
     }
 
     public void removeProduct(Product product) {
         products.remove(product);
-        try {
-            // תוקן: מוחק את המוצר גם ממסד הנתונים
-            productDAO.removeProduct(product.id());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        productDAO.removeProduct(product.id());
     }
 
     public String getProductDisplay(int productId) {
-        for (Product product : products) {
-            if (product.id() == productId) {
-                return product.toString();
-            }
-        }
-        throw new IllegalArgumentException("Product ID not found: " + productId);
+        return getProduct(productId).toString();
     }
 
     public List<Integer> getProductsId() {
         List<Integer> productsId = new ArrayList<>();
-        for (Product product : products) {
+        for (Product product : products)
             productsId.add(product.id());
-        }
+
         return productsId;
     }
 
-    public Map<Product, Integer> mapIndicesToProducts(Map<Integer, Integer> selectedIndices) {
-        Map<Product, Integer> productMap = new HashMap<>();
-
-        // תוקן: חיפוש המוצר לפי ID ולא לפי אינדקס הרשימה
-        for (Map.Entry<Integer, Integer> entry : selectedIndices.entrySet()) {
-            int targetId = entry.getKey();
-            Product foundProduct = null;
-
-            for (Product p : products) {
-                if (p.id() == targetId) {
-                    foundProduct = p;
-                    break;
-                }
-            }
-
-            if (foundProduct != null) {
-                productMap.put(foundProduct, entry.getValue());
-            } else {
-                throw new IllegalArgumentException("Product ID not found: " + targetId);
-            }
-        }
-        return productMap;
+    public int getWeightForProduct(int productId) {
+        return getProduct(productId).weight();
     }
 
-    public int getWeightForProduct(int productId) {
-        for (Product product : products) {
-            if (product.id() == productId) {
-                return product.weight();
-            }
+    public String getProductsDisplay(Map<Integer, Integer> truckProducts) {
+        StringBuilder sb = new StringBuilder();
+        if (truckProducts != null && !truckProducts.isEmpty()) {
+            for (Map.Entry<Integer, Integer> entry : truckProducts.entrySet())
+                sb.append("- ").append(getProduct(entry.getKey()).name()).append(": ").append(entry.getValue()).append(" units\n");
+
+            return sb.toString();
         }
+
+        return null;
+    }
+
+    private Product getProduct(int productId){
+        for (Product product : products)
+            if (product.id() == productId)
+                return product;
+
         throw new IllegalArgumentException("Product ID not found: " + productId);
+    }
+
+    public String getProductName(int productId) {
+        return getProduct(productId).name();
     }
 }

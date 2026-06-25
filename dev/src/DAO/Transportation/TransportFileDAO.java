@@ -14,13 +14,15 @@ public class TransportFileDAO {
         this.connection = connection;
     }
 
-    public void addTransportFile(TransportFileDTO transportFileDTO) throws SQLException {
+    public void addTransportFile(TransportFileDTO transportFileDTO) {
         String sql = "INSERT INTO TransportFile (transport_id, text_content) VALUES (?, ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, transportFileDTO.id());
             stmt.setString(2, transportFileDTO.transportText());
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -3,6 +3,7 @@ package Service.Transportation;
 import DAO.Transportation.TruckDAO;
 import DTO.Transportation.TruckDTO;
 import Domain.Transportation.Truck;
+import Exceptions.OverweightException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,33 +20,24 @@ public class TruckService {
         this.productService = productService;
         this.trucks = new ArrayList<>();
         this.truckDAO = truckDAO;
-        try {
-            this.counter = truckDAO.getHighestTruckID() + 1;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        loadAllTrucksFromDB();
+        this.counter = truckDAO.getHighestTruckID() + 1;
     }
 
     public void loadAllTrucksFromDB() {
-        try {
-            this.trucks.clear();
-            // ה-DAO מחזיר רשימה של DTOs
-            List<TruckDTO> dtos = truckDAO.loadAllTrucks();
+        this.trucks.clear();
+        // ה-DAO מחזיר רשימה של DTOs
+        List<TruckDTO> dtos = truckDAO.loadAllTrucks();
 
-            // ה-Service ממיר כל DTO לישות Domain חכמה
-            for (TruckDTO dto : dtos) {
-                this.trucks.add(new Truck(
-                        dto.id(),
-                        dto.truckNumber(),
-                        dto.model(),
-                        dto.startWeight(),
-                        dto.maxWeight(),
-                        dto.minLicense()
-                ));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        // ה-Service ממיר כל DTO לישות Domain חכמה
+        for (TruckDTO dto : dtos) {
+            this.trucks.add(new Truck(
+                    dto.id(),
+                    dto.truckNumber(),
+                    dto.model(),
+                    dto.startWeight(),
+                    dto.maxWeight(),
+                    dto.minLicense()
+            ));
         }
     }
 
@@ -54,12 +46,8 @@ public class TruckService {
         Truck truck = new Truck(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
         trucks.add(truck);
 
-        try {
-            TruckDTO dto = new TruckDTO(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
-            truckDAO.addTruck(dto);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        TruckDTO dto = new TruckDTO(count, truckNumber, model, truckWeight, maxWeight, requiredLicense);
+        truckDAO.addTruck(dto);
     }
 
     public Truck getTruck(int truckId) {
@@ -101,9 +89,9 @@ public class TruckService {
         int weight = truck.getStartWeight();
         Map<Integer, Integer> loadedProducts = truck.getLoadedProducts();
 
-        for (Map.Entry<Integer, Integer> entry : loadedProducts.entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : loadedProducts.entrySet())
             weight += productService.getWeightForProduct(entry.getKey()) * entry.getValue();
-        }
+
         return weight;
     }
 
@@ -143,5 +131,16 @@ public class TruckService {
 
     public boolean isDriverEligible(int license, int truckId) {
         return getTruck(truckId).getMinLicense() <= license;
+    }
+
+    public void addProductToTruck(int truckId, Map<Integer, Integer> itemsToLoad) {
+        Truck truck = getTruck(truckId);
+        truck.addProducts(itemsToLoad);
+        if (getTruckWeight(truckId) > truck.getMaxWeight())
+            throw new OverweightException(getTruckWeight(truckId), truck.getMaxWeight());
+    }
+
+    public boolean isTruckOverweight(int truckId) {
+        return getTruckWeight(truckId) > getTruckMaxWeight(truckId);
     }
 }
