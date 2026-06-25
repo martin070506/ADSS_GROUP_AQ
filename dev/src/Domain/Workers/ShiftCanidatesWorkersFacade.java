@@ -21,8 +21,8 @@ public class ShiftCanidatesWorkersFacade {
     public ShiftCanidatesWorkersFacade(WorkersFacade workers, LocationService locationService) {
         this.canidates_list = new ArrayList<>();
         this.workers= workers;
-        this.shift_candidates_dao = new ShiftCandidatesDAO(DatabaseManager.getConnectionWrapper());
-        this.shift_candidate_id_dao = new ShiftCandidateIdDAO(DatabaseManager.getConnectionWrapper());
+        this.shift_candidates_dao = new ShiftCandidatesDAO(DatabaseManager.getConnection());
+        this.shift_candidate_id_dao = new ShiftCandidateIdDAO(DatabaseManager.getConnection());
         this.locationService=locationService;
     }
     public boolean containWorker(LocalDate date, boolean is_morning, Location location, int id){

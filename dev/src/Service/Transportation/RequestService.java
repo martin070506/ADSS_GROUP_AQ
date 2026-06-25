@@ -23,7 +23,6 @@ public class RequestService {
         this.locationService = locationService;
         this.requestDAO = requestDAO;
         this.requests = new ArrayList<>();
-        loadRequestsFromDB();
     }
 
     public void loadRequestsFromDB() {
