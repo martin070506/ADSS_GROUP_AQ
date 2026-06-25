@@ -59,7 +59,6 @@ public class Main {
 
         TransportManagerService transportManagerService = new TransportManagerService(truckService, supplierService, requestService, workers_service, jobs_service, transportFileDAO);
 //
-
         // ============================================================
         // Boot Sequence: טעינת כל הנתונים מה-DB לזיכרון של המערכת
         // ============================================================
@@ -153,7 +152,14 @@ public class Main {
                 "Location",
                 "Truck",
                 "Product",
-                "TransportFile" // וודאי שזה השם המדויק אצלך ב-DB
+                "TransportFile",
+                "workers",
+                "shift_placement_jobs_workers",
+                "shift_placement",
+                "shift_jobs_count",
+                "shift_jobs",
+                "shift_candidates",
+                "shift_candidate_ids"
         };
 
         try (Statement stmt = conn.createStatement()) {
