@@ -1,0 +1,446 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" modified="2026-06-18T14:06:19.749165+00:00" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="assign-employees-to-shift-sequence" name="Page-1">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title1" value="Assign Employees to Shift" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="10" width="300" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="title2" value="Operation: addPlacments(date, is_morning, location, shift_manager, ids, jobs)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="28" width="580" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="actor_admin_top" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#000000;fillColor=#FFFFFF;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="5" y="63" width="40" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="actor_admin_bottom" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#000000;fillColor=#FFFFFF;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="5" y="1010" width="40" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="life_admin" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="25" y="125" as="sourcePoint" />
+            <mxPoint x="25" y="1005" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="head_service" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="180" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_service" value="serviceControl : ServiceControl" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="95.0" y="95" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_service" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="190" y="125" as="sourcePoint" />
+            <mxPoint x="190" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_service" value="serviceControl : ServiceControl" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="95.0" y="1010" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="head_placement" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="410" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_placement" value="placementService : ShiftPlacementService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="315.0" y="95" width="210" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_placement" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="125" as="sourcePoint" />
+            <mxPoint x="420" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_placement" value="placementService : ShiftPlacementService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="315.0" y="1010" width="210" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="head_workers" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="625" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_workers" value="workers : WorkersService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540.0" y="95" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_workers" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="635" y="125" as="sourcePoint" />
+            <mxPoint x="635" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_workers" value="workers : WorkersService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540.0" y="1010" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="head_jobs" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="790" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_jobs" value="allJobs : ShiftJobsService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="705.0" y="95" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_jobs" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="800" y="125" as="sourcePoint" />
+            <mxPoint x="800" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_jobs" value="allJobs : ShiftJobsService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="705.0" y="1010" width="190" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="head_candidates" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_candidates" value="candidates : ShiftWorkersCandidatesService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="880.0" y="95" width="260" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_candidates" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="125" as="sourcePoint" />
+            <mxPoint x="1010" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_candidates" value="candidates : ShiftWorkersCandidatesService" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="880.0" y="1010" width="260" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="head_shifts" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="1225" y="70" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_shifts" value="shifts : List&amp;lt;ShiftPlacement&amp;gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1130.0" y="95" width="210" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_shifts" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1235" y="125" as="sourcePoint" />
+            <mxPoint x="1235" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_shifts" value="shifts : List&amp;lt;ShiftPlacement&amp;gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1130.0" y="1010" width="210" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="activation_placement" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="415" y="190" width="10" height="775" as="geometry" />
+        </mxCell>
+        <mxCell id="m1_assign" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="25" y="150" as="sourcePoint" />
+            <mxPoint x="190" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m1_assign_label" value="assignEmployeesToShift(...)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="22.5" y="130" width="170" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m2_add" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="190" y="190" as="sourcePoint" />
+            <mxPoint x="420" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2_add_label" value="addPlacments(date, is_morning,&lt;br&gt;location, shift_manager, ids, jobs)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170.0" y="162" width="270" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m3_mgr" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="220" as="sourcePoint" />
+            <mxPoint x="635" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3_mgr_label" value="isShiftManager(shift_manager)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420.0" y="200" width="220" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m4_mgr_ret" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="635" y="245" as="sourcePoint" />
+            <mxPoint x="425" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4_mgr_ret_label" value="true" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500.0" y="225" width="60" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m5_jobs" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="275" as="sourcePoint" />
+            <mxPoint x="800" y="275" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5_jobs_label" value="containAllJobs(date, is_morning,&lt;br&gt;location, jobs)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="482.5" y="247" width="260" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m6_jobs_ret" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="800" y="305" as="sourcePoint" />
+            <mxPoint x="425" y="305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6_jobs_ret_label" value="true" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="582.5" y="285" width="60" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m7_workers" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="335" as="sourcePoint" />
+            <mxPoint x="1010" y="335" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m7_workers_label" value="containAllWorkers(date, is_morning,&lt;br&gt;location, ids)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="582.5" y="307" width="270" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m8_workers_ret" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="365" as="sourcePoint" />
+            <mxPoint x="425" y="365" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m8_workers_ret_label" value="true" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="687.5" y="345" width="60" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_loop_driver" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="382" width="440" height="92" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_loop_driver" value="loop" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="382" width="60" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_loop_driver" value="[for each worker-job pair]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="343" y="383" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_alt_driver" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="288" y="410" width="424" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_alt_driver" value="alt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="288" y="410" width="55" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_alt_driver" value="[jobs[i] == Driver]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="348" y="411" width="160" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m9_license" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="438" as="sourcePoint" />
+            <mxPoint x="635" y="438" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m9_license_label" value="validateDriverLicense(ids[i])" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="410.0" y="418" width="240" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m10_license_ret" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="635" y="460" as="sourcePoint" />
+            <mxPoint x="425" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m10_license_ret_label" value="true" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500.0" y="440" width="60" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m11_find_shift" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="492" as="sourcePoint" />
+            <mxPoint x="1235" y="492" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m11_find_shift_label" value="findShift(date, is_morning, location)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="665.0" y="472" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_alt_shift" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="520" width="1265" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_alt_shift" value="alt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="520" width="60" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_alt_shift" value="[matching shift exists]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="345" y="521" width="190" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="alt_separator" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="685" as="sourcePoint" />
+            <mxPoint x="1545" y="685" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cond_alt_shift_else" value="[matching shift does not exist]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="285" y="688" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m12_sp_return" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1235" y="548" as="sourcePoint" />
+            <mxPoint x="425" y="548" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m12_sp_return_label" value="SP" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="790.0" y="528" width="80" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_loop_existing" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="288" y="565" width="1249" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_loop_existing" value="loop" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="288" y="565" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_loop_existing" value="[for each worker-job pair]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="353" y="566" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m13_addplacement_existing" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="590" as="sourcePoint" />
+            <mxPoint x="1430" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m13_addplacement_existing_label" value="addPlacement(ids[i], jobs[i])" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="787.5" y="570" width="280" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m14_get_mgr" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="620" as="sourcePoint" />
+            <mxPoint x="1430" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m14_get_mgr_label" value="getShiftManager()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="837.5" y="600" width="180" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m15_current_mgr" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1430" y="650" as="sourcePoint" />
+            <mxPoint x="425" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m15_current_mgr_label" value="currentShiftManager" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="827.5" y="630" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_opt_setmanager" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="288" y="636" width="1249" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_opt_setmanager" value="opt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="288" y="636" width="55" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_opt_setmanager" value="[currentShiftManager != shift_manager]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="348" y="637" width="290" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m16_set_mgr_existing" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="666" as="sourcePoint" />
+            <mxPoint x="1430" y="666" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m16_set_mgr_existing_label" value="setShiftManager(shift_manager)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="797.5" y="646" width="260" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m17_null" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1235" y="715" as="sourcePoint" />
+            <mxPoint x="425" y="715" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m17_null_label" value="null" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="790.0" y="695" width="80" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="head_sp" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;fillColor=#F5F5F5;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="732" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="label_sp" value="shiftPlacement : ShiftPlacement" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="757" width="220" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="life_sp" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#999999;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1430" y="780" as="sourcePoint" />
+            <mxPoint x="1430" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bottom_sp" value="shiftPlacement : ShiftPlacement" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1010" width="220" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m18_create" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="750" as="sourcePoint" />
+            <mxPoint x="1430" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m18_create_label" value="«create»(date, is_morning, location)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="777.5" y="730" width="300" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="activation_sp" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#000000;fillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="1425" y="750" width="10" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="frame_loop_new" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontFamily=Arial;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="288" y="775" width="1249" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_loop_new" value="loop" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Arial;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="288" y="775" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cond_loop_new" value="[for each worker-job pair]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="353" y="776" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m19_addplacement_new" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="802" as="sourcePoint" />
+            <mxPoint x="1430" y="802" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m19_addplacement_new_label" value="addPlacement(ids[i], jobs[i])" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="787.5" y="782" width="280" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m20_set_mgr_new" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="830" as="sourcePoint" />
+            <mxPoint x="1430" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m20_set_mgr_new_label" value="setShiftManager(shift_manager)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="797.5" y="810" width="260" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m21_add_sp" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="855" as="sourcePoint" />
+            <mxPoint x="1235" y="855" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m21_add_sp_label" value="add(SP)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="785.0" y="835" width="90" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m22_start_candidates" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="910" as="sourcePoint" />
+            <mxPoint x="1010" y="910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m22_start_candidates_label" value="startPlacement(date, is_morning, location)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="552.5" y="890" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m23_candidates_updated" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1010" y="940" as="sourcePoint" />
+            <mxPoint x="425" y="940" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m23_candidates_updated_label" value="candidates updated" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="617.5" y="920" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m24_start_jobs" value="" style="endArrow=classic;endFill=1;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="425" y="970" as="sourcePoint" />
+            <mxPoint x="800" y="970" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m24_start_jobs_label" value="startPlacement(date, is_morning, location)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="447.5" y="950" width="330" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m25_jobs_updated" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="800" y="995" as="sourcePoint" />
+            <mxPoint x="425" y="995" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m25_jobs_updated_label" value="jobs updated" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="537.5" y="975" width="150" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m26_result" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="1025" as="sourcePoint" />
+            <mxPoint x="190" y="1025" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m26_result_label" value="result : String" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="225.0" y="1005" width="160" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="m27_completed" value="" style="endArrow=open;endFill=0;html=1;rounded=0;strokeColor=#000000;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="190" y="1050" as="sourcePoint" />
+            <mxPoint x="25" y="1050" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m27_completed_label" value="assignment completed" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Arial;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="17.5" y="1030" width="180" height="18" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

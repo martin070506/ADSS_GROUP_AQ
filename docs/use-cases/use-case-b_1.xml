@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mxfile host="app.diagrams.net" modified="2026-06-18T13:49:19.025109+00:00" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="5e350e84c79e42db" name="Manage Shift Availability">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="system_boundary" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="97" y="7" width="898" height="352" as="geometry"/>
+        </mxCell>
+        <mxCell id="admin_actor" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="12" y="145" width="30" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_manage" value="Manage Shift Availability" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="113" y="165" width="195" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_view" value="View Candidate Workers for Shift" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="447" y="23" width="252" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_remove" value="Remove Candidate Worker from Shift" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="433" y="94" width="282" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_add" value="Add Candidate Worker to Shift" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="457" y="164" width="233" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_select_shift" value="Select Shift" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="523" y="236" width="101" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_open_service" value="Open Shift Candidates Service" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="457" y="307" width="233" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_worker_id" value="Enter Worker ID" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="843" y="77" width="132" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_location" value="Select Location" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="848" y="162" width="124" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_shift_type" value="Select Shift Type" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="839" y="234" width="139" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_shift_date" value="Enter Shift Date" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="843" y="306" width="132" height="37" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_admin_manage" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" edge="1" parent="1" source="admin_actor" target="uc_manage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_view" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_manage" target="uc_view">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_view_label" value="«extend»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_manage_view">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_remove" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_manage" target="uc_remove">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_remove_label" value="«extend»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_manage_remove">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_add" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_manage" target="uc_add">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_add_label" value="«extend»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_manage_add">
+          <mxGeometry x="0" y="-8" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_select_shift" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_manage" target="uc_select_shift">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_select_shift_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_manage_select_shift">
+          <mxGeometry x="0" y="-12" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_open_service" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_manage" target="uc_open_service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_manage_open_service_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_manage_open_service">
+          <mxGeometry x="0" y="-8" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_remove_worker_id" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_remove" target="uc_worker_id">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_remove_worker_id_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_remove_worker_id">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_add_worker_id" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_add" target="uc_worker_id">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_add_worker_id_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_add_worker_id">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_location" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_select_shift" target="uc_location">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_location_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_select_location">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_type" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_select_shift" target="uc_shift_type">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_type_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_select_type">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_date" value="" style="endArrow=open;endFill=0;html=1;rounded=0;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="uc_select_shift" target="uc_shift_date">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_select_date_label" value="«include»" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="e_select_date">
+          <mxGeometry x="0" y="-10" relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
