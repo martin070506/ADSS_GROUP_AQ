@@ -52,7 +52,12 @@ public class Worker {
         this.name = name;
     }
 
-    public boolean isDriver(){return false;}
+    public boolean isDriver(){
+        if(getLicense()!=-1){
+            return true;
+        }
+        return false;
+    }
     public void setId(int id) {
         this.id = id;
     }

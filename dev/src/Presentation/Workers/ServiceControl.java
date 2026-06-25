@@ -1,6 +1,7 @@
 package Presentation.Workers;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,12 +39,13 @@ public class ServiceControl{
         boolean exit=false;
         System.out.println("system woke up... \nsystem initialize");
         //-------
-//        System.out.println("Enter true to load preset data and false to enter without");
-//        boolean data  = scanner.nextBoolean();
-//        if(data)
-//            load_data();
-//        scanner.nextLine();
+        System.out.println("Enter true to load preset data and false to enter without");
+        boolean data  = scanner.nextBoolean();
+        if(data)
+            load_data();
+        scanner.nextLine();
         //-----------
+
         while (!exit) {
             System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placement' for placement service \n 4) 'canidate' for shift canidates service \n 5) 'exit' for exit: ");
             String command = scanner.nextLine();
@@ -68,24 +70,71 @@ public class ServiceControl{
             }
         }
     }
-    //-------------
- //   public   void load_data(){
-//        workers_service.addDriver("Marko", 10, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false,1);
-//        workers_service.addWorker("Mark11", 11, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false);
-//        workers_service.addWorker("Mark12", 12, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
-//
-//        workers_service.removeWorker(1);
+ //   -------------
+    public   void load_data(){
+        workers_service.addDriver("Marko", 10, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false,1);
+        workers_service.addWorker("Mark11", 11, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false);
+        workers_service.addWorker("Mark12", 12, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
 
-//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),10));
-//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),11));
-//        System.out.println(canidates_service.addCandidate(LocalDate.parse("2027-01-02"),true, locationService.getLocation(1),12));
-//
-//        System.out.println(jobs_service.addJob(LocalDate.parse("2027-01-02"),true,locationService.getLocation(1),0));
 
-    //    System.out.println(placement_service.addPlacement(LocalDate.parse("2027-01-02"), true, locationService.getLocation(1), 12, List.of(10), List.of(0)));
-   //     System.out.println(placement_service.changePlacment(LocalDate.parse("2027-01-02"), true, locationService.getLocation(1),10,11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(1),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(1),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(1),12));
 
-  //  }
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(1),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(1),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(1),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(4),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(4),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(4),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(4),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(4),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(4),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(5),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(5),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(5),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(5),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(5),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(5),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(6),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(6),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),true, locationService.getLocation(6),12));
+
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(6),10));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(6),11));
+        System.out.println(canidates_service.addCandidate(LocalDate.now().plusDays(1),false, locationService.getLocation(6),12));
+
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),true,locationService.getLocation(1),2));
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),false,locationService.getLocation(1),2));
+
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),true,locationService.getLocation(4),1));
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),false,locationService.getLocation(4),1));
+
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),true,locationService.getLocation(5),1));
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),false,locationService.getLocation(5),1));
+
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),true,locationService.getLocation(6),1));
+        System.out.println(jobs_service.addJob(LocalDate.now().plusDays(1),false,locationService.getLocation(6),1));
+
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), true, locationService.getLocation(1), 12, List.of(10), List.of(2)));
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), false, locationService.getLocation(1), 12, List.of(10), List.of(2)));
+
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), true, locationService.getLocation(4), 12, List.of(11), List.of(1)));
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), false, locationService.getLocation(4), 12, List.of(11), List.of(1)));
+
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), true, locationService.getLocation(5), 12, List.of(11), List.of(1)));
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), false, locationService.getLocation(5), 12, List.of(11), List.of(1)));
+
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), true, locationService.getLocation(6), 12, List.of(11), List.of(1)));
+        System.out.println(placement_service.addPlacement(LocalDate.now().plusDays(1), false, locationService.getLocation(6), 12, List.of(11), List.of(1)));
+
+
+    }
     //----------
     public void runCanidateService(){
         boolean exit=false;

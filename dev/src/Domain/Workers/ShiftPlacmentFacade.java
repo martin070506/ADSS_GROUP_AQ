@@ -77,9 +77,10 @@ public class ShiftPlacmentFacade {
             for (ShiftPlacement shiftPlacement : shifts) {
                 if(shiftPlacement.getShift().equals(shift)){
                     for( int i=0; i<length; i++){
-                        if(jobs.getFirst()==2 && !workers.isShiftManager(ids.getFirst())){
+                        if(jobs.getFirst()==2 && !workers.isDriver(ids.getFirst())){
                             return "failed, "+ids.getFirst()+" is not a driver";
                         }
+
                         String result = shiftPlacement.addPlacement(ids.get(i), jobs.get(i));
                         if(!result.startsWith("succeed")){
                             return "failed at adding, "+result;
@@ -106,7 +107,7 @@ public class ShiftPlacmentFacade {
             }
             ShiftPlacement new_Placement = new ShiftPlacement(date, is_morning, location);
             for( int i=0; i<length; i++){
-                if(jobs.getFirst()==2 && !workers.isShiftManager(ids.getFirst())){
+                if(jobs.getFirst()==2 && !workers.isDriver(ids.getFirst())){
                     return "failed, "+ids.getFirst()+" is not a driver";
                 }
                 String result = new_Placement.addPlacement(ids.get(i), jobs.get(i));
