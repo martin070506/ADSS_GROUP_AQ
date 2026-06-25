@@ -38,12 +38,17 @@ public class ServiceControl{
     public void run(){
         boolean exit=false;
         System.out.println("system woke up... \nsystem initialize");
+
         //-------
-        System.out.println("Enter true to load preset data and false to enter without");
-        boolean data  = scanner.nextBoolean();
-        if(data)
-            load_data();
-        scanner.nextLine();
+        try{
+            System.out.println("Enter true to load preset data and false to enter without");
+            boolean data  = scanner.nextBoolean();
+            if(data)
+                load_data();
+            scanner.nextLine();
+        } catch (Exception e) {
+            System.out.println("system did not understand, continue as answered false");
+        }
         //-----------
 
         while (!exit) {
