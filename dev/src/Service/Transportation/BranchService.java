@@ -47,7 +47,7 @@ public class BranchService {
         return branchesId;
     }
 
-    public String getBranchDisplay(int branchId) { // שונה ל-int
+    public String getBranchDisplay(int branchId) {
         for (BranchManager branch : branches) {
             if (branch.getLocation().id() == branchId) {
                 return branch.toString();

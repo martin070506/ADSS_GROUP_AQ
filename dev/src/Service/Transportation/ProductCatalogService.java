@@ -22,7 +22,7 @@ public class ProductCatalogService {
     }
 
     public void loadAllProductsFromDB() {
-        products.clear(); // תוקן: מונע כפילויות במקרה של טעינה חוזרת
+        products.clear();
 
         List<ProductDTO> dtos = productDAO.loadAllProducts();
         for (ProductDTO dto : dtos)

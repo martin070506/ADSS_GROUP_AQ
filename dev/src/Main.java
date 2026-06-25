@@ -25,13 +25,6 @@ public class Main {
         Connection dbConnection = DatabaseManager.getConnection();
 
         // ============================================================
-        // שלב 1: ניקוי בסיס הנתונים (מתבצע בכל הרצה מחדש)
-        // ============================================================
-
-        // ============================================================
-        // שלב 2: אתחול כל ה-DAOs וה-Services
-        // ============================================================
-        // תשתית הובלה
         ProductDAO productDB = new ProductDAO(dbConnection);
         ProductCatalogService productCatalogService = new ProductCatalogService(productDB);
 
@@ -50,7 +43,6 @@ public class Main {
 
         TransportFileDAO transportFileDAO = new TransportFileDAO(dbConnection);
 
-        // תשתית עובדים (בהנחה והמחלקות קיימות בפרויקט שלך)
         WorkersFacade workers_facade = new WorkersFacade();
         ShiftJobsFacade jobs_facade = new ShiftJobsFacade(locationService);
         ShiftCanidatesWorkersFacade candidates_facade = new ShiftCanidatesWorkersFacade(workers_facade, locationService);
@@ -64,39 +56,30 @@ public class Main {
         TransportManagerService transportManagerService = new TransportManagerService(truckService, supplierService, requestService, workers_service, jobs_service, transportFileDAO);
 //
         // ============================================================
-        // Boot Sequence: טעינת כל הנתונים מה-DB לזיכרון של המערכת
-        // ============================================================
         System.out.println("\n[SYSTEM BOOT] Loading existing data from Database...");
 
         try {
-            // 1. קודם כל דברים עצמאיים שלא תלויים באף אחד
             productCatalogService.loadAllProductsFromDB();
             locationService.loadLocationsFromDB();
 
-            // 2. משאיות (תלויות במוצרים כדי לחשב משקל)
             truckService.loadAllTrucksFromDB();
 
-            // 3. סניפים וספקים (תלויים במיקומים ובמוצרים)
             branchService.loadBranchesFromDB();
             supplierService.loadSuppliersFromDB();
 
-            // 4. בקשות והובלות (הכי מורכבים, תלויים בסניפים ובמוצרים)
             requestService.loadRequestsFromDB();
             transportManagerService.loadCountFromDB();
 
 
-            // הערה: אם יש לך Service שצריך לטעון הובלות פעילות שנקטעו באמצע, זה הזמן לטעון גם אותו.
 
             System.out.println("[SYSTEM BOOT] All data loaded successfully into memory. Ready to go!");
         } catch (Exception e) {
             System.err.println("[SYSTEM BOOT] CRITICAL ERROR loading data from DB: " + e.getMessage());
             e.printStackTrace();
-            return; // עוצרים את התוכנית אם אי אפשר לטעון נתונים
+            return;
         }
 
 
-        // ============================================================
-        // שלב 4: ניתוב למערכות (UI Main Loop)
         // ============================================================
         AdminConsole transportUI = new AdminConsole(productCatalogService, transportManagerService, supplierService,
                 requestService, truckService, branchService, locationService, workers_service, candidates_service,
@@ -128,15 +111,15 @@ public class Main {
                     load_data(workers_service, jobs_service, candidates_service, placement_service, locationService);
                 }
                 case "4" -> {
-                    System.out.println("\n⚠️ WARNING: This will permanently delete ALL data in the database! ⚠️");
+                    System.out.println("\nWARNING: This will permanently delete ALL data in the database!");
                     System.out.print("Are you absolutely sure? (y/n): ");
                     String confirm = scanner.nextLine().trim().toLowerCase();
 
                     if (confirm.equals("y") || confirm.equals("yes")) {
                         clearDatabase(dbConnection);
-                        System.out.println("✅ Database completely wiped!");
-                        System.out.println("🔄 PLEASE RESTART THE PROGRAM to clear the in-memory cache.");
-                        exit = true; // יוצאים מהתוכנית כדי להכריח איפוס זיכרון נקי
+                        System.out.println("Database completely wiped!");
+                        System.out.println("PLEASE RESTART THE PROGRAM to clear the in-memory cache.");
+                        exit = true;
                     } else {
                         System.out.println("Aborted. Data is safe.");
                     }
@@ -261,6 +244,12 @@ public class Main {
     }
 
     public static void load_data(WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService canidates_service, ShiftPlacementService placement_service, LocationService locationService){
+
+        System.out.println("-> Seeding Workers...");
+        System.out.println("-> Seeding Jobs...");
+        System.out.println("-> Seeding Candidates...");
+        System.out.println("-> Seeding Placements...");
+
         workers_service.addDriver("Marko", 10, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false,2);
         workers_service.addWorker("Mark11", 11, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), false);
         workers_service.addWorker("Mark12", 12, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);

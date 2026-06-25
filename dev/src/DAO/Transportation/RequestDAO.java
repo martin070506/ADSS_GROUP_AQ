@@ -26,13 +26,12 @@ public class RequestDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
-                // מביא את המספר הגדול ביותר. אם הטבלה ריקה, זה יחזיר 0.
                 return rs.getInt("max_id");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return 0; // במקרה חריג שהטבלה לא קיימת או אין תוצאה
+        return 0;
     }
 
     public int getActiveFileNumber(int locationId) {
@@ -211,8 +210,5 @@ public class RequestDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void removeRequest(int requestId) {
     }
 }

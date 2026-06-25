@@ -49,7 +49,6 @@ public class RequestService {
             if (request.getLocation().id() == locationId) {
                 request.addProducts(neededItems);
 
-                // סנכרון ל-DB.DB: עדכון הפריטים שהתווספו/עודכנו
                 for (Map.Entry<Integer, Integer> entry : neededItems.entrySet()) {
                     int pId = entry.getKey();
                     int newTotalAmount = request.getProducts().get(pId);
@@ -59,11 +58,9 @@ public class RequestService {
             }
         }
 
-        // יצירת בקשה חדשה לגמרי
         Request newRequest = new Request(locationService.getLocation(locationId), fileNumberCounter++, neededItems);
         requests.add(newRequest);
 
-        // שמירת הבקשה החדשה ב-DB.DB דרך ה-DTOs
         requestDAO.addProductFile(new ProductFileDTO(newRequest.getFileNumber(), locationId, "Active"));
         requestDAO.addRequest(new RequestDTO(locationId, newRequest.getFileNumber()));
 
@@ -85,15 +82,12 @@ public class RequestService {
             int fileNumber = requestDAO.getActiveFileNumber(locationId);
 
             if (fileNumber != -1) {
-                // 2. מוחקים מהסוף להתחלה (Items -> File -> Request)
                 requestDAO.removeProductFileItems(fileNumber);
                 requestDAO.removeProductFile(fileNumber);
             }
 
-            // 3. מוחקים את הבקשה הפעילה מה-DB
             requestDAO.removeAllRequestsForLocationID(locationId);
 
-            // 4. מסירים מהזיכרון
             requests.removeIf(request -> request.getLocation().id() == locationId);
         }
         else {

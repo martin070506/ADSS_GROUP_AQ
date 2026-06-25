@@ -43,13 +43,21 @@ public class MainConsole {
         boolean isMorning = LocalTime.now().isAfter(LocalTime.of(4, 59)) && LocalTime.now().isBefore(LocalTime.of(17, 0));
 
         int sourceIdx = selectSourceLocation();
-        if (sourceIdx == -1) return;
+        if (sourceIdx == 0)
+            sourceIdx = findLocationWithDriver(tomorrow, isMorning);
 
-        int truckId = chooseTruck();
-        if (truckId == -1) return;
+        if (sourceIdx == -1) {
+            System.out.println("No location available with driver ready.");
+            return;
+        } else  {
+            System.out.println("Location with driver ready: " + locationService.getLocationDisplay(sourceIdx));
+        }
 
-        int driverId = chooseDriver(sourceIdx, truckId, isMorning, tomorrow);
+        int driverId = chooseDriver(sourceIdx, isMorning, tomorrow);
         if (driverId == -1) return;
+
+        int truckId = chooseTruck(workers_service.getLicense(driverId));
+        if (truckId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
 
@@ -67,6 +75,17 @@ public class MainConsole {
         } catch (Exception e) {
             System.out.println("Critical System Error: " + e.getMessage());
         }
+    }
+
+    private int findLocationWithDriver(LocalDate tomorrow, boolean isMorning) {
+        List<Integer> locations = locationService.getLocationIds();
+        for (int locationId : locations) {
+            if (candidates_service.getAllAvialableDrivers(tomorrow, isMorning, locationService.getLocation(locationId)).isEmpty())
+                continue;
+            return locationId;
+        }
+
+        return -1;
     }
 
     private void processShipmentFlow(boolean isMorning) {
@@ -145,6 +164,10 @@ public class MainConsole {
 
                     List<Integer> truckIds = truckService.getBiggerTruckIds(driverLicense,
                             transportService.getTruckId());
+                    if (truckIds.isEmpty()) {
+                        System.out.println("No bigger trucks available to replace with driver license.");
+                        return;
+                    }
                     while (!truckIds.isEmpty()) {
                         for (int truckId : truckIds)
                             System.out.println(truckService.getTruckDisplay(truckId));
@@ -251,8 +274,8 @@ public class MainConsole {
         System.out.println();
     }
 
-    private int chooseTruck() {
-        List<Integer> trucks = truckService.getAvailableTruckIds();
+    private int chooseTruck(int license) {
+        List<Integer> trucks = truckService.getBiggerTruckIds(license, -1);
         if (trucks.isEmpty()) {
             System.out.println("No trucks available.");
             return -1;
@@ -269,7 +292,7 @@ public class MainConsole {
         }
     }
 
-    private int chooseDriver(int sourceIdx, int truckId, boolean isMorning, LocalDate day) {
+    private int chooseDriver(int sourceIdx, boolean isMorning, LocalDate day) {
         List<Integer> drivers = candidates_service.getAllAvialableDrivers(day, isMorning, locationService.getLocation(sourceIdx));
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");
@@ -282,29 +305,16 @@ public class MainConsole {
             System.out.println("ID :" + index + " Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
 
         while (true) {
-            int driverIndex = promptInt("Enter Driver: ");
-            if (driverIndex == -1)
+            int driverId = promptInt("Enter Driver: ");
+            if (driverId == -1)
                 return -1;
 
-            if (!drivers.contains(driverIndex)) {
+            if (!drivers.contains(driverId)) {
                 System.out.println("Invalid Driver Index.");
                 continue;
             }
 
-            if (!truckService.isDriverEligible(workers_service.getLicense(driverIndex), truckId)) {
-                System.out.println("Driver is not eligible to this truck.");
-                continue;
-            }
-
-            String massage = placement_service.PlaceDriver(day, isMorning,
-                    locationService.getLocation(sourceIdx), drivers.get(driverIndex));
-
-            if (massage.startsWith("failed")) {
-                System.out.println(massage);
-                continue;
-            }
-
-            return driverIndex;
+            return driverId;
         }
     }
 
@@ -318,9 +328,10 @@ public class MainConsole {
         System.out.println("\n--- Select Source Location ---");
         for (Integer location : locations) 
             System.out.println(locationService.getLocationDisplay(location));
+        System.out.println("Choose '0' to autoselect location with driver ready.");
         while (true) {
             int choice = promptInt("Enter Location ID: ");
-            if (locations.contains(choice)) 
+            if (locations.contains(choice) || choice == 0)
                 return choice;
             System.out.println("Invalid Location ID.");
         }

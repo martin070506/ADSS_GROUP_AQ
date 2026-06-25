@@ -19,7 +19,7 @@ public class LocationService {
     }
 
     public void loadLocationsFromDB() {
-        locations.clear(); // מונע כפילויות בטעינה חוזרת
+        locations.clear();
         List<LocationDTO> dtos = locationDAO.loadAllLocations();
         for (LocationDTO dto : dtos)
             locations.add(new Location(dto.locationId(), dto.address(), dto.phoneNumber(), dto.contactName()));

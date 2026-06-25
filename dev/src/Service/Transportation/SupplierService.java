@@ -25,10 +25,8 @@ public class SupplierService {
         suppliers.clear();
         List<Location> supplierLocations = locationService.loadAllSuppliers();
         for (Location loc : supplierLocations) {
-            // 1. קבלת רשימת DTOs מה-DAO
             List<SupplierAllocationDTO> dtoList = allocationDAO.getAllocations(loc.id());
 
-            // 2. המרת הרשימה למפה (Map) עבור ה-Domain Object
             Map<Integer, Integer> allocations = new HashMap<>();
             for (SupplierAllocationDTO dto : dtoList) {
                 allocations.put(dto.productID(), dto.amountOfProduct());
@@ -86,7 +84,6 @@ public class SupplierService {
     public void resupplySupplier(int locationId, int productId, int amount) {
         Supplier supplier = getSupplier(locationId);
         supplier.addStock(productId, amount);
-        // המרה ל-DTO לפני עדכון ה-DB.DB
         int updatedStock = supplier.getProductStock(productId);
         allocationDAO.updateAllocation(new SupplierAllocationDTO(locationId, productId, updatedStock));
     }

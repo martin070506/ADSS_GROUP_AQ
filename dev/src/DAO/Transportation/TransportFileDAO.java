@@ -32,12 +32,11 @@ public class TransportFileDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
-                // מביא את המספר הגדול ביותר. אם הטבלה ריקה, זה יחזיר 0.
                 return rs.getInt("max_id");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return 0; // במקרה חריג שהטבלה לא קיימת או אין תוצ
+        return 0;
     }
 }

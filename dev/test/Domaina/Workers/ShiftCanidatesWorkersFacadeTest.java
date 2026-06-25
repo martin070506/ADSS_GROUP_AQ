@@ -1,10 +1,11 @@
-package Domain.Workers;
+package Domaina.Workers;
 
 import DAO.Workers.ShiftCandidateIdDAO;
 import DAO.Workers.ShiftCandidatesDAO;
 import DTO.Workers.ShiftCandidateIdDTO;
 import DTO.Workers.ShiftCandidatesDTO;
 import Domain.Transportation.Location;
+import Domain.Workers.ShiftCanidatesWorkersFacade;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;

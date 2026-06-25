@@ -29,7 +29,6 @@ public class SupplierAllocationDAO {
         }
     }
 
-    // הפונקציה עכשיו מקבלת DTO
     public void addAllocation(SupplierAllocationDTO dto) {
         if (exists(dto.LocationID(), dto.productID())) {
             String updateSql = "UPDATE SupplierAllocation SET amount_of_product = ? WHERE location_id = ? AND product_id = ?";
@@ -54,7 +53,6 @@ public class SupplierAllocationDAO {
         }
     }
 
-    // מחזירה עכשיו רשימה של DTOs במקום Map (תפקיד ה-DAO זה להחזיר שורות מידע)
     public List<SupplierAllocationDTO> getAllocations(int locationId) {
         List<SupplierAllocationDTO> allocations = new ArrayList<>();
         String sql = "SELECT product_id, amount_of_product FROM SupplierAllocation WHERE location_id = ?";
@@ -97,7 +95,6 @@ public class SupplierAllocationDAO {
         }
     }
 
-    // מקבלת DTO בדיוק כמו ה-add
     public void updateAllocation(SupplierAllocationDTO dto) {
         addAllocation(dto);
     }

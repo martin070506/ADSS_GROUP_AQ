@@ -25,10 +25,8 @@ public class TruckService {
 
     public void loadAllTrucksFromDB() {
         this.trucks.clear();
-        // ה-DAO מחזיר רשימה של DTOs
         List<TruckDTO> dtos = truckDAO.loadAllTrucks();
 
-        // ה-Service ממיר כל DTO לישות Domain חכמה
         for (TruckDTO dto : dtos) {
             this.trucks.add(new Truck(
                     dto.id(),
@@ -51,27 +49,24 @@ public class TruckService {
     }
 
     public Truck getTruck(int truckId) {
-        for (Truck truck : trucks) {
-            if (truck.getId() == truckId) {
+        for (Truck truck : trucks)
+            if (truck.getId() == truckId)
                 return truck;
-            }
-        }
+
         throw new IllegalArgumentException("Truck not found: " + truckId);
     }
 
     public List<Integer> getBiggerTruckIds(int minLicense, int truckId) {
-        Truck oldTruck = getTruck(truckId);
-        int oldTruckTotalWeight = getTruckWeight(truckId);
-        int cargoWeight = oldTruckTotalWeight - oldTruck.getStartWeight();
+        int maxWeight = 0;
+        if (truckId != -1)
+            maxWeight = getTruck(truckId).getMaxWeight();
 
         List<Integer> available = new ArrayList<>();
-        for (Truck truck : trucks) {
-            if (truck.isAvailable() && truck.getMinLicense() <= minLicense) {
-                if (truck.getStartWeight() + cargoWeight <= truck.getMaxWeight()) {
+        for (Truck truck : trucks)
+            if (truck.isAvailable() && truck.getMinLicense() <= minLicense)
+                if (maxWeight < truck.getMaxWeight())
                     available.add(truck.getId());
-                }
-            }
-        }
+
         return available;
     }
 

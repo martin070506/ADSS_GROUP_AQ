@@ -1,7 +1,8 @@
-package Domain.Workers;
+package Domaina.Workers;
 
 import DAO.Transportation.LocationDAO;
 import Domain.Transportation.Location;
+import Domain.Workers.ShiftJobs;
 import Service.Transportation.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

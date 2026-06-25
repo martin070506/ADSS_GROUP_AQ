@@ -18,7 +18,7 @@ public class TransportManagerService {
     private final SupplierService supplierService;
     private final RequestService requestService;
     private final WorkersService workers_service;
-    private final ShiftJobsService shiftJobsService; // תוקן לאות קטנה
+    private final ShiftJobsService shiftJobsService;
     private final TransportFileDAO transportFileDAO;
 
 
@@ -26,7 +26,7 @@ public class TransportManagerService {
         this.truckService = truckService;
         this.supplierService = supplierService;
         this.requestService = requestService;
-        this.shiftJobsService = shiftJobsService; // תוקן לאות קטנה
+        this.shiftJobsService = shiftJobsService;
         this.transportFileDAO = transportFileDAO;
         this.transport = null;
         this.transportIdCounter = -1;
