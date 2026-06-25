@@ -7,8 +7,10 @@ import Service.Workers.ShiftPlacementService;
 import Service.Workers.ShiftWorkersCanidatesService;
 import Service.Workers.WorkersService;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+
 
 public class AdminConsole {
     private final Scanner scanner = new Scanner(System.in);
@@ -41,18 +43,8 @@ public class AdminConsole {
     }
 
     public void start() {
-        System.out.println("=== LOGISTICS MANAGEMENT SYSTEM ===");
-        System.out.println("1. Load Automatic Demo Data");
-        System.out.println("2. Manual Data Entry");
-        System.out.print("Choice: ");
-
-        if (scanner.nextLine().trim().equals("1")) {
-            // DemoDataLoader.load(companyManager,productService,truckService,branchService);
-            System.out.println("Demo Data Loaded Successfully.");
-        } else { manualSetup(); }
-
-        boolean running = true;
-        while (running) {
+        boolean exit = false;
+        while (!exit) {
             displayMenu();
 
             String choice = scanner.nextLine().trim();
@@ -68,7 +60,7 @@ public class AdminConsole {
                 case "9" -> updateBranchRequest();
                 case "0" -> {
                     System.out.println("Exiting system... Goodbye!");
-                    running = false;
+                    exit = true;
                 }
                 default -> System.out.println("Invalid choice. Try again.");
             }
@@ -100,8 +92,8 @@ public class AdminConsole {
         }
 
         MainConsole shipmentConsole = new MainConsole(transportService, supplierService, productService,
-                truckService, locationService, workers_service, candidates_service, placement_service);
-        try {shipmentConsole.initiateShipment(requestService.getActiveRequestLocationIds()); }
+                truckService, locationService, requestService, workers_service, candidates_service, placement_service);
+        try {shipmentConsole.initiateShipment(); }
         catch (Exceptions.ConsoleEndException e) { System.out.println("Returned to Admin Menu."); }
         catch (Exception e) { System.out.println("Shipment Console Error: " + e.getMessage()); }
     }
@@ -140,8 +132,10 @@ public class AdminConsole {
             if (productId == -1)
                 break;
 
-            if (!productIds.contains(productId))
+            if (!productIds.contains(productId)) {
                 System.out.println("Invalid Product ID.");
+                continue;
+            }
 
             int amount = promptInt("Quantity needed: ");
             if (amount > 0)
@@ -217,9 +211,8 @@ public class AdminConsole {
                 break;
             System.out.println("Invalid Branch Index. Please try again.");
         }
-        System.out.println("\nBranch Request:" + activeBranches.get(branchId));
         try {
-            requestService.removeRequest(branchId);
+            requestService.removeRequest(branchId, true);
             System.out.println("Request removed.");
         } catch (Exception e) { System.out.println("Failed to remove request: " + e.getMessage()); }
     }
@@ -371,8 +364,8 @@ public class AdminConsole {
             scanner.nextLine();
 
             workers_service.addDriver(name, id, bank_account, salary, salary_condision, start_date, is_shift_manager, license);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Failed to add driver: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("entered wrong data type, returning to menu \n");
         }
     }
 
@@ -426,13 +419,16 @@ public class AdminConsole {
             if (id == -1)
                 break;
 
+            if (!catalog.contains(id))
+                continue;
+
             int amount = promptInt("Quantity: ");
             stockIds.put(id, amount);
         }
 
         try {
-            int locationId = locationService.addLocation(addr, phone, contact);
-            supplierService.addSupplier(locationId, stockIds);
+
+            supplierService.addSupplier(addr,phone,contact, stockIds);
             System.out.println("Supplier registered.");
         } catch (Exception e) {
             System.out.println(e.getMessage());

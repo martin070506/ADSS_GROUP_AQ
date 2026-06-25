@@ -1,5 +1,6 @@
 package Domain.Transportation;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProductFile {
@@ -9,7 +10,7 @@ public class ProductFile {
 
 
     public ProductFile(Map<Integer, Integer> products, int fileNumber){
-        this.products = products;
+        this.products = new HashMap<>(products);;
         this.fileNumber = fileNumber;
     }
 

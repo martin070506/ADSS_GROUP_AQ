@@ -10,19 +10,17 @@ public class Transport {
     private int truckId;
     private final int driverId;
     private final int sourceId;
-    private final List<Integer> requestIds;
     private final Map<Integer, Map<Integer, Integer>> supplierAllocationIds;
     private final TransportFile transportFile;
 
     public Transport(int id, LocalDate departureTime, int truckId, int driverId, int sourceId,
-                     List<Integer> requests, Map<Integer, Map<Integer, Integer>> supplierAllocationIds,
+                     Map<Integer, Map<Integer, Integer>> supplierAllocationIds,
                      String truckInfo, String driverInfo, String sourceInfo) {
         this.id = id;
         this.departureTime = departureTime;
         this.truckId = truckId;
         this.driverId = driverId;
         this.sourceId = sourceId;
-        this.requestIds = requests;
         this.supplierAllocationIds = new HashMap<>(supplierAllocationIds);
         this.transportFile = new TransportFile(departureTime, truckInfo, driverInfo, sourceInfo);
     }
@@ -30,10 +28,6 @@ public class Transport {
 
     public int getDriverId() {
         return driverId;
-    }
-
-    public Map<Integer, Map<Integer, Integer>> getSupplierAllocationIds() {
-        return supplierAllocationIds;
     }
 
     public int getId() {
@@ -57,20 +51,12 @@ public class Transport {
         this.transportFile.changeTruck(truckCapacity, truckInfo);
     }
 
-    public void removeSupplier(int supplierId) {
+    public void removeSupplierAllocations(int supplierId) {
         supplierAllocationIds.remove(supplierId);
-    }
-
-    public void removeRequest(int requestId) {
-        this.requestIds.remove(requestId);
     }
 
     public int getFirstSupplierId() {
         return supplierAllocationIds.keySet().iterator().next();
-    }
-
-    public List<Integer> getRequestIds() {
-        return requestIds;
     }
 
     public void UpdateArriveAtSupplier(String supplierName) {
@@ -89,15 +75,27 @@ public class Transport {
         transportFile.leaveRequest(requestContactName, requestInfo);
     }
 
-    public void UpdateSkipSupplier(String supplierName) {
-        transportFile.skipSupplier(supplierName);
+    public void UpdateSkipSupplier(String supplierName, String reason) {
+        transportFile.skipSupplier(supplierName, reason);
     }
 
-    public void removeItems(Map<Integer, Integer> thingsToRemove) {
-        for (Map.Entry<Integer, Integer> entry : thingsToRemove.entrySet()) {
-            int productId = entry.getKey();
-            int amount = entry.getValue();
-            supplierAllocationIds.get(productId).put(productId, supplierAllocationIds.get(productId).get(productId) - amount);
-        }
+    public TransportFile getTransportFile() {
+        return transportFile;
+    }
+
+    public void UpdateSkipRequest(String requestContactName, String reason) {
+        transportFile.skipRequest(requestContactName, reason);
+    }
+
+    public boolean hasSuppliers() {
+        return !supplierAllocationIds.isEmpty();
+    }
+
+    public Map<Integer, Integer> getSupplierAllocations(int supplierId) {
+        return supplierAllocationIds.get(supplierId);
+    }
+
+    public void UpdateDropOff(String productName, int amountToRemove) {
+        transportFile.UpdateDropOff(productName, amountToRemove);
     }
 }

@@ -12,19 +12,6 @@ public class Request {
         this.productFile = new ProductFile(neededItems, fileNumber);
     }
 
-    public void handleShipment(Map<Integer, Integer> truckProducts) {
-        Map<Integer, Integer> requestedProducts = productFile.getProducts();
-
-        for (Map.Entry<Integer, Integer> entry : requestedProducts.entrySet()) {
-            int productId = entry.getKey();
-            int requestedAmount = entry.getValue();
-            int availableAmount = truckProducts.getOrDefault(productId, 0);
-
-            if (availableAmount < requestedAmount)
-                throw new Exceptions.ProductNotFoundOnTruckException(productId, requestedAmount, availableAmount);
-        }
-    }
-
     public String getContactName() {
         return location.contactName();
     }
@@ -35,7 +22,8 @@ public class Request {
 
     @Override
     public String toString() {
-        return "Request: " + location.address() +
+        return "ID: " + location.id() +
+                " | Request Location: " + location.address() +
                 " | Contact: " + location.contactName() +
                 " | File #" + productFile.getFileNumber() + "\n";
     }
@@ -58,5 +46,9 @@ public class Request {
 
     public int getLocationId() {
         return location.id();
+    }
+
+    public int getFileNumber() {
+        return productFile.getFileNumber();
     }
 }

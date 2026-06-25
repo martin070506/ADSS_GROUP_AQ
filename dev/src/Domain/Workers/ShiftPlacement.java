@@ -27,6 +27,20 @@ public class ShiftPlacement{
         placements.put(id_to_in, job);
         return "succeed, changed "+job+" from "+id_to_out+" to "+id_to_in;
     }
+    public int getJob(int id){
+        if(placements.get(id).equals(Jobs.CASHEER)){
+            return 0;
+        } else if (placements.get(id).equals(Jobs.SHOPKEEPER)) {
+            return  1;
+        }
+        else if (placements.get(id).equals(Jobs.DRIVER)) {
+            return  2;
+        }
+        else{
+            return -1;
+        }
+    }
+
     public Shift getShift() {
         return shift;
     }

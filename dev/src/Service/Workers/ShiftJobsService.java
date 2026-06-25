@@ -32,4 +32,7 @@ public class ShiftJobsService {
         return jobs_facade.hashShopKeeper(date, is_morning, location);
     }
 
+    public void loadAllJobs(){
+         jobs_facade.loadAllJobs();
+    }
 }

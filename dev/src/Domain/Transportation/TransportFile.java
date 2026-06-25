@@ -29,9 +29,9 @@ public class TransportFile {
         transportLog += "Arrived at Supplier " + supplierName + '\n';
     }
 
-    public void skipSupplier(String supplierName) {
+    public void skipSupplier(String supplierName, String reason) {
 
-        transportLog += "Skipped Supplier " + supplierName + '\n';
+        transportLog += "Skipped Supplier " + supplierName + " due to " + reason + '\n';
     }
 
     public void overWeightAlert(int weight) {
@@ -44,9 +44,9 @@ public class TransportFile {
         trucksLog = " (Swapped)\n" + truckInfo;
     }
 
-    public void skipRequest(String requestName) {
+    public void skipRequest(String requestName, String reason) {
 
-        transportLog += "Skipped Request " + requestName + '\n';
+        transportLog += "Skipped Request " + requestName + " due to " + reason + '\n';
     }
 
     public void arriveAtRequest(String requestName) {
@@ -58,11 +58,13 @@ public class TransportFile {
         requestsLog += requestInfo;
     }
 
-    public String toString(Map<Product, Integer> itemsLeft) {
+    public void UpdateDropOff(String productName, int amountToRemove) {
+        transportLog += "Dropped off " + amountToRemove + " " + productName + ".\n";
+    }
+
+    public String toString(String itemsLeft) {
 
         StringBuilder sb = new StringBuilder();
-
-        sb.append("Transport File :\n\n");
 
         sb.append("--- TRANSPORT LOG ---\n");
         sb.append(transportLog != null ? transportLog : "").append("\n");
@@ -80,19 +82,8 @@ public class TransportFile {
         sb.append(requestsLog != null ? requestsLog : "").append("\n\n");
 
         sb.append("--- ITEM LEFT ON TRUCK ---\n");
-        if (itemsLeft != null && !itemsLeft.isEmpty()) {
-            for (Map.Entry<Product, Integer> entry : itemsLeft.entrySet()) {
-                sb.append("- ").append(entry.getKey().name()).append(": ").append(entry.getValue()).append(" units\n");
-            }
-        } else {
-            sb.append("No items currently held.\n");
-        }
+        sb.append(itemsLeft != null ? itemsLeft : "No items currently held.").append("\n");
 
         return sb.toString();
-    }
-
-    @Override
-    public String toString() {
-        return toString(null);
     }
 }

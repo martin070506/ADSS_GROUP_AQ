@@ -6,6 +6,7 @@ import Service.Workers.ShiftPlacementService;
 import Service.Workers.ShiftWorkersCanidatesService;
 import Service.Workers.WorkersService;
 
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -16,12 +17,13 @@ public class MainConsole {
     private final ProductCatalogService productService;
     private final TruckService truckService;
     private final LocationService locationService;
+    private final RequestService requestService;
     private final WorkersService workers_service;
     private final ShiftWorkersCanidatesService candidates_service;
     private final ShiftPlacementService placement_service;
 
     public MainConsole(TransportManagerService transportService, SupplierService supplierService,
-                       ProductCatalogService productService, TruckService truckService, LocationService locationService,
+                       ProductCatalogService productService, TruckService truckService, LocationService locationService, RequestService requestService,
                        WorkersService workers_service, ShiftWorkersCanidatesService candidates_service,
                        ShiftPlacementService placement_service) {
         this.transportService = transportService;
@@ -29,31 +31,45 @@ public class MainConsole {
         this.productService = productService;
         this.truckService = truckService;
         this.locationService = locationService;
+        this.requestService = requestService;
         this.workers_service = workers_service;
         this.candidates_service = candidates_service;
         this.placement_service = placement_service;
     }
 
-    public void initiateShipment(List<Integer> requests) {
+    public void initiateShipment() {
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        boolean isMorning = LocalTime.now().isAfter(LocalTime.of(4, 59)) && LocalTime.now().isBefore(LocalTime.of(17, 0));
 
         int sourceIdx = selectSourceLocation();
-        if (sourceIdx == -1) return;
+        if (sourceIdx == 0)
+            sourceIdx = findLocationWithDriver(tomorrow, isMorning);
 
-        int truckId = chooseTruck();
-        if (truckId == -1) return;
+        if (sourceIdx == -1) {
+            System.out.println("No location available with driver ready.");
+            return;
+        } else  {
+            System.out.println("Location with driver ready: " + locationService.getLocationDisplay(sourceIdx));
+        }
 
-        int driverId = chooseDriver(sourceIdx, truckId);
+        int driverId = chooseDriver(sourceIdx, isMorning, tomorrow);
         if (driverId == -1) return;
+
+        int truckId = chooseTruck(workers_service.getLicense(driverId));
+        if (truckId == -1) return;
 
         Map<Integer, Map<Integer, Integer>> supplierAllocationsIds = chooseSuppliersAndProducts();
 
-        if (supplierAllocationsIds.isEmpty()) return;
-
+        if (supplierAllocationsIds.isEmpty()) {
+            System.out.println("No suppliers selected.");
+            return;
+        }
         try {
-            int transportId = transportService.createTransport(truckId, driverId, sourceIdx, requests, 
+            transportService.createTransport(truckId, driverId, sourceIdx,
                     supplierAllocationsIds, truckService.getTruckDisplay(truckId), 
                     locationService.getLocationDisplay(sourceIdx));
-            processShipmentFlow(transportId);
+            processShipmentFlow(isMorning);
         } catch (DomainException e) {
             System.out.println("Validation Error: " + e.getMessage());
         } catch (Exception e) {
@@ -61,23 +77,42 @@ public class MainConsole {
         }
     }
 
-    private void processShipmentFlow(int transportId) {
-        transportService.startShipment(transportId);
+    private int findLocationWithDriver(LocalDate tomorrow, boolean isMorning) {
+        List<Integer> locations = locationService.getLocationIds();
+        for (int locationId : locations) {
+            if (candidates_service.getAllAvialableDrivers(tomorrow, isMorning, locationService.getLocation(locationId)).isEmpty())
+                continue;
+            return locationId;
+        }
+
+        return -1;
+    }
+
+    private void processShipmentFlow(boolean isMorning) {
+        transportService.startShipment();
 
         boolean shipmentFinish = false;
         while (!shipmentFinish) {
             try {
-                transportService.processTransportLifecycle(transportId);
+                transportService.processTransportLifecycle(isMorning);
                 shipmentFinish = true;
             } catch (OverweightException oe) {
-                handleOverweightUI(transportId);
+                handleOverweightUI();
             } catch (InsufficientSupplierStockException | InsufficientTruckStockException ise) {
                 System.out.println("Stock Problem: " + ise.getMessage());
-                try { transportService.handleStockException(transportId, ise); }
-                catch (Exception e) { System.out.println("Error handling stock: " + e.getMessage()); }
+                try {
+                    transportService.handleStockException(ise);
+                } catch (Exception e) {
+                    System.out.println("Error handling stock: " + e.getMessage());
+                }
+            } catch (MissingShopKeeper msk) {
+                System.out.println("ShopKeeper Missing: " + msk.getMessage());
+                transportService.skipRequest("ShopKeeper Missing");
             } catch (DomainException de) {
                 System.out.println("General Domain Error: " + de.getMessage());
                 break;
+            } catch (IgnoreException ignore) {
+
             } catch (Exception e) {
                 System.out.println("General Error: " + e.getMessage());
                 break;
@@ -85,16 +120,14 @@ public class MainConsole {
         }
 
         if (shipmentFinish) {
-            // Step 3: Safely clear out the truck's contents for future shipments
-            transportService.finishShipment(transportId);
-            System.out.println(transportService.getTransportFileDisplay(transportId));
-            transportService.removeTransportById(transportId);
+            System.out.println(transportService.getTransportFileDisplay(productService.getProductsDisplay(truckService.getTruckProducts(transportService.getTruckId()))));
+            transportService.finishShipment();
             System.out.println("Shipment finished successfully!");
         }
     }
 
-    public void handleOverweightUI(int transportId) {
-        String supplierName = transportService.getFirstSupplierName(transportId);
+    public void handleOverweightUI() {
+        String supplierName = transportService.getFirstSupplierName();
         int choice;
 
         while (true) {
@@ -114,14 +147,27 @@ public class MainConsole {
 
         try {
             switch (choice) {
+                case 2:
+                    transportService.removeLastSupplierProductsFromTruck();
+                    showTruckProducts();
+                    int requestId = getRequestIdFromUser();
+                    if (requestId == -1)
+                        return;
+                    transportService.performEmergencyDropOff(requestId);
+                    break;
                 case 3:
-                    getItemsToRemoveUI(transportId);
+                    getItemsToRemoveUI();
+                    transportService.leaveFirstSupplier();
                     break;
                 case 4:
-                    int driverLicense = workers_service.getLicense(transportService.getDriverId(transportId));
+                    int driverLicense = workers_service.getLicense(transportService.getDriverId());
 
                     List<Integer> truckIds = truckService.getBiggerTruckIds(driverLicense,
-                            transportService.getTruckId(transportId));
+                            transportService.getTruckId());
+                    if (truckIds.isEmpty()) {
+                        System.out.println("No bigger trucks available to replace with driver license.");
+                        return;
+                    }
                     while (!truckIds.isEmpty()) {
                         for (int truckId : truckIds)
                             System.out.println(truckService.getTruckDisplay(truckId));
@@ -129,8 +175,7 @@ public class MainConsole {
                         System.out.print("Enter Truck ID to replace: ");
                         int newTruckId = Integer.parseInt(scanner.nextLine().trim());
                         if (truckIds.contains(newTruckId)) {
-                            transportService.replaceTruck(transportId, newTruckId);
-                            transportService.finalizeCurrentSupplierLoading(transportId);
+                            transportService.replaceTruck(newTruckId);
                             return;
                         } else {
                             System.out.println("Invalid Truck ID. Please try again.");
@@ -138,26 +183,62 @@ public class MainConsole {
                     }
                     break;
                 default:
-                    transportService.resolveOverweightIssue(transportId, choice);
+                    transportService.skipSupplierAndDropProductsFromTruck("Overweight default");
             }
-            System.out.println("Mitigation failed: No alternative vehicle matches criteria. Skipping supplier.");
-            transportService.skipSupplier(transportId);
-        } catch (Exception e) { System.out.println("Error handling overweight: " + e.getMessage()); }
+        } catch (Exception e) {
+            System.out.println("Error handling overweight: " + e.getMessage() + '\n'); }
     }
 
-    private void getItemsToRemoveUI(int transportId) {
+    private void showTruckProducts() {
+        Map<Integer, Integer> products = truckService.getTruckProducts(transportService.getTruckId());
+        if (products.isEmpty()) {
+            System.out.println("The truck is empty!\n");
+            return;
+        }
+        System.out.println("Truck Products:");
+        List<Integer> productNames = new ArrayList<>(products.keySet());
+        for (Integer productId : productNames)
+            System.out.println(productService.getProductDisplay(productId) + " (" + products.get(productId) + " units)");
+        System.out.println();
+    }
+
+    private int getRequestIdFromUser() {
+        int requestNeeded;
         while (true) {
-            Map<Integer, Integer> currentItemsDisplay = truckService.getTruckProducts(transportService.getTruckId(transportId));
-            if (currentItemsDisplay.isEmpty()) {
+            System.out.println("Choose a request to drop off:");
+            for (Integer requestId : requestService.getAllRequests()) {
+                System.out.print(requestService.getRequestDisplay(requestId));
+                Map<Integer, Integer> products = requestService.getProducts(requestId);
+                for (Integer productId : products.keySet())
+                    System.out.println(productService.getProductDisplay(productId) + " (" + products.get(productId) + " units)");
+                System.out.println();
+            }
+
+            requestNeeded = promptInt("Enter Request ID (or '-1' to skip'): ") ;
+
+            if (requestService.getAllRequests().contains(requestNeeded) || requestNeeded == -1)
+                break;
+
+            System.out.println("Invalid Branch ID. Please try again.");
+        }
+        return requestNeeded;
+    }
+
+    private void getItemsToRemoveUI() {
+        while (true) {
+            System.out.println();
+            System.out.print("TruckWeight = " + truckService.getTruckWeight(transportService.getTruckId()) + '/' + truckService.getTruckMaxWeight(transportService.getTruckId()) + " kg");
+            Map<Integer, Integer> productPairIds = truckService.getTruckProducts(transportService.getTruckId());
+            if (productPairIds.isEmpty()) {
                 System.out.println("The truck is now empty!");
                 break;
             }
 
             System.out.println("\nCurrent loaded items:");
             int i = 0;
-            List<Integer> productNames = new ArrayList<>(currentItemsDisplay.keySet());
-            for (Integer productId : productNames)
-                System.out.println(productService.getProductDisplay(productId) + " (" + currentItemsDisplay.get(productId) + " units)");
+            List<Integer> productIds = new ArrayList<>(productPairIds.keySet());
+            for (Integer productId : productIds)
+                System.out.println(productService.getProductDisplay(productId) + " (" + productPairIds.get(productId) + " units)");
 
 
             System.out.print("Enter product ID to remove (or type '-1'): ");
@@ -167,19 +248,34 @@ public class MainConsole {
 
             try {
                 int productId = Integer.parseInt(input);
-                if (productId >= 0 && productId < productNames.size()) {
+                if (productId >= 0 && productIds.contains(productId)) {
                     int amt = promptInt("Amount to remove: ");
                     if (amt > 0) {
-                        transportService.resolveOverweightWithFineTuning(transportId, productId, amt);
-                        System.out.println("Items removed.");
-                    } else { System.out.println("Invalid amount."); }
-                } else { System.out.println("Product ID not found on truck."); }
-            } catch (NumberFormatException e) { System.out.println("Invalid input. Please enter a number."); }
+                        try {
+                            transportService.resolveOverweightWithFineTuning(productId, amt, productService.getProductName(productId));
+                            System.out.println("Items removed.");
+                        } catch (InsufficientTruckStockException e) {
+                            System.out.println("Insufficient stock on truck.");
+                        }
+                    } else {
+                        System.out.println("Invalid amount.");
+                    }
+                } else {
+                    System.out.println("Product ID not found on truck.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
         }
+        if (truckService.isTruckOverweight(transportService.getTruckId())) {
+            System.out.println("Truck Still on overweight");
+            getItemsToRemoveUI();
+        }
+        System.out.println();
     }
 
-    private int chooseTruck() {
-        List<Integer> trucks = truckService.getAvailableTruckIds();
+    private int chooseTruck(int license) {
+        List<Integer> trucks = truckService.getBiggerTruckIds(license, -1);
         if (trucks.isEmpty()) {
             System.out.println("No trucks available.");
             return -1;
@@ -196,10 +292,8 @@ public class MainConsole {
         }
     }
 
-    private int chooseDriver(int sourceIdx, int truckId) {
-        LocalDate today = LocalDate.now();
-        boolean isMorning = Math.random() > 0.5; // TODO: notice
-        List<Integer> drivers = candidates_service.getAllAvialableDrivers(today, isMorning, locationService.getLocation(sourceIdx)); // TODO: notice break of Domain
+    private int chooseDriver(int sourceIdx, boolean isMorning, LocalDate day) {
+        List<Integer> drivers = candidates_service.getAllAvialableDrivers(day, isMorning, locationService.getLocation(sourceIdx));
         if (drivers.isEmpty()) {
             System.out.println("No drivers available.");
             return -1;
@@ -208,32 +302,19 @@ public class MainConsole {
 
         System.out.println("\n--- Available Drivers ---");
         for (int index : drivers)
-            System.out.println("Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
+            System.out.println("ID :" + index + " Driver: " + workers_service.getName(index) + ", License: " + workers_service.getLicense(index));
 
         while (true) {
-            int driverIndex = promptInt("Enter Driver: ")-1;
-            if (driverIndex == -1)
+            int driverId = promptInt("Enter Driver: ");
+            if (driverId == -1)
                 return -1;
 
-            if (!drivers.contains(driverIndex)) {
+            if (!drivers.contains(driverId)) {
                 System.out.println("Invalid Driver Index.");
                 continue;
             }
 
-            if (!truckService.isDriverEligable(workers_service.getLicense(driverIndex), truckId)) {
-                System.out.println("Driver is not eligible to this truck.");
-                continue;
-            }
-
-            String massage = placement_service.PlaceDriver(today, isMorning,
-                    locationService.getLocation(sourceIdx), drivers.get(driverIndex));
-
-            if (massage.startsWith("failed")) {
-                System.out.println(massage);
-                continue;
-            }
-
-            return driverIndex;
+            return driverId;
         }
     }
 
@@ -247,9 +328,10 @@ public class MainConsole {
         System.out.println("\n--- Select Source Location ---");
         for (Integer location : locations) 
             System.out.println(locationService.getLocationDisplay(location));
+        System.out.println("Choose '0' to autoselect location with driver ready.");
         while (true) {
             int choice = promptInt("Enter Location ID: ");
-            if (locations.contains(choice)) 
+            if (locations.contains(choice) || choice == 0)
                 return choice;
             System.out.println("Invalid Location ID.");
         }
@@ -275,10 +357,23 @@ public class MainConsole {
         List<Integer> selectedSupplierIndices = new ArrayList<>();
 
         if (input.equalsIgnoreCase("all")) {
-            for (int i = 0; i < supplierIds.size(); i++) {
-                selectedSupplierIndices.add(i);
+            selectedSupplierIndices.addAll(supplierIds);
+            System.out.println("Selected all Suppliers.");
+            System.out.print("Do you want to select also all Products? (y/n): ");
+
+            if (scanner.nextLine().trim().equals("y")) {
+                System.out.println();
+                for (Integer supplierId : supplierIds) {
+                    Map<Integer, Integer> productsToBuy = new HashMap<>();
+                    for (Integer productId : supplierService.getProductIds(supplierId))
+                        productsToBuy.put(productId, supplierService.getProductStock(supplierId, productId));
+
+                    allocations.put(supplierId, productsToBuy);
+                }
+                return allocations;
             }
-        } else {
+        }
+        else
             for (String part : input.split(",\\s*")) {
                 try {
                     int idx = Integer.parseInt(part);
@@ -287,7 +382,17 @@ public class MainConsole {
                     }
                 } catch (NumberFormatException ignored) {}
             }
+
+
+        int supS = selectedSupplierIndices.size();
+        for (int i = 0; i < selectedSupplierIndices.size(); i++) {
+            if (!supplierIds.contains(selectedSupplierIndices.get(i))) {
+                selectedSupplierIndices.remove(i);
+                i--;
+            }
         }
+        if (selectedSupplierIndices.size() != supS)
+            System.out.println("Invalid Supplier Indices. Only " + selectedSupplierIndices.size() + " valid.");
 
         for (int supplierId : selectedSupplierIndices) {
             String supplierName = supplierService.getSupplierName(supplierId);
@@ -312,7 +417,10 @@ public class MainConsole {
                 System.out.print("Enter Product Index to add (or type 'done'): ");
                 String prodInput = scanner.nextLine().trim();
                 if (prodInput.equalsIgnoreCase("done")) break;
-
+                if (!availableProductIds.contains(Integer.parseInt(prodInput))) {
+                    System.out.println("Invalid Product Index.");
+                    continue;
+                }
                 try {
                     int pIdx = Integer.parseInt(prodInput);
                     if (pIdx >= 0) {

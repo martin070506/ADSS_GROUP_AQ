@@ -1,6 +1,7 @@
 package Presentation.Workers;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -25,6 +26,10 @@ public class ServiceControl{
         this.canidates_service = candidates_service;
         this.placement_service = placement_service;
         this.locationService = locationService;
+        this.workers_service.loadAllJobs();
+        this.jobs_service.loadAllJobs();
+        this.canidates_service.loadAllJobs();
+        this.placement_service.loadAllJobs();
     }
 //    public   void main(LocationService locationService, WorkersService workers_service, ShiftJobsService jobs_service, ShiftWorkersCanidatesService candidates_service, ShiftPlacementService placement_service) {
 //        ServiceControl service = new ServiceControl(locationService, workers_service, jobs_service, candidates_service, placement_service);
@@ -33,11 +38,7 @@ public class ServiceControl{
     public void run(){
         boolean exit=false;
         System.out.println("system woke up... \nsystem initialize");
-//        System.out.println("Enter true to load preset data and false to enter without");
-//        boolean data  = scanner.nextBoolean();
-//        if(data)
-//            load_data();
-//        scanner.nextLine();
+
         while (!exit) {
             System.out.println("Enter command \n 1) 'workers' for workers service \n 2) 'jobs' for jobs service \n 3) 'placement' for placement service \n 4) 'canidate' for shift canidates service \n 5) 'exit' for exit: ");
             String command = scanner.nextLine();
@@ -62,33 +63,7 @@ public class ServiceControl{
             }
         }
     }
-//    public   void load_data(){
-//        workers_service.addWorker("Mark", 0, "discount", 33.7, "above avg",  LocalDate.parse("2011-11-11"), true);
-//        workers_service.addWorker("Pam", 1, "hapoalim", 31.4, "no extra hours",  LocalDate.parse("2015-05-05"), false);
-//        workers_service.addWorker("Elon", 2, "mizrachi", 38.7, "manager terms",  LocalDate.parse("2009-11-11"), true);
-//        workers_service.addWorker("Tim", 3, "leomi", 29.9, "trying term",  LocalDate.parse("2021-09-12"), false);
-//
-//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),0);
-//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),1);
-//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),2);
-//        canidates_service.addCandidate(LocalDate.parse("2027-01-01"),true, new Location(),3);
-//
-//        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),true, new Location(),0);
-//        canidates_service.addCandidate(LocalDate.parse("2028-01-02"),false, new Location(),1);
-//
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),0);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-//        jobs_service.addJob(LocalDate.parse("2027-01-01"),true,new Location(),1);
-//
-//
-//        jobs_service.addJob(LocalDate.parse("2028-01-02"),false,new Location(),0);
-//
-//        placement_service.addPlacement(LocalDate.parse("2027-01-01"), true, new Location(), 0, List.of(0, 1, 2, 3), List.of(0, 1, 0, 1));
-//        placement_service.addPlacement(LocalDate.parse("2028-01-02"), false, new Location(), 0, List.of(1), List.of(0));
-//
-//
-//    }
+    //----------
     public void runCanidateService(){
         boolean exit=false;
         while (!exit) {
@@ -504,16 +479,13 @@ public class ServiceControl{
     public void runWorkersServiceEdit(){
         boolean exit=false;
         while (!exit) {
-            System.out.println("Welcome to workers edit service \n 1) for editing worker name 'name' \n 2) for editing worker id 'id' \n 3) for editing worker bank account info enter 'bank account' \n 4) for editing worker salary enter 'salary' \n 5) for editing worker salary condision enter 'salary condision' \n 6) for editing worker start date enter 'date' \n 7) for editing if worker can be shift manager enter 'shift manager' \n 8) for returning to workers service menu enter 'return' \n");
+            System.out.println("Welcome to workers edit service \n 1) for editing worker name 'name' \n 2) for editing worker bank account info enter 'bank account' \n 3) for editing worker salary enter 'salary' \n 4) for editing worker salary condision enter 'salary condision' \n 5) for editing worker start date enter 'date' \n 6) for editing if worker can be shift manager enter 'shift manager' \n 7) for returning to workers service menu enter 'return' \n");
             String command = scanner.nextLine();
             if (command.equals("return")) {
                     exit=true;
             }
             else if (command.equals("name")) {
                     runWorkersServiceEditName();
-            }
-            else if (command.equals("id")) {
-                    runWorkersServiceEditId();
             }
             else if (command.equals("bank account")) {
                     runWorkersServiceEditBankAccount();
@@ -641,29 +613,7 @@ public class ServiceControl{
 
         }
 
-    }  
-    public void runWorkersServiceEditId(){
-        int new_id = 0;
-        int id =0;
-        try{
-            System.out.println("enter worker id: ");
-            id = scanner.nextInt();
-            scanner.nextLine();
-
-            System.out.println("enter worker new id: ");
-            new_id = scanner.nextInt();
-            scanner.nextLine();
-
-            System.out.println(workers_service.editWorkerId(id,new_id));
-
-
-        }
-        catch(Exception e){
-           System.out.println("entered wrong data type, returning to workers service menu ");
-
-        }
-
-    }   
+    }
     public void runWorkersServiceEditName(){
         String new_name = "";
         int id=0;
